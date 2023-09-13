@@ -10,4 +10,10 @@ export abstract class Base {
 
   @Property({ nullable: false })
   updated_at: Date = new Date();
+
+  @Property({ nullable: false })
+  created_id: number;
+
+  @Property({ nullable: false })
+  updated_id: number;
 }
