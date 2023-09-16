@@ -12,6 +12,8 @@ import { HandlebarsAdapter, MailerModule } from '@nest-modules/mailer';
 import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './modules/auth/constants';
+import { UsersModule } from './modules/users/users.module';
+import { UsersService } from './modules/users/users.service';
 
 @Module({
   imports: [
@@ -55,6 +57,7 @@ import { jwtConstants } from './modules/auth/constants';
     }),
     // ExampleModule,
     AuthModule,
+    UsersModule,
   ],
 
   controllers: [AppController],
