@@ -29,10 +29,10 @@ export class User extends Base {
   @Property({ default: true })
   isEnable!: boolean;
 
-  @Property({ nullable: true })
+  @Property({ nullable: false })
   @IsPhoneNumber()
   @Unique()
-  phone_number?: string;
+  phone_number!: string;
 
   @Property({ nullable: false })
   role: Role;

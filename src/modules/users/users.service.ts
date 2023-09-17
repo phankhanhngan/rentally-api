@@ -1,10 +1,12 @@
-import { EntityRepository } from '@mikro-orm/core';
+import { EntityRepository, Loaded, QueryOrder, wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable } from '@nestjs/common';
-import { User } from 'src/entities';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { Role, User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { UpdateUserDTO } from './dtos/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -14,149 +16,182 @@ export class UsersService {
     private readonly userRepository: EntityRepository<User>,
   ) {}
 
-  async hashPassword(password: string): Promise<string> {
+  async hashPassword(password: string) {
     const saltRounds = 10; // Số lần lặp để tạo salt, thay đổi tùy ý
     return bcrypt.hash(password, saltRounds);
   }
 
+  async duplicatedEmail(email: string) {
+    const user = await this.userRepository.findOne({ email: email });
+    if (user === null) return false;
+    return true;
+  }
+
+  async duplicatedPhoneNumber(phone_number: string) {
+    const user = await this.userRepository.findOne({
+      phone_number: phone_number,
+    });
+    if (user === null) return false;
+    return true;
+  }
+
   async getUserById(id: number): Promise<User> {
     const user = await this.userRepository.findOne({ id: id });
-    if (user == null) throw new Error(`User with ID ${id} not found`);
+    if (user == null) throw new Error(`Can not find user with id: ${id}`);
     return user;
   }
 
   async getUserByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({ email: email });
-    if (user == null) throw new Error(`User with Email "${email}" not found`);
+    if (user == null) throw new Error(`Can not find user with email: ${email}`);
     return user;
   }
 
-  async duplicatedEmail(email: string): Promise<boolean> {
-    const user = await this.userRepository.findOne({ email: email });
-    if (user == null) return false;
-    return true;
-  }
-
-  async getDataResponse(message: string, status: string, data): Promise<{}> {
-    var dataResponse = {};
-    dataResponse = {
-      message: message,
-      status: status,
-      data: data,
-    };
-    return dataResponse;
-  }
-
-  async getUser(id: number): Promise<{}> {
+  async listByPage(
+    pageNumber: number,
+    sortField: string,
+    sortDir: string,
+    keyword: string,
+    limit: number,
+  ) {
     try {
-      const user = await this.getUserById(id);
-      return await this.getDataResponse(`Found User with ID ${id}`, 'OK', user);
-    } catch (error) {
-      return await this.getDataResponse(error.message, 'Failed', []);
-    }
-  }
-
-  async getAllUser(): Promise<{}> {
-    return await this.getDataResponse(
-      'Get all User successfully',
-      'OK',
-      await this.userRepository.findAll(),
-    );
-  }
-
-  async searchUser(txt: string): Promise<{}> {
-    const users = await this.userRepository.findAll();
-    const searchedUsers = [];
-    users.forEach((element) => {
-      if (
-        element.email.includes(txt) ||
-        element.firstName.includes(txt) ||
-        (element.lastName !== null && element.lastName.includes(txt)) ||
-        (element.phone_number !== null && element.phone_number.includes(txt))
-      ) {
-        searchedUsers.push(element);
+      if (pageNumber < 1) {
+        throw new BadRequestException('Invalid page number');
       }
-    });
-    return await this.getDataResponse(
-      `Search User with "${txt}" success`,
-      'OK',
-      searchedUsers,
-    );
-  }
 
-  async addUser(id: number, user: UserDTO): Promise<{}> {
-    const newUser = new User();
-    newUser.googleId = user.googleId;
-    newUser.email = user.email;
-    newUser.password = (await this.hashPassword(user.password)).toString();
-    newUser.firstName = user.firstName;
-    newUser.lastName = user.lastName;
-    newUser.photo = user.photo;
-    newUser.phone_number = user.phone_number;
-    newUser.role = user.role;
-    newUser.created_id = id;
-    newUser.updated_id = id;
+      const fields = ['id', 'googleId', 'email', 'firstName', 'role'];
 
-    if (user.id == 0) {
-      if (await this.duplicatedEmail(user.email)) {
-        return await this.getDataResponse(
-          'Email is already in use',
-          'Failed',
-          user,
+      if (!fields.includes(sortField) && sortField !== undefined) {
+        throw new BadRequestException(
+          'sortField must be one of the following values: id, googleId, email, firstName, role',
         );
       }
-    }
+      if (sortField === undefined) sortField = 'id';
 
-    try {
-      await this.em.persistAndFlush(newUser);
+      const dirs = ['asc', 'desc', undefined];
+      if (!dirs.includes(sortDir)) {
+        throw new BadRequestException(
+          'sortDir must be one of the following values: asc, desc',
+        );
+      }
+      if (sortDir === undefined) sortDir = 'asc';
+
+      if (limit < 1) {
+        throw new BadRequestException('Invalid limit');
+      }
+      if (limit === undefined) limit = 5;
+      const offset = (pageNumber - 1) * limit;
+
+      const orderBy = {};
+      orderBy[sortField] =
+        sortDir === 'desc' ? QueryOrder.DESC : QueryOrder.ASC;
+
+      if (keyword === undefined) keyword = '';
+      const query = {};
+
+      // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
+      const searchConditions = fields.map((field) => ({
+        [field]: { $like: `%${keyword}%` },
+      }));
+
+      // Tạo một điều kiện $or để kết hợp tất cả điều kiện tìm kiếm
+      query['$or'] = searchConditions;
+
+      const users = await this.userRepository.findAndCount(query, {
+        offset,
+        limit,
+        orderBy,
+      });
+      return users[0];
     } catch (error) {
-      return await this.getDataResponse(error.message, 'Failed', user);
+      throw error;
     }
-    return await this.getDataResponse(
-      'Add Successfully!',
-      'OK',
-      await this.userRepository.findOne({ email: user.email }),
-    );
   }
 
-  async updateUser(id: number, user: UserDTO): Promise<{}> {
+  async addUser(userDto: UserDTO) {
     try {
-      const userToUpdate = await this.getUserById(user.id);
-      userToUpdate.googleId = user.googleId;
-      userToUpdate.email = user.email;
-      userToUpdate.password = (
-        await this.hashPassword(user.password)
-      ).toString();
-      userToUpdate.firstName = user.firstName;
-      userToUpdate.lastName = user.lastName;
-      userToUpdate.photo = user.photo;
-      userToUpdate.phone_number = user.phone_number;
-      userToUpdate.role = user.role;
-      userToUpdate.updated_id = id;
-      await this.em.flush();
-      return await this.getDataResponse(
-        `Update User with ID ${user.id} success`,
-        'OK',
-        userToUpdate,
-      );
+      if (await this.duplicatedEmail(userDto.email)) {
+        throw new BadRequestException('Email is already in use');
+      }
+      if (
+        userDto.phone_number !== undefined &&
+        (await this.duplicatedPhoneNumber(userDto.phone_number))
+      ) {
+        throw new BadRequestException('Phone number is already in use');
+      }
+      const user = plainToInstance(User, userDto);
+
+      if (user.role === undefined) user.role = Role.USER;
+      const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
+      user.created_id = create_id;
+      user.updated_id = create_id;
+
+      await this.em.persistAndFlush(user);
     } catch (error) {
-      return await this.getDataResponse(error.message, 'Failed', user);
+      throw error;
     }
   }
 
-  async deleteUser(id: number): Promise<{}> {
+  async updateUser(updateUserDto: UpdateUserDTO) {
     try {
-      const userToDelete = await this.getUserById(id);
+      try {
+        await this.getUserById(updateUserDto.idLogin);
+      } catch (error) {
+        throw new BadRequestException(
+          `Can not find user login with id: ${updateUserDto.idLogin}`,
+        );
+      }
 
-      this.em.remove(userToDelete);
-      await this.em.flush();
-      return await this.getDataResponse(
-        `Delete User with ID ${id} success`,
-        'OK',
-        [],
+      const userEntity: Loaded<User> = await this.userRepository.findOne({
+        id: updateUserDto.id,
+      });
+      if (!userEntity) {
+        throw new BadRequestException(
+          `Can not find user with id: ${updateUserDto.id}`,
+        );
+      }
+
+      if (
+        updateUserDto.phone_number !== undefined &&
+        userEntity.phone_number !== updateUserDto.phone_number &&
+        (await this.duplicatedEmail(updateUserDto.phone_number))
+      ) {
+        throw new BadRequestException('Phone number is already in use');
+      }
+
+      if (
+        updateUserDto.email !== undefined &&
+        userEntity.email !== updateUserDto.email &&
+        !(await this.duplicatedEmail(updateUserDto.email))
+      ) {
+        throw new BadRequestException('Email cannot be changed');
+      }
+
+      wrap(userEntity).assign(
+        {
+          ...updateUserDto,
+          updated_at: new Date(),
+          updated_id: updateUserDto.idLogin,
+        },
+        { updateByPrimaryKey: false },
       );
+
+      await this.em.persistAndFlush(userEntity);
     } catch (error) {
-      return await this.getDataResponse(error.message, 'Failed', []);
+      throw error;
+    }
+  }
+
+  async deleteUser(id: number) {
+    try {
+      const userToDelete = await this.userRepository.count({ id });
+      if (!userToDelete) {
+        throw new BadRequestException(`Can not find user with id: ${id}`);
+      }
+
+      await this.em.removeAndFlush(this.userRepository.getReference(id));
+    } catch (error) {
+      throw error;
     }
   }
 }
