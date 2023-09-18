@@ -13,7 +13,8 @@ import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './modules/auth/constants';
 import { UsersModule } from './modules/users/users.module';
-import { UsersService } from './modules/users/users.service';
+import { AWSModule } from './modules/aws/aws.module';
+
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { UsersService } from './modules/users/users.service';
     // ExampleModule,
     AuthModule,
     UsersModule,
+    AWSModule,
   ],
 
   controllers: [AppController],
