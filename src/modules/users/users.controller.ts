@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Res,
+  UploadedFiles,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -35,7 +36,9 @@ export class UsersController {
   async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
     try {
       const user = await this.usersService.getUserById(id);
-      const userDto = plainToInstance(UserDTO, user, {excludePrefixes: ['password']});
+      const userDto = plainToInstance(UserDTO, user, {
+        excludePrefixes: ['password'],
+      });
       res.status(200).json({
         message: 'Get user successfully',
         status: 'sucess',
@@ -67,12 +70,15 @@ export class UsersController {
   }
 
   @Post('add')
+  @UseInterceptors(FilesInterceptor('photo', 5, fileFilter))
   async addUser(
     @Res() res: Response,
-    @Body(new ValidationPipe()) userDto: UserDTO,
+    @Body(new ValidationPipe({ transform: true })) userDto: UserDTO,
+    @UploadedFiles()
+    files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
-      await this.usersService.addUser(userDto);
+      await this.usersService.addUser(userDto, files);
       res.status(200).json({
         message: 'Added user successfully',
         status: 'sucess',

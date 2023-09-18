@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
+import { AWSService } from '../aws/aws.service';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,7 @@ export class UsersService {
     private readonly em: EntityManager,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
+    private readonly awsService: AWSService,
   ) {}
 
   async hashPassword(password: string) {
@@ -92,7 +94,12 @@ export class UsersService {
     }
   }
 
-  async addUser(userDto: UserDTO) {
+  async addUser(
+    userDto: UserDTO,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
+    console.log(files);
+    
     try {
       if (await this.duplicatedEmail(userDto.email)) {
         throw new BadRequestException('Email is already in use');
@@ -104,6 +111,18 @@ export class UsersService {
         throw new BadRequestException('Phone number is already in use');
       }
       const user = plainToInstance(User, userDto);
+
+      if(userDto.photo !== undefined) {
+        const currentDate = new Date();
+        const timestamp = currentDate.getTime();
+        const urlImages: string[] = await this.awsService.bulkPutObject(
+          `QRImages/${timestamp}`,
+          files,
+        );
+        const qrImagesUrl = JSON.stringify(urlImages);
+        user.photo = qrImagesUrl;
+      }
+
       user.password = await this.hashPassword(user.password);
       if (user.role === undefined) user.role = Role.USER;
       const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
@@ -170,9 +189,14 @@ export class UsersService {
 
   async deleteUser(id: number) {
     try {
-      const userToDelete = await this.userRepository.count({ id });
+      const userToDelete = await this.userRepository.findOne({ id });
       if (!userToDelete) {
         throw new BadRequestException(`Can not find user with id: ${id}`);
+      }
+      if (userToDelete.photo !== undefined) {
+        await this.awsService.bulkDeleteObject(
+          JSON.parse(userToDelete.photo),
+        );
       }
 
       await this.em.removeAndFlush(this.userRepository.getReference(id));
