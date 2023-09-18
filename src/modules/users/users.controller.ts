@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,14 +10,19 @@ import {
   Post,
   Query,
   Res,
+  UseInterceptors,
+  UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './dtos/user.dto';
 import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
+import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { fileFilter } from './helpers/file-filter.helper';
 
 @Controller('users')
 export class UsersController {
@@ -31,61 +35,31 @@ export class UsersController {
   async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
     try {
       const user = await this.usersService.getUserById(id);
-      const userDto = plainToInstance(UserDTO, user);
+      const userDto = plainToInstance(UserDTO, user, {excludePrefixes: ['password']});
       res.status(200).json({
         message: 'Get user successfully',
         status: 'sucess',
         data: [userDto],
       });
     } catch (error) {
-      this.logger.error('Calling getUser', error, UsersController.name);
-      res.status(200).json({
-        message: error.message,
-        status: 'failed',
-        data: [],
-      });
-    }
-  }
-
-  @Get()
-  async listFirstPage(@Res() res: Response) {
-    try {
-      const users = await this.usersService.listByPage(1, 'id', 'asc', '', 5);
-      const usersDto = plainToClass(UserDTO, users);
-      res.status(200).json({
-        message: 'Get first page sucessfully',
-        status: 'success',
-        data: [usersDto],
-      });
-    } catch (error) {
-      this.logger.error('Calling listFirstPage()', error, UsersController.name);
+      this.logger.error('Calling getUser()', error, UsersController.name);
       throw error;
     }
   }
 
-  @Get('page/:pageNumber')
+  @Get()
+  @UsePipes(new ValidationPipe({ transform: true }))
   async listByPage(
     @Res() res: Response,
-    @Param('pageNumber', ParseIntPipe) pageNumber: number,
-    @Query('sortField') sortField: string,
-    @Query('sortDir') sortDir: string,
-    @Query('keyword') keyword: string,
-    @Query('limit') limit: number,
+    @Query() filterMessageDto: FilterMessageDTO,
   ) {
     try {
-      const users = await this.usersService.listByPage(
-        pageNumber,
-        sortField,
-        sortDir,
-        keyword,
-        limit,
-      );
-      const usersDto = plainToClass(UserDTO, users);
+      const response = await this.usersService.listByPage(filterMessageDto);
       res.status(200).json({
-        message: `Get page ${pageNumber} successfully`,
+        message: `Get page ${filterMessageDto.pageNo} successfully`,
         status: 'success',
-        data: [usersDto]
-      })
+        data: response,
+      });
     } catch (error) {
       this.logger.error('Calling listByPage()', error, UsersController.name);
       throw error;

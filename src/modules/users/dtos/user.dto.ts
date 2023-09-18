@@ -1,5 +1,12 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsPhoneNumber, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEmpty,
+  IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
+  MinLength,
+} from 'class-validator';
 import { Role } from 'src/entities';
 
 @Exclude()
@@ -7,6 +14,7 @@ export class UserDTO {
   idLogin?: number;
 
   @Expose()
+  @IsEmpty({ message: 'Create without id' })
   id!: number;
 
   @Expose()
@@ -29,6 +37,7 @@ export class UserDTO {
   lastName?: string;
 
   @Expose()
+  @IsOptional()
   photo?: string;
 
   @Expose()

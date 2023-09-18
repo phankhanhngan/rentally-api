@@ -9,7 +9,8 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { ExampleModule } from './modules/example/example.module';
 import { UsersModule } from './modules/users/users.module';
-import { UsersService } from './modules/users/users.service';
+import { AWSModule } from './modules/aws/aws.module';
+
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { UsersService } from './modules/users/users.service';
     }),
     ExampleModule,
     UsersModule,
+    AWSModule,
   ],
 
   controllers: [AppController],

@@ -5,8 +5,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Role, User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
+import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 
 @Injectable()
 export class UsersService {
@@ -47,51 +48,28 @@ export class UsersService {
     return user;
   }
 
-  async listByPage(
-    pageNumber: number,
-    sortField: string,
-    sortDir: string,
-    keyword: string,
-    limit: number,
-  ) {
+  async listByPage(filterMessageDto: FilterMessageDTO) {
     try {
-      if (pageNumber < 1) {
-        throw new BadRequestException('Invalid page number');
-      }
-
-      const fields = ['id', 'googleId', 'email', 'firstName', 'role'];
-
-      if (!fields.includes(sortField) && sortField !== undefined) {
-        throw new BadRequestException(
-          'sortField must be one of the following values: id, googleId, email, firstName, role',
-        );
-      }
-      if (sortField === undefined) sortField = 'id';
-
-      const dirs = ['asc', 'desc', undefined];
-      if (!dirs.includes(sortDir)) {
-        throw new BadRequestException(
-          'sortDir must be one of the following values: asc, desc',
-        );
-      }
-      if (sortDir === undefined) sortDir = 'asc';
-
-      if (limit < 1) {
-        throw new BadRequestException('Invalid limit');
-      }
-      if (limit === undefined) limit = 5;
-      const offset = (pageNumber - 1) * limit;
+      const offset = (filterMessageDto.pageNo - 1) * filterMessageDto.limit;
 
       const orderBy = {};
-      orderBy[sortField] =
-        sortDir === 'desc' ? QueryOrder.DESC : QueryOrder.ASC;
+      orderBy[filterMessageDto.sortField] =
+        filterMessageDto.sortDir === 'desc' ? QueryOrder.DESC : QueryOrder.ASC;
 
-      if (keyword === undefined) keyword = '';
+      if (filterMessageDto.keyword === undefined) filterMessageDto.keyword = '';
       const query = {};
 
       // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
+      const fields = [
+        'id',
+        'googleId',
+        'email',
+        'firstName',
+        'role',
+        'phone_number',
+      ];
       const searchConditions = fields.map((field) => ({
-        [field]: { $like: `%${keyword}%` },
+        [field]: { $like: `%${filterMessageDto.keyword}%` },
       }));
 
       // Tạo một điều kiện $or để kết hợp tất cả điều kiện tìm kiếm
@@ -99,16 +77,23 @@ export class UsersService {
 
       const users = await this.userRepository.findAndCount(query, {
         offset,
-        limit,
+        limit: filterMessageDto.limit,
         orderBy,
       });
-      return users[0];
+      const usersDto = plainToClass(UserDTO, users[0]);
+      return {
+        users: usersDto,
+        totalItems: users[1],
+        totalPages: Math.ceil(users[1] / filterMessageDto.limit),
+        currentPage: filterMessageDto.pageNo,
+      };
     } catch (error) {
       throw error;
     }
   }
 
   async addUser(userDto: UserDTO) {
+    
     try {
       if (await this.duplicatedEmail(userDto.email)) {
         throw new BadRequestException('Email is already in use');
@@ -120,7 +105,7 @@ export class UsersService {
         throw new BadRequestException('Phone number is already in use');
       }
       const user = plainToInstance(User, userDto);
-
+      user.password = await this.hashPassword(user.password);
       if (user.role === undefined) user.role = Role.USER;
       const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
       user.created_id = create_id;
@@ -166,7 +151,7 @@ export class UsersService {
       ) {
         throw new BadRequestException('Email cannot be changed');
       }
-
+      updateUserDto.password = await this.hashPassword(updateUserDto.password);
       wrap(userEntity).assign(
         {
           ...updateUserDto,
