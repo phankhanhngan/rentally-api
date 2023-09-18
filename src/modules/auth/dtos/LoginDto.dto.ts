@@ -7,7 +7,7 @@ export class LoginDto {
   @Expose()
   email!: string;
 
-  @IsNotEmpty()
   @Expose()
+  @IsNotEmpty()
   password!: string;
 }

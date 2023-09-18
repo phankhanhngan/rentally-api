@@ -97,7 +97,7 @@ export class UsersService {
     newUser.created_id = id;
     newUser.updated_id = id;
 
-    if (user.id == 0) {
+    if (user.id === 0) {
       if (await this.duplicatedEmail(user.email)) {
         return await this.getDataResponse(
           'Email is already in use',
