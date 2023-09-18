@@ -193,7 +193,8 @@ export class UsersService {
       if (!userToDelete) {
         throw new BadRequestException(`Can not find user with id: ${id}`);
       }
-      if (userToDelete.photo !== undefined) {
+
+      if (userToDelete.photo !== null) {
         await this.awsService.bulkDeleteObject(
           JSON.parse(userToDelete.photo),
         );
