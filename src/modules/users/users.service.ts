@@ -93,7 +93,6 @@ export class UsersService {
   }
 
   async addUser(userDto: UserDTO) {
-    
     try {
       if (await this.duplicatedEmail(userDto.email)) {
         throw new BadRequestException('Email is already in use');
@@ -139,19 +138,21 @@ export class UsersService {
       if (
         updateUserDto.phone_number !== undefined &&
         userEntity.phone_number !== updateUserDto.phone_number &&
-        (await this.duplicatedEmail(updateUserDto.phone_number))
+        (await this.duplicatedPhoneNumber(updateUserDto.phone_number))
       ) {
         throw new BadRequestException('Phone number is already in use');
       }
 
       if (
         updateUserDto.email !== undefined &&
-        userEntity.email !== updateUserDto.email &&
-        !(await this.duplicatedEmail(updateUserDto.email))
+        userEntity.email !== updateUserDto.email
       ) {
         throw new BadRequestException('Email cannot be changed');
       }
-      updateUserDto.password = await this.hashPassword(updateUserDto.password);
+      if (updateUserDto.password !== undefined)
+        updateUserDto.password = await this.hashPassword(
+          updateUserDto.password,
+        );
       wrap(userEntity).assign(
         {
           ...updateUserDto,

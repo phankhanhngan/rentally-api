@@ -21,7 +21,7 @@ export class UpdateUserDTO {
 
   @Expose()
   @IsNotEmpty({ message: 'Id update cannot be null' })
-  @IsInt({ message: 'id update must be an integer' })
+  @IsInt({ message: 'Id update must be an integer' })
   id!: number;
 
   @Expose()
