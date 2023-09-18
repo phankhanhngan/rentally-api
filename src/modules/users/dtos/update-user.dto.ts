@@ -1,10 +1,11 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsPhoneNumber,
   IsString,
   MinLength,
@@ -16,11 +17,13 @@ import { Role } from 'src/entities';
 export class UpdateUserDTO {
   @Expose()
   @IsNotEmpty({ message: 'Id login cannot be null' })
-  @IsInt({ message: 'id login must be an integer' })
+  @Type(() => Number)
+  @IsInt({ message: 'Id login must be an integer' })
   idLogin!: number;
 
   @Expose()
   @IsNotEmpty({ message: 'Id update cannot be null' })
+  @Type(() => Number)
   @IsInt({ message: 'Id update must be an integer' })
   id!: number;
 
@@ -64,6 +67,7 @@ export class UpdateUserDTO {
   isEnable?: boolean;
 
   @Expose()
+  @IsOptional()
   @ValidateIf((obj, value) => value)
   @IsEnum(Role)
   role?: Role;

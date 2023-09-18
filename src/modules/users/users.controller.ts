@@ -10,7 +10,7 @@ import {
   Post,
   Query,
   Res,
-  UploadedFiles,
+  UploadedFile,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -22,7 +22,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from './helpers/file-filter.helper';
 
 @Controller('users')
@@ -70,15 +70,15 @@ export class UsersController {
   }
 
   @Post('add')
-  @UseInterceptors(FilesInterceptor('photo', 5, fileFilter))
+  @UseInterceptors(FileInterceptor('photo', fileFilter))
   async addUser(
     @Res() res: Response,
     @Body(new ValidationPipe({ transform: true })) userDto: UserDTO,
-    @UploadedFiles()
-    files: Array<Express.Multer.File> | Express.Multer.File,
+    @UploadedFile()
+    file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.addUser(userDto, files);
+      await this.usersService.addUser(userDto, file);
       res.status(200).json({
         message: 'Added user successfully',
         status: 'sucess',
@@ -90,12 +90,15 @@ export class UsersController {
   }
 
   @Post('update')
+  @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDTO,
+    @UploadedFile()
+    file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.updateUser(updateUserDto);
+      await this.usersService.updateUser(updateUserDto, file);
       res.status(200).json({
         message: 'Updated user successfully',
         status: 'sucess',

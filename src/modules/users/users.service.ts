@@ -20,34 +20,55 @@ export class UsersService {
   ) {}
 
   async hashPassword(password: string) {
-    const saltRounds = 10; // Số lần lặp để tạo salt, thay đổi tùy ý
-    return bcrypt.hash(password, saltRounds);
+    try {
+      const saltRounds = 10; // Số lần lặp để tạo salt, thay đổi tùy ý
+      return bcrypt.hash(password, saltRounds);
+    } catch (error) {
+      throw error;
+    }
   }
 
   async duplicatedEmail(email: string) {
-    const user = await this.userRepository.findOne({ email: email });
-    if (user === null) return false;
-    return true;
+    try {
+      const user = await this.userRepository.findOne({ email: email });
+      if (user === null) return false;
+      return true;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async duplicatedPhoneNumber(phone_number: string) {
-    const user = await this.userRepository.findOne({
-      phone_number: phone_number,
-    });
-    if (user === null) return false;
-    return true;
+    try {
+      const user = await this.userRepository.findOne({
+        phone_number: phone_number,
+      });
+      if (user === null) return false;
+      return true;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getUserById(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({ id: id });
-    if (user == null) throw new Error(`Can not find user with id: ${id}`);
-    return user;
+    try {
+      const user = await this.userRepository.findOne({ id: id });
+      if (user === null) throw new Error(`Can not find user with id: ${id}`);
+      return user;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User> {
-    const user = await this.userRepository.findOne({ email: email });
-    if (user == null) throw new Error(`Can not find user with email: ${email}`);
-    return user;
+    try {
+      const user = await this.userRepository.findOne({ email: email });
+      if (user === null)
+        throw new Error(`Can not find user with email: ${email}`);
+      return user;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async listByPage(filterMessageDto: FilterMessageDTO) {
@@ -94,12 +115,7 @@ export class UsersService {
     }
   }
 
-  async addUser(
-    userDto: UserDTO,
-    files: Array<Express.Multer.File> | Express.Multer.File,
-  ) {
-    console.log(files);
-    
+  async addUser(userDto: UserDTO, file: Express.Multer.File) {
     try {
       if (await this.duplicatedEmail(userDto.email)) {
         throw new BadRequestException('Email is already in use');
@@ -112,15 +128,9 @@ export class UsersService {
       }
       const user = plainToInstance(User, userDto);
 
-      if(userDto.photo !== undefined) {
-        const currentDate = new Date();
-        const timestamp = currentDate.getTime();
-        const urlImages: string[] = await this.awsService.bulkPutObject(
-          `QRImages/${timestamp}`,
-          files,
-        );
-        const qrImagesUrl = JSON.stringify(urlImages);
-        user.photo = qrImagesUrl;
+      if (file !== undefined) {
+        const photo: string = await this.awsService.bulkPutObject(file);
+        user.photo = photo;
       }
 
       user.password = await this.hashPassword(user.password);
@@ -135,7 +145,7 @@ export class UsersService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDTO) {
+  async updateUser(updateUserDto: UpdateUserDTO, file: Express.Multer.File) {
     try {
       try {
         await this.getUserById(updateUserDto.idLogin);
@@ -168,10 +178,20 @@ export class UsersService {
       ) {
         throw new BadRequestException('Email cannot be changed');
       }
+
+      if (file !== undefined) {
+        const photo: string = await this.awsService.bulkPutObject(file);
+        updateUserDto.photo = photo;
+      }
+      if (userEntity.photo !== null) {
+        await this.awsService.bulkDeleteObject(userEntity.photo);
+      }
+
       if (updateUserDto.password !== undefined)
         updateUserDto.password = await this.hashPassword(
           updateUserDto.password,
         );
+
       wrap(userEntity).assign(
         {
           ...updateUserDto,
@@ -195,9 +215,7 @@ export class UsersService {
       }
 
       if (userToDelete.photo !== null) {
-        await this.awsService.bulkDeleteObject(
-          JSON.parse(userToDelete.photo),
-        );
+        await this.awsService.bulkDeleteObject(userToDelete.photo);
       }
 
       await this.em.removeAndFlush(this.userRepository.getReference(id));
