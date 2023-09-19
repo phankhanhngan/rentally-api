@@ -1,31 +1,38 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsPhoneNumber, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsPhoneNumber,
+  MinLength,
+} from 'class-validator';
 import { Role } from 'src/entities';
 @Exclude()
 export class RegisterDto {
-  @IsNotEmpty()
-  @IsEmail()
   @Expose()
-  email!: string;
+  @IsEmail({}, { message: 'Invalid email' })
+  email!: string | undefined;
 
-  @IsNotEmpty()
   @Expose()
-  password!: string;
+  @MinLength(2, { message: 'Password at least 2 characters' })
+  password?: string;
 
-  @IsNotEmpty()
   @Expose()
-  @MinLength(2)
+  @IsNotEmpty({ message: 'First name cannot be null' })
+  @MinLength(2, { message: 'First name at least 2 characters' })
   firstName!: string;
 
-  @IsNotEmpty()
   @Expose()
-  lastName!: string;
-
-  @IsPhoneNumber()
-  @Expose()
-  phone_number?: string;
+  lastName?: string;
 
   @Expose()
-  @IsNotEmpty()
-  role: Role;
+  @IsOptional()
+  photo?: string;
+
+  @Expose()
+  @IsPhoneNumber('VN', { message: 'Invalid Phone number' })
+  phone_number!: string;
+
+  @Expose()
+  role!: Role;
 }

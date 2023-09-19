@@ -14,6 +14,7 @@ import {
 import { RegisterDto } from './dtos/RegisterDto.dto';
 import { log } from 'console';
 import { UsersService } from '../users/users.service';
+import { UserDTO } from '../users/dtos/user.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,17 +23,26 @@ export class AuthService {
     private readonly userService: UsersService,
     private readonly mailerService: MailerService, // @InjectRepository(User) // private readonly userRepository: EntityRepository<User>,
   ) {}
-  async sendMail(dto: RegisterDto, verificationToken: string) {
-    await this.mailerService.sendMail({
-      to: dto.email,
-      subject: 'Account confirmation - Rentally Team',
-      template: './verification',
-      context: {
-        name: dto.email.split('@')[0],
-        url:
-          'http://localhost:3003/api/v1/auth/email/verify/' + verificationToken,
-      },
-    });
+  async sendMail(email: string) {
+    try {
+      var verificationToken = await this.jwtService.signAsync({
+        email: email,
+        expiry: new Date(new Date().getTime() + 60 * 15 * 1000), // 15 mins
+      });
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Account confirmation - Rentally Team',
+        template: './verification',
+        context: {
+          name: email.split('@')[0],
+          url:
+            'http://localhost:3003/api/v1/auth/email/verify/' +
+            verificationToken,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
   async validateLogin(loginDto: LoginDto) {
     try {
@@ -61,7 +71,7 @@ export class AuthService {
           id: userDb.id,
           role: userDb.role,
         });
-        return { token: accessToken, user: plainToInstance(LoginDto, userDb) };
+        return { token: accessToken };
       } else {
         throw new HttpException(
           'Invalid email or password',
@@ -74,28 +84,30 @@ export class AuthService {
   }
   async performRegister(dto: RegisterDto) {
     try {
-      var verificationToken = await this.jwtService.signAsync({
-        email: dto.email,
-        expiry: new Date(new Date().getTime() + 60 * 15 * 1000),
-      });
-      await this.registerUser(dto);
-      await this.sendMail(dto, verificationToken);
+      await this.userService.addUser(
+        plainToInstance(UserDTO, dto),
+        null,
+        false,
+      );
+      await this.sendMail(dto.email);
     } catch (error) {
       throw error;
     }
   }
-  async registerUser(dto: RegisterDto) {
+
+  async resendEmail(email: string) {
     try {
-      const user = plainToClass(User, dto);
-      user.firstName = dto.email.split('@')[0];
-      user.password = (
-        await this.userService.hashPassword(user.password)
-      ).toString();
-      user.updated_id = 0;
-      user.created_id = 0;
-      user.role = Role.USER;
-      user.isEnable = false;
-      await this.em.persistAndFlush(user);
+      const userDb = await this.userService.getUserByEmail(email);
+      if (!userDb)
+        throw new HttpException('Invalid email', HttpStatus.NOT_FOUND);
+      if (userDb.verificationCode)
+        throw new HttpException(
+          'Email has been verified',
+          HttpStatus.FORBIDDEN,
+        );
+      if (!userDb.isEnable)
+        throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      await this.sendMail(userDb.email);
     } catch (error) {
       throw error;
     }
@@ -107,6 +119,7 @@ export class AuthService {
         const user = await this.userService.getUserByEmail(objToken['email']);
         if (!user.verificationCode) {
           user.verificationCode = token;
+          user.isEnable = true;
         } else {
           throw new HttpException(
             'You are already verificated',
@@ -130,6 +143,22 @@ export class AuthService {
   //     userDB.role = registerDto.role;
   //     userDB.isEnable = true;
   //     await this.em.persistAndFlush(userDB);
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+  // async registerUser(dto: RegisterDto) {
+  //   try {
+  //     const user = plainToClass(User, dto);
+  //     user.firstName = dto.email.split('@')[0];
+  //     user.password = (
+  //       await this.userService.hashPassword(user.password)
+  //     ).toString();
+  //     user.updated_id = 0;
+  //     user.created_id = 0;
+  //     user.role = Role.USER;
+  //     user.isEnable = false;
+  //     await this.em.persistAndFlush(user);
   //   } catch (error) {
   //     throw error;
   //   }

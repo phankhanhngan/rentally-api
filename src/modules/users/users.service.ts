@@ -97,6 +97,7 @@ export class UsersService {
   async addUser(
     userDto: UserDTO,
     files: Array<Express.Multer.File> | Express.Multer.File,
+    isEnable: boolean = true,
   ) {
     console.log(files);
 
@@ -128,6 +129,7 @@ export class UsersService {
       const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
       user.created_id = create_id;
       user.updated_id = create_id;
+      user.isEnable = isEnable;
 
       await this.em.persistAndFlush(user);
     } catch (error) {

@@ -20,6 +20,9 @@ import { LoginDto } from './dtos/LoginDto.dto';
 import { RegisterDto } from './dtos/RegisterDto.dto';
 import { UsersService } from '../users/users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { plainToInstance } from 'class-transformer';
+import { UserDTO } from '../users/dtos/user.dto';
+import { EmailDto } from './dtos/EmailDto.dto';
 // "/api/v1/auth/**"
 @Controller('auth')
 export class AuthController {
@@ -32,6 +35,7 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     try {
+      // console.log(plainToInstance(UserDTO, registerDto));
       await this.authService.performRegister(registerDto);
       res.status(200).json({
         message: 'OK',
@@ -103,9 +107,25 @@ export class AuthController {
       throw error;
     }
   }
-  @Get('email/resend-verification/:email')
-  async resendVerification() {
+  @Post('email/resend-verification')
+  @UsePipes(new ValidationPipe())
+  async resendVerification(@Body() emailDTO: EmailDto, @Res() res: Response) {
     // resend verification email
+    try {
+      // console.log(emailDTO);
+      await this.authService.resendEmail(emailDTO.email);
+      res.status(200).json({
+        message: 'Resend email verification successfully',
+        status: 'SUCCESS',
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling resendVerification()',
+        error,
+        AuthController.name,
+      );
+      throw error;
+    }
   }
   @Get('email/forgot-password/:email')
   async fotgotPassword() {
