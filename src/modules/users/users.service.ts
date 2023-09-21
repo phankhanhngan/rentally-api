@@ -1,7 +1,7 @@
 import { EntityRepository, Loaded, QueryOrder, wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, UsePipes } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UsePipes } from '@nestjs/common';
 import { Role, User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
@@ -54,7 +54,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOne({ id: id });
       if (!user)
-        throw new BadRequestException(`Can not find user with id: ${id}`);
+        throw new NotFoundException(`Can not find user with id: ${id}`);
       return user;
     } catch (error) {
       throw error;
@@ -65,7 +65,7 @@ export class UsersService {
     try {
       const user = await this.userRepository.findOne({ email: email });
       if (!user)
-        throw new BadRequestException(`Can not find user with email: ${email}`);
+        throw new NotFoundException(`Can not find user with email: ${email}`);
       return user;
     } catch (error) {
       throw error;
@@ -243,10 +243,7 @@ export class UsersService {
 
   async deleteUser(id: number) {
     try {
-      const userToDelete = await this.userRepository.findOne({ id });
-      if (!userToDelete) {
-        throw new BadRequestException(`Can not find user with id: ${id}`);
-      }
+      const userToDelete = await this.getUserById(id);
 
       if (userToDelete.photo !== null) {
         await this.awsService.bulkDeleteObject(userToDelete.photo);
