@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Validate } from 'class-validator';
+import { IsIn, IsInt, IsOptional, Validate, ValidateIf } from 'class-validator';
 
 export class FilterMessageDTO {
   @Validate((_, value) => value > 0, { message: 'pageNo must be bigger 0' })
@@ -8,17 +8,14 @@ export class FilterMessageDTO {
   pageNo?: number = Constant.DEFAULT_PAGENO;
 
   @IsOptional()
-  @IsIn(['id', 'googleId', 'email', 'firstName', 'role'], {
-    message: 'sortField must be one of id, googleId, email, firstName, role',
-  })
-  sortField?: string = Constant.DEFAULT_SORTFIELD;
+  sortField?: string[] = ['id'];
 
   @IsOptional()
   @IsIn(['asc', 'desc'], {
     message: 'sortDir must be one of asc, desc',
   })
   sortDir?: string = Constant.DEFAULT_SORTDIR;
-  
+
   @IsOptional()
   keyword?: string = Constant.DEFAULT_KEYWORD;
 
@@ -30,8 +27,8 @@ export class FilterMessageDTO {
 
 export enum Constant {
   DEFAULT_PAGENO = 1,
-  DEFAULT_SORTFIELD = 'id',
+  // DEFAULT_SORTFIELD = 'id',
   DEFAULT_SORTDIR = 'asc',
   DEFAULT_KEYWORD = '',
-  DEFAULT_LIMIT = 5,
+  DEFAULT_LIMIT = 10,
 }
