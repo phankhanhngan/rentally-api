@@ -7,6 +7,7 @@ import {
   Logger,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   Res,
@@ -41,7 +42,7 @@ export class UsersController {
       });
       res.status(200).json({
         message: 'Get user successfully',
-        status: 'sucess',
+        status: 'success',
         data: [userDto],
       });
     } catch (error) {
@@ -69,7 +70,7 @@ export class UsersController {
     }
   }
 
-  @Post('add')
+  @Post()
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async addUser(
     @Res() res: Response,
@@ -81,7 +82,7 @@ export class UsersController {
       await this.usersService.addUser(userDto, file);
       res.status(200).json({
         message: 'Added user successfully',
-        status: 'sucess',
+        status: 'success',
       });
     } catch (error) {
       this.logger.error('Calling addUser()', error, UsersController.name);
@@ -89,16 +90,17 @@ export class UsersController {
     }
   }
 
-  @Post('update')
+  @Patch(':id')
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDTO,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.updateUser(updateUserDto, file);
+      await this.usersService.updateUser(id, updateUserDto, file);
       res.status(200).json({
         message: 'Updated user successfully',
         status: 'sucess',

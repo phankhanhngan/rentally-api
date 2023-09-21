@@ -21,11 +21,11 @@ export class UpdateUserDTO {
   @IsInt({ message: 'Id login must be an integer' })
   idLogin!: number;
 
-  @Expose()
-  @IsNotEmpty({ message: 'Id update cannot be null' })
-  @Type(() => Number)
-  @IsInt({ message: 'Id update must be an integer' })
-  id!: number;
+  // @Expose()
+  // @IsNotEmpty({ message: 'Id update cannot be null' })
+  // @Type(() => Number)
+  // @IsInt({ message: 'Id update must be an integer' })
+  // id!: number;
 
   @Expose()
   @ValidateIf((obj, value) => value)

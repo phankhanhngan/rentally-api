@@ -1,7 +1,7 @@
 import { EntityRepository, Loaded, QueryOrder, wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UsePipes } from '@nestjs/common';
 import { Role, User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
@@ -31,7 +31,7 @@ export class UsersService {
   async duplicatedEmail(email: string) {
     try {
       const user = await this.userRepository.findOne({ email: email });
-      if (user === null) return false;
+      if (!user) return false;
       return true;
     } catch (error) {
       throw error;
@@ -43,7 +43,7 @@ export class UsersService {
       const user = await this.userRepository.findOne({
         phone_number: phone_number,
       });
-      if (user === null) return false;
+      if (!user) return false;
       return true;
     } catch (error) {
       throw error;
@@ -53,7 +53,8 @@ export class UsersService {
   async getUserById(id: number): Promise<User> {
     try {
       const user = await this.userRepository.findOne({ id: id });
-      if (user === null) throw new Error(`Can not find user with id: ${id}`);
+      if (!user)
+        throw new BadRequestException(`Can not find user with id: ${id}`);
       return user;
     } catch (error) {
       throw error;
@@ -63,8 +64,8 @@ export class UsersService {
   async getUserByEmail(email: string): Promise<User> {
     try {
       const user = await this.userRepository.findOne({ email: email });
-      if (user === null)
-        throw new Error(`Can not find user with email: ${email}`);
+      if (!user)
+        throw new BadRequestException(`Can not find user with email: ${email}`);
       return user;
     } catch (error) {
       throw error;
@@ -73,16 +74,6 @@ export class UsersService {
 
   async listByPage(filterMessageDto: FilterMessageDTO) {
     try {
-      const offset = (filterMessageDto.pageNo - 1) * filterMessageDto.limit;
-
-      const orderBy = {};
-      orderBy[filterMessageDto.sortField] =
-        filterMessageDto.sortDir === 'desc' ? QueryOrder.DESC : QueryOrder.ASC;
-
-      if (filterMessageDto.keyword === undefined) filterMessageDto.keyword = '';
-      const query = {};
-
-      // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
       const fields = [
         'id',
         'googleId',
@@ -91,6 +82,30 @@ export class UsersService {
         'role',
         'phone_number',
       ];
+      const offset = (filterMessageDto.pageNo - 1) * filterMessageDto.limit;
+
+      if (!Array.isArray(filterMessageDto.sortField)) {
+        filterMessageDto.sortField = [filterMessageDto.sortField];
+      }
+      filterMessageDto.sortField.forEach((field) => {
+        if (!fields.includes(field))
+          throw new BadRequestException(
+            'sortField must be one of id, googleId, email, firstName, role, phone_number',
+          );
+      });
+
+      const orderBy = {};
+      filterMessageDto.sortField.forEach((field) => {
+        orderBy[field] =
+          filterMessageDto.sortDir === 'desc'
+            ? QueryOrder.DESC
+            : QueryOrder.ASC;
+      });
+
+      if (filterMessageDto.keyword === undefined) filterMessageDto.keyword = '';
+      const query = {};
+
+      // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
       const searchConditions = fields.map((field) => ({
         [field]: { $like: `%${filterMessageDto.keyword}%` },
       }));
@@ -103,7 +118,9 @@ export class UsersService {
         limit: filterMessageDto.limit,
         orderBy,
       });
-      const usersDto = plainToClass(UserDTO, users[0]);
+      const usersDto = plainToClass(UserDTO, users[0], {
+        excludePrefixes: ['password'],
+      });
       return {
         users: usersDto,
         totalItems: users[1],
@@ -129,7 +146,12 @@ export class UsersService {
       const user = plainToInstance(User, userDto);
 
       if (file !== undefined) {
-        const photo: string = await this.awsService.bulkPutObject(file);
+        const currentDate = new Date();
+        const timestamp = currentDate.getTime();
+        const photo: string = await this.awsService.bulkPutObject(
+          file,
+          `photo_user/${timestamp}`,
+        );
         user.photo = photo;
       }
 
@@ -145,7 +167,7 @@ export class UsersService {
     }
   }
 
-  async updateUser(updateUserDto: UpdateUserDTO, file: Express.Multer.File) {
+  async updateUser(id: number, updateUserDto: UpdateUserDTO, file: Express.Multer.File) {
     try {
       try {
         await this.getUserById(updateUserDto.idLogin);
@@ -156,11 +178,11 @@ export class UsersService {
       }
 
       const userEntity: Loaded<User> = await this.userRepository.findOne({
-        id: updateUserDto.id,
+        id: id,
       });
       if (!userEntity) {
         throw new BadRequestException(
-          `Can not find user with id: ${updateUserDto.id}`,
+          `Can not find user with id: ${id}`,
         );
       }
 
@@ -180,7 +202,12 @@ export class UsersService {
       }
 
       if (file !== undefined) {
-        const photo: string = await this.awsService.bulkPutObject(file);
+        const currentDate = new Date();
+        const timestamp = currentDate.getTime();
+        const photo: string = await this.awsService.bulkPutObject(
+          file,
+          `photo_user/${timestamp}`,
+        );
         updateUserDto.photo = photo;
       }
       if (userEntity.photo !== null) {

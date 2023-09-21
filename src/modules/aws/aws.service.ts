@@ -56,11 +56,9 @@ export class AWSService {
     }
   }
 
-  async bulkPutObject(file: Express.Multer.File): Promise<string> {
+  async bulkPutObject(file: Express.Multer.File, folderPath: string): Promise<string> {
     try {
-      const currentDate = new Date();
-      const timestamp = currentDate.getTime();
-      const fileName = `photo/${timestamp}/${file.originalname}`;
+      const fileName = `${folderPath}/${file.originalname}`;
       file.originalname = file.originalname.replace(/ /g, '');
       const cmd = new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -71,7 +69,7 @@ export class AWSService {
 
       await this.s3Client.send(cmd);
 
-      return this.getObjectUrl(`photo/${timestamp}`, file.originalname);
+      return this.getObjectUrl(folderPath, file.originalname);
     } catch (err) {
       this.logger.error('Calling bulkPutObject()', err, AWSService.name);
       throw err;
