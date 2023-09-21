@@ -18,6 +18,8 @@ import { LoginDto } from './dtos/LoginDto.dto';
 import { RegisterDto } from './dtos/RegisterDto.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { EmailDto } from './dtos/EmailDto.dto';
+import { CheckCodeDto } from './dtos/CheckCodeDto.dto';
+import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 // "/api/v1/auth/**"
 @Controller('auth')
 export class AuthController {
@@ -57,10 +59,10 @@ export class AuthController {
       throw error;
     }
   }
-  @Get('email/logout')
-  async logout() {
-    // logout
-  }
+  // @Get('email/logout')
+  // async logout() {
+  //   // logout
+  // }
   @Get('email/verify/:token')
   async verifyToken(@Param('token') token: string, @Res() res: Response) {
     try {
@@ -97,18 +99,54 @@ export class AuthController {
   async fotgotPassword(@Param() emailDTO: EmailDto, @Res() res: Response) {
     // send a token via email to reset the password
     try {
-      await this.authService.forgotPass(emailDTO);
+      const token = await this.authService.forgotPass(emailDTO);
       res.status(200).json({
         message: 'Send reset password email verification successfully',
         status: 'SUCCESS',
+        data: token,
       });
     } catch (error) {
       this.logger.error('Calling fotgotPassword()', error, AuthController.name);
       throw error;
     }
   }
+  @Post('email/forgot-password/check')
+  @UsePipes(new ValidationPipe())
+  async checkVerificationCode(
+    @Body() checkDto: CheckCodeDto,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.authService.checkResetPssVerificationCode(checkDto);
+      res.status(200).json({
+        message: 'Valid verification code',
+        status: 'SUCCESS',
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling checkVerificationCode()',
+        error,
+        AuthController.name,
+      );
+      throw error;
+    }
+  }
+
   @Post('email/reset-password')
-  async resetPassword() {
-    // change the userpassword. newPassword-string, newPasswordToken-string (token received by fotgot-password api)
+  @UsePipes(new ValidationPipe())
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.authService.resetPassword(resetPasswordDto);
+      res.status(200).json({
+        message: 'Reset password successfully',
+        status: 'SUCCESS',
+      });
+    } catch (error) {
+      this.logger.error('Calling resetPassword()', error, AuthController.name);
+      throw error;
+    }
   }
 }

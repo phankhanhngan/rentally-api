@@ -10,6 +10,8 @@ import { UsersService } from '../users/users.service';
 import { UserDTO } from '../users/dtos/user.dto';
 import { UserRtnDto } from './dtos/UserRtnDto.dto';
 import { EmailDto } from './dtos/EmailDto.dto';
+import { CheckCodeDto } from './dtos/CheckCodeDto.dto';
+import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -140,16 +142,32 @@ export class AuthService {
         );
       if (!userDb.isEnable)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      var verificationCode = 'R-' + this.randomFixedInteger(6);
+      var verificationToken = await this.jwtService.signAsync({
+        email: emailDTO.email,
+        code: verificationCode,
+        expiry: new Date(
+          new Date().getTime() +
+            parseInt(process.env.MAIL_FORGOT_PASS_EXPIRATION_TIME),
+        ), // 15 mins
+      });
+      userDb.verificationCode = verificationToken;
+      await this.em.persistAndFlush(userDb);
       this.sendMailForgotPass(
         userDb.email,
         userDb.lastName + ' ' + userDb.firstName,
+        verificationCode,
       );
+      return verificationToken;
     } catch (error) {
       throw error;
     }
   }
-  async sendMailForgotPass(email: string, fName: string) {
-    var verificationCode = 'R-' + this.randomFixedInteger(6);
+  async sendMailForgotPass(
+    email: string,
+    fName: string,
+    verificationCode: string,
+  ) {
     await this.mailerService.sendMail({
       to: email,
       subject: 'Forgot Password Confirmation Code - Rentally Team',
@@ -159,6 +177,39 @@ export class AuthService {
         code: verificationCode,
       },
     });
+  }
+  async checkResetPssVerificationCode(checkDto: CheckCodeDto) {
+    try {
+      const userDb = await this.userService.getUserByEmail(checkDto.email);
+      const objToken = this.jwtService.decode(userDb.verificationCode);
+      if (new Date(objToken['expiry']) > new Date()) {
+        if (objToken['code'] === checkDto.code) {
+          return true;
+        } else {
+          throw new HttpException(
+            'Invalid verification code',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      } else {
+        throw new HttpException('Code is expired', HttpStatus.NOT_ACCEPTABLE);
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      const userUb = await this.userService.getUserByEmail(
+        resetPasswordDto.email,
+      );
+      userUb.password = await this.userService.hashPassword(
+        resetPasswordDto.password,
+      );
+      await this.em.persistAndFlush(userUb);
+    } catch (error) {
+      throw error;
+    }
   }
   randomFixedInteger(length: number) {
     return Math.floor(
