@@ -11,10 +11,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HandlebarsAdapter, MailerModule } from '@nest-modules/mailer';
 import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './modules/auth/constants';
 import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
-
 
 @Module({
   imports: [
@@ -51,9 +49,9 @@ import { AWSModule } from './modules/aws/aws.module';
     }),
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
+      secret: process.env.JWT_SECRET,
       signOptions: {
-        expiresIn: jwtConstants.expiresIn,
+        expiresIn: process.env.JWT_EXPIRATION_TIME,
       },
     }),
     // ExampleModule,

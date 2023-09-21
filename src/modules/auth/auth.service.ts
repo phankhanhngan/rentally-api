@@ -1,20 +1,15 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
-import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityManager } from '@mikro-orm/mysql';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Role, User } from 'src/entities/user.entity';
 import { MailerService } from '@nest-modules/mailer';
 import { LoginDto } from './dtos/LoginDto.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import {
-  instanceToPlain,
-  plainToClass,
-  plainToInstance,
-} from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { RegisterDto } from './dtos/RegisterDto.dto';
-import { log } from 'console';
 import { UsersService } from '../users/users.service';
 import { UserDTO } from '../users/dtos/user.dto';
+import { UserRtnDto } from './dtos/UserRtnDto.dto';
+import { EmailDto } from './dtos/EmailDto.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -23,11 +18,13 @@ export class AuthService {
     private readonly userService: UsersService,
     private readonly mailerService: MailerService, // @InjectRepository(User) // private readonly userRepository: EntityRepository<User>,
   ) {}
-  async sendMail(email: string) {
+  async sendMailConfirm(email: string) {
     try {
       var verificationToken = await this.jwtService.signAsync({
         email: email,
-        expiry: new Date(new Date().getTime() + 60 * 15 * 1000), // 15 mins
+        expiry: new Date(
+          new Date().getTime() + parseInt(process.env.MAIL_EXPIRATION_TIME),
+        ), // 15 mins
       });
       await this.mailerService.sendMail({
         to: email,
@@ -36,7 +33,8 @@ export class AuthService {
         context: {
           name: email.split('@')[0],
           url:
-            'http://localhost:3003/api/v1/auth/email/verify/' +
+            process.env.HOST_URL +
+            '/api/v1/auth/email/verify/' +
             verificationToken,
         },
       });
@@ -46,10 +44,7 @@ export class AuthService {
   }
   async validateLogin(loginDto: LoginDto) {
     try {
-      const userDb = await this.em.findOne(User, {
-        email: loginDto.email,
-        // isEnable: true,
-      });
+      const userDb = await this.userService.getUserByEmail(loginDto.email);
       if (!userDb)
         throw new HttpException(
           'Invalid email or password',
@@ -68,10 +63,11 @@ export class AuthService {
       );
       if (isValidPass) {
         var accessToken = await this.jwtService.signAsync({
-          id: userDb.id,
-          role: userDb.role,
+          user: plainToInstance(UserRtnDto, userDb),
         });
-        return { token: accessToken };
+        return {
+          token: accessToken,
+        };
       } else {
         throw new HttpException(
           'Invalid email or password',
@@ -89,7 +85,7 @@ export class AuthService {
         null,
         false,
       );
-      await this.sendMail(dto.email);
+      this.sendMailConfirm(dto.email);
     } catch (error) {
       throw error;
     }
@@ -107,7 +103,7 @@ export class AuthService {
         );
       if (!userDb.isEnable)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
-      await this.sendMail(userDb.email);
+      await this.sendMailConfirm(userDb.email);
     } catch (error) {
       throw error;
     }
@@ -134,33 +130,40 @@ export class AuthService {
       throw error;
     }
   }
-  // async finishRegister(registerDto: FinishRegisterDto) {
-  //   try {
-  //     const userDB = await this.userService.getUserByEmail(registerDto.email);
-  //     userDB.firstName = registerDto.firstName;
-  //     userDB.lastName = registerDto.lastName;
-  //     userDB.phone_number = registerDto.phone_number;
-  //     userDB.role = registerDto.role;
-  //     userDB.isEnable = true;
-  //     await this.em.persistAndFlush(userDB);
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-  // async registerUser(dto: RegisterDto) {
-  //   try {
-  //     const user = plainToClass(User, dto);
-  //     user.firstName = dto.email.split('@')[0];
-  //     user.password = (
-  //       await this.userService.hashPassword(user.password)
-  //     ).toString();
-  //     user.updated_id = 0;
-  //     user.created_id = 0;
-  //     user.role = Role.USER;
-  //     user.isEnable = false;
-  //     await this.em.persistAndFlush(user);
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
+  async forgotPass(emailDTO: EmailDto) {
+    try {
+      const userDb = await this.userService.getUserByEmail(emailDTO.email);
+      if (!userDb.verificationCode)
+        throw new HttpException(
+          'Email has not been verified',
+          HttpStatus.FORBIDDEN,
+        );
+      if (!userDb.isEnable)
+        throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      this.sendMailForgotPass(
+        userDb.email,
+        userDb.lastName + ' ' + userDb.firstName,
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+  async sendMailForgotPass(email: string, fName: string) {
+    var verificationCode = 'R-' + this.randomFixedInteger(6);
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Forgot Password Confirmation Code - Rentally Team',
+      template: './reset_password',
+      context: {
+        name: fName,
+        code: verificationCode,
+      },
+    });
+  }
+  randomFixedInteger(length: number) {
+    return Math.floor(
+      Math.pow(10, length - 1) +
+        Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1),
+    );
+  }
 }
