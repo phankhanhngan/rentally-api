@@ -103,7 +103,7 @@ export class UsersController {
       await this.usersService.updateUser(id, updateUserDto, file);
       res.status(200).json({
         message: 'Updated user successfully',
-        status: 'sucess',
+        status: 'success',
       });
     } catch (error) {
       this.logger.error('Calling updateUser()', error, UsersController.name);
@@ -120,7 +120,7 @@ export class UsersController {
       await this.usersService.deleteUser(id);
       res.status(200).json({
         message: 'Delete user successfully',
-        status: 'sucess',
+        status: 'success',
       });
     } catch (error) {
       this.logger.error('Calling deleteUser()', error, UsersController.name);
