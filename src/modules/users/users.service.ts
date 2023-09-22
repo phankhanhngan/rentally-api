@@ -1,7 +1,12 @@
 import { EntityRepository, Loaded, QueryOrder, wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, NotFoundException, UsePipes } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UsePipes,
+} from '@nestjs/common';
 import { Role, User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
