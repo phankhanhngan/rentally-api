@@ -18,6 +18,13 @@ export const MikroOrmConfig = (): Options => {
       path: 'dist/database/migrations',
       pathTs: 'src/database/migrations',
     },
+    seeder: {
+      path: 'dist/database/seeders',
+      pathTs: 'src/database/seeders',
+      defaultSeeder: 'DatabaseSeeder', // default seeder class name
+      emit: 'ts', // seeder generation mode
+      fileName: (className: string) => className, // seeder file naming convention
+    },
   };
 };
 
