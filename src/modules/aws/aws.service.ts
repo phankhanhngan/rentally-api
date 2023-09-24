@@ -56,7 +56,10 @@ export class AWSService {
     }
   }
 
-  async bulkPutObject(file: Express.Multer.File, folderPath: string): Promise<string> {
+  async bulkPutObject(
+    file: Express.Multer.File,
+    folderPath: string,
+  ): Promise<string> {
     try {
       const fileName = `${folderPath}/${file.originalname}`;
       file.originalname = file.originalname.replace(/ /g, '');
@@ -66,9 +69,7 @@ export class AWSService {
         ContentType: file.mimetype,
         Body: file.buffer,
       });
-
       await this.s3Client.send(cmd);
-
       return this.getObjectUrl(folderPath, file.originalname);
     } catch (err) {
       this.logger.error('Calling bulkPutObject()', err, AWSService.name);

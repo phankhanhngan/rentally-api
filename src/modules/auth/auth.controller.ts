@@ -27,6 +27,7 @@ export class AuthController {
     private readonly authService: AuthService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
+
   @Post('email/register')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
@@ -59,23 +60,22 @@ export class AuthController {
       throw error;
     }
   }
-  // @Get('email/logout')
-  // async logout() {
-  //   // logout
-  // }
-  @Get('email/verify/:token')
-  async verifyToken(@Param('token') token: string, @Res() res: Response) {
+
+  @Post('email/verify')
+  async verifyToken(@Body() checkDto: CheckCodeDto, @Res() res: Response) {
     try {
-      await this.authService.verifyToken(token);
-      res.status(200).json({
-        message: 'Email verification successfully',
-        status: 'SUCCESS',
-      });
+      if (await this.authService.verifyToken(checkDto)) {
+        res.status(200).json({
+          message: 'Email verification successfully',
+          status: 'SUCCESS',
+        });
+      }
     } catch (error) {
       this.logger.error('Calling verifyToken()', error, AuthController.name);
       throw error;
     }
   }
+
   @Post('email/resend-verification')
   @UsePipes(new ValidationPipe())
   async resendVerification(@Body() emailDTO: EmailDto, @Res() res: Response) {
@@ -94,6 +94,7 @@ export class AuthController {
       throw error;
     }
   }
+
   @Get('email/forgot-password/:email')
   @UsePipes(new ValidationPipe())
   async fotgotPassword(@Param() emailDTO: EmailDto, @Res() res: Response) {
@@ -103,25 +104,27 @@ export class AuthController {
       res.status(200).json({
         message: 'Send reset password email verification successfully',
         status: 'SUCCESS',
-        data: token,
+        // data: token,
       });
     } catch (error) {
       this.logger.error('Calling fotgotPassword()', error, AuthController.name);
       throw error;
     }
   }
-  @Post('email/forgot-password/check')
+
+  @Post('email/forgot-password/verify')
   @UsePipes(new ValidationPipe())
   async checkVerificationCode(
     @Body() checkDto: CheckCodeDto,
     @Res() res: Response,
   ) {
     try {
-      await this.authService.checkResetPssVerificationCode(checkDto);
-      res.status(200).json({
-        message: 'Valid verification code',
-        status: 'SUCCESS',
-      });
+      if (await this.authService.checkResetPssVerificationCode(checkDto)) {
+        res.status(200).json({
+          message: 'Valid verification code',
+          status: 'SUCCESS',
+        });
+      }
     } catch (error) {
       this.logger.error(
         'Calling checkVerificationCode()',

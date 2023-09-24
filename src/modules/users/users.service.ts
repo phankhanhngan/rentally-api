@@ -1,7 +1,11 @@
 import { EntityRepository, Loaded, QueryOrder, wrap } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, NotFoundException, UsePipes } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Role, User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
@@ -149,7 +153,7 @@ export class UsersService {
       }
       const user = plainToInstance(User, userDto);
 
-      if (file !== undefined) {
+      if (file) {
         const currentDate = new Date();
         const timestamp = currentDate.getTime();
         const photo: string = await this.awsService.bulkPutObject(

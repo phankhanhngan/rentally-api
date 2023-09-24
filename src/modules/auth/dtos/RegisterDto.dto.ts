@@ -35,4 +35,8 @@ export class RegisterDto {
 
   @Expose()
   role!: Role;
+
+  @Expose()
+  @IsOptional()
+  verificationCode?: string;
 }

@@ -6,4 +6,7 @@ export class ResetPasswordDto {
 
   @IsNotEmpty()
   password!: string;
+
+  @IsNotEmpty()
+  code!: string;
 }

@@ -12,6 +12,7 @@ import {
   Query,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -25,14 +26,18 @@ import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from './helpers/file-filter.helper';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
+import { Role } from 'src/entities';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
-
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get(':id')
   async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
     try {
@@ -51,6 +56,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
   async listByPage(
@@ -70,6 +76,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Post()
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async addUser(
@@ -90,6 +97,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Patch(':id')
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
@@ -111,6 +119,7 @@ export class UsersController {
     }
   }
 
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Delete(':id')
   async deleteUser(
     @Res() res: Response,

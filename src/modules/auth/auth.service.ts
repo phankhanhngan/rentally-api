@@ -1,10 +1,15 @@
-import { EntityManager } from '@mikro-orm/mysql';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { MailerService } from '@nest-modules/mailer';
 import { LoginDto } from './dtos/LoginDto.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { RegisterDto } from './dtos/RegisterDto.dto';
 import { UsersService } from '../users/users.service';
 import { UserDTO } from '../users/dtos/user.dto';
@@ -12,32 +17,27 @@ import { UserRtnDto } from './dtos/UserRtnDto.dto';
 import { EmailDto } from './dtos/EmailDto.dto';
 import { CheckCodeDto } from './dtos/CheckCodeDto.dto';
 import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { User } from 'src/entities';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly em: EntityManager,
     private readonly userService: UsersService,
-    private readonly mailerService: MailerService, // @InjectRepository(User) // private readonly userRepository: EntityRepository<User>,
+    private readonly mailerService: MailerService,
+    @InjectRepository(User)
+    private readonly userRepository: EntityRepository<User>,
   ) {}
-  async sendMailConfirm(email: string) {
+  async sendMailConfirm(email: string, code: string) {
     try {
-      var verificationToken = await this.jwtService.signAsync({
-        email: email,
-        expiry: new Date(
-          new Date().getTime() + parseInt(process.env.MAIL_EXPIRATION_TIME),
-        ), // 15 mins
-      });
       await this.mailerService.sendMail({
         to: email,
         subject: 'Account confirmation - Rentally Team',
         template: './verification',
         context: {
           name: email.split('@')[0],
-          url:
-            process.env.HOST_URL +
-            '/api/v1/auth/email/verify/' +
-            verificationToken,
+          code: code,
         },
       });
     } catch (error) {
@@ -63,9 +63,10 @@ export class AuthService {
         loginDto.password,
         userDb.password,
       );
+      const user: UserRtnDto = plainToInstance(UserRtnDto, userDb);
       if (isValidPass) {
         var accessToken = await this.jwtService.signAsync({
-          user: plainToInstance(UserRtnDto, userDb),
+          ...user,
         });
         return {
           token: accessToken,
@@ -82,12 +83,21 @@ export class AuthService {
   }
   async performRegister(dto: RegisterDto) {
     try {
+      var verificationCode = 'R-' + this.randomFixedInteger(6);
+      var verificationToken = await this.jwtService.signAsync({
+        email: dto.email,
+        code: verificationCode,
+        expiry: new Date(
+          new Date().getTime() + parseInt(process.env.MAIL_EXPIRATION_TIME),
+        ), // 15 mins
+      });
+      dto.verificationCode = verificationToken;
       await this.userService.addUser(
         plainToInstance(UserDTO, dto),
         null,
         false,
       );
-      this.sendMailConfirm(dto.email);
+      this.sendMailConfirm(dto.email, verificationCode);
     } catch (error) {
       throw error;
     }
@@ -98,35 +108,50 @@ export class AuthService {
       const userDb = await this.userService.getUserByEmail(email);
       if (!userDb)
         throw new HttpException('Invalid email', HttpStatus.NOT_FOUND);
-      if (userDb.verificationCode)
-        throw new HttpException(
-          'Email has been verified',
-          HttpStatus.FORBIDDEN,
-        );
-      if (!userDb.isEnable)
-        throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
-      await this.sendMailConfirm(userDb.email);
+      // if (userDb.verificationCode)
+      //   throw new HttpException(
+      //     'Email has been verified',
+      //     HttpStatus.FORBIDDEN,
+      //   );
+      // if (!userDb.isEnable)
+      //   throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      var verificationCode = 'R-' + this.randomFixedInteger(6);
+      var verificationToken = await this.jwtService.signAsync({
+        email: email,
+        code: verificationCode,
+        expiry: new Date(
+          new Date().getTime() + parseInt(process.env.MAIL_EXPIRATION_TIME),
+        ), // 15 mins
+      });
+      userDb.verificationCode = verificationToken;
+      await this.em.persistAndFlush(userDb);
+      this.sendMailConfirm(userDb.email, verificationCode);
     } catch (error) {
       throw error;
     }
   }
-  async verifyToken(token: string) {
+  async verifyToken(checkDto: CheckCodeDto) {
     try {
-      const objToken = this.jwtService.decode(token);
+      const userDb = await this.userService.getUserByEmail(checkDto.email);
+      if (userDb.isEnable)
+        throw new HttpException(
+          'Email has been verified',
+          HttpStatus.FORBIDDEN,
+        );
+      const objToken = this.jwtService.decode(userDb.verificationCode);
       if (new Date(objToken['expiry']) > new Date()) {
-        const user = await this.userService.getUserByEmail(objToken['email']);
-        if (!user.verificationCode) {
-          user.verificationCode = token;
-          user.isEnable = true;
+        if (objToken['code'] === checkDto.code) {
+          userDb.isEnable = true;
+          await this.em.persistAndFlush(userDb);
+          return true;
         } else {
           throw new HttpException(
-            'You are already verificated',
-            HttpStatus.NOT_ACCEPTABLE,
+            'Invalid verification code',
+            HttpStatus.NOT_FOUND,
           );
         }
-        await this.em.persistAndFlush(user);
       } else {
-        throw new HttpException('Link is expired', HttpStatus.NOT_ACCEPTABLE);
+        throw new HttpException('Code is expired', HttpStatus.NOT_ACCEPTABLE);
       }
     } catch (error) {
       throw error;
@@ -200,13 +225,18 @@ export class AuthService {
   }
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     try {
-      const userUb = await this.userService.getUserByEmail(
+      const userDb = await this.userService.getUserByEmail(
         resetPasswordDto.email,
       );
-      userUb.password = await this.userService.hashPassword(
-        resetPasswordDto.password,
-      );
-      await this.em.persistAndFlush(userUb);
+      const objToken = this.jwtService.decode(userDb.verificationCode);
+      if (objToken['code'] === resetPasswordDto.code) {
+        userDb.password = await this.userService.hashPassword(
+          resetPasswordDto.password,
+        );
+        await this.em.persistAndFlush(userDb);
+      } else {
+        throw new HttpException('Code is invalid', HttpStatus.NOT_ACCEPTABLE);
+      }
     } catch (error) {
       throw error;
     }
@@ -216,5 +246,15 @@ export class AuthService {
       Math.pow(10, length - 1) +
         Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1),
     );
+  }
+
+  async getUserByEmail(email: string) {
+    try {
+      const userDb = await this.userRepository.findOne({ email: email });
+      if (!userDb) throw new UnauthorizedException('Please log in to continue');
+      return plainToInstance(UserRtnDto, userDb);
+    } catch (error) {
+      throw error;
+    }
   }
 }

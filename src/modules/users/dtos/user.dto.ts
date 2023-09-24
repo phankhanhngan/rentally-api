@@ -46,4 +46,7 @@ export class UserDTO {
 
   @Expose()
   role!: Role;
+
+  @Expose()
+  verificationCode?: string;
 }

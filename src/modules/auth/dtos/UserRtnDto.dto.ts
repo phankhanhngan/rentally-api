@@ -3,6 +3,8 @@ import { Role } from 'src/entities';
 @Exclude()
 export class UserRtnDto {
   @Expose()
+  googleId?: string;
+  @Expose()
   email!: string | undefined;
   @Expose()
   firstName!: string;
