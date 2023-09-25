@@ -55,9 +55,7 @@
       "indexes": [
         {
           "keyName": "PRIMARY",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "primary": true,
           "unique": true
@@ -220,27 +218,21 @@
       "name": "users",
       "indexes": [
         {
-          "columnNames": [
-            "google_id"
-          ],
+          "columnNames": ["google_id"],
           "composite": false,
           "keyName": "users_google_id_unique",
           "primary": false,
           "unique": true
         },
         {
-          "columnNames": [
-            "email"
-          ],
+          "columnNames": ["email"],
           "composite": false,
           "keyName": "users_email_unique",
           "primary": false,
           "unique": true
         },
         {
-          "columnNames": [
-            "phone_number"
-          ],
+          "columnNames": ["phone_number"],
           "composite": false,
           "keyName": "users_phone_number_unique",
           "primary": false,
@@ -248,9 +240,7 @@
         },
         {
           "keyName": "PRIMARY",
-          "columnNames": [
-            "id"
-          ],
+          "columnNames": ["id"],
           "composite": false,
           "primary": true,
           "unique": true
