@@ -19,6 +19,8 @@ import { CheckCodeDto } from './dtos/CheckCodeDto.dto';
 import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { User } from 'src/entities';
+import { IUserAuthen } from './interfaces/auth-user.interface';
+import { throws } from 'assert';
 @Injectable()
 export class AuthService {
   constructor(
@@ -44,6 +46,39 @@ export class AuthService {
       throw error;
     }
   }
+
+  async validateGoogleLogin(user: IUserAuthen) {
+    try {
+      const userDb = await this.userService.getUserByEmail(user.email);
+      if (!userDb.isEnable)
+        throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      if (!userDb) {
+        await this.userService.addUser(
+          plainToInstance(UserDTO, user),
+          null,
+          true,
+        );
+      } else {
+        if (!userDb.googleId) {
+          userDb.googleId = user.googleId;
+          await this.em.persistAndFlush(userDb);
+        }
+      }
+      const userRtn: UserRtnDto = plainToInstance(
+        UserRtnDto,
+        await this.userService.getUserByEmail(user.email),
+      );
+      var accessToken = await this.jwtService.signAsync({
+        ...userRtn,
+      });
+      return {
+        token: accessToken,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async validateLogin(loginDto: LoginDto) {
     try {
       const userDb = await this.userService.getUserByEmail(loginDto.email);
@@ -108,13 +143,6 @@ export class AuthService {
       const userDb = await this.userService.getUserByEmail(email);
       if (!userDb)
         throw new HttpException('Invalid email', HttpStatus.NOT_FOUND);
-      // if (userDb.verificationCode)
-      //   throw new HttpException(
-      //     'Email has been verified',
-      //     HttpStatus.FORBIDDEN,
-      //   );
-      // if (!userDb.isEnable)
-      //   throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
       var verificationCode = 'R-' + this.randomFixedInteger(6);
       var verificationToken = await this.jwtService.signAsync({
         email: email,
