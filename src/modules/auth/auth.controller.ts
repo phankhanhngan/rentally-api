@@ -24,7 +24,6 @@ import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { error } from 'console';
 import { OAuth2Client } from './google_client/google-client.config';
 import { IUserAuthen } from './interfaces/auth-user.interface';
-// "/api/v1/auth/**"
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -33,7 +32,7 @@ export class AuthController {
     private readonly oauth2Client: OAuth2Client,
   ) {}
 
-  @Post('email/register')
+  @Post('egister')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
@@ -49,7 +48,7 @@ export class AuthController {
     }
   }
 
-  @Post('email/login')
+  @Post('login')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   async login(@Res() res: Response, @Body() loginDto: LoginDto) {
@@ -98,10 +97,10 @@ export class AuthController {
     }
   }
 
-  @Post('email/verify')
+  @Post('verify')
   async verifyToken(@Body() checkDto: CheckCodeDto, @Res() res: Response) {
     try {
-      if (await this.authService.verifyToken(checkDto)) {
+      if (await this.authService.verifyLoginToken(checkDto)) {
         res.status(200).json({
           message: 'Email verification successfully',
           status: 'SUCCESS',
@@ -113,7 +112,7 @@ export class AuthController {
     }
   }
 
-  @Post('email/resend-verification')
+  @Post('resend-verification')
   @UsePipes(new ValidationPipe())
   async resendVerification(@Body() emailDTO: EmailDto, @Res() res: Response) {
     try {
@@ -132,16 +131,14 @@ export class AuthController {
     }
   }
 
-  @Get('email/forgot-password/:email')
+  @Post('forgot-password')
   @UsePipes(new ValidationPipe())
-  async fotgotPassword(@Param() emailDTO: EmailDto, @Res() res: Response) {
-    // send a token via email to reset the password
+  async fotgotPassword(@Body() emailDTO: EmailDto, @Res() res: Response) {
     try {
       const token = await this.authService.forgotPass(emailDTO);
       res.status(200).json({
         message: 'Send reset password email verification successfully',
         status: 'SUCCESS',
-        // data: token,
       });
     } catch (error) {
       this.logger.error('Calling fotgotPassword()', error, AuthController.name);
@@ -149,14 +146,14 @@ export class AuthController {
     }
   }
 
-  @Post('email/forgot-password/verify')
+  @Post('forgot-password/verify')
   @UsePipes(new ValidationPipe())
   async checkVerificationCode(
     @Body() checkDto: CheckCodeDto,
     @Res() res: Response,
   ) {
     try {
-      if (await this.authService.checkResetPssVerificationCode(checkDto)) {
+      if (await this.authService.verifyResetPassToken(checkDto)) {
         res.status(200).json({
           message: 'Valid verification code',
           status: 'SUCCESS',
@@ -172,7 +169,7 @@ export class AuthController {
     }
   }
 
-  @Post('email/reset-password')
+  @Post('reset-password')
   @UsePipes(new ValidationPipe())
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,

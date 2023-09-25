@@ -20,7 +20,6 @@ import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { User } from 'src/entities';
 import { IUserAuthen } from './interfaces/auth-user.interface';
-import { throws } from 'assert';
 @Injectable()
 export class AuthService {
   constructor(
@@ -31,14 +30,20 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
   ) {}
-  async sendMailConfirm(email: string, code: string) {
+  async sendMail(
+    email: string,
+    code: string,
+    name: string,
+    template: string,
+    subject: string,
+  ) {
     try {
       await this.mailerService.sendMail({
         to: email,
-        subject: 'Account confirmation - Rentally Team',
-        template: './verification',
+        subject: subject,
+        template: template,
         context: {
-          name: email.split('@')[0],
+          name: name,
           code: code,
         },
       });
@@ -118,21 +123,25 @@ export class AuthService {
   }
   async performRegister(dto: RegisterDto) {
     try {
-      var verificationCode = 'R-' + this.randomFixedInteger(6);
-      var verificationToken = await this.jwtService.signAsync({
-        email: dto.email,
-        code: verificationCode,
-        expiry: new Date(
-          new Date().getTime() + parseInt(process.env.MAIL_EXPIRATION_TIME),
-        ), // 15 mins
-      });
+      var { verificationCode, verificationToken } =
+        await this.generateVerificationCode(
+          6,
+          dto.email,
+          parseInt(process.env.MAIL_EXPIRATION_TIME),
+        );
       dto.verificationCode = verificationToken;
       await this.userService.addUser(
         plainToInstance(UserDTO, dto),
         null,
         false,
       );
-      this.sendMailConfirm(dto.email, verificationCode);
+      this.sendMail(
+        dto.email,
+        verificationCode,
+        dto.email.split('@')[0],
+        './verification',
+        'Account confirmation - Rentally Team',
+      );
     } catch (error) {
       throw error;
     }
@@ -143,22 +152,26 @@ export class AuthService {
       const userDb = await this.userService.getUserByEmail(email);
       if (!userDb)
         throw new HttpException('Invalid email', HttpStatus.NOT_FOUND);
-      var verificationCode = 'R-' + this.randomFixedInteger(6);
-      var verificationToken = await this.jwtService.signAsync({
-        email: email,
-        code: verificationCode,
-        expiry: new Date(
-          new Date().getTime() + parseInt(process.env.MAIL_EXPIRATION_TIME),
-        ), // 15 mins
-      });
+      var { verificationCode, verificationToken } =
+        await this.generateVerificationCode(
+          6,
+          email,
+          parseInt(process.env.MAIL_EXPIRATION_TIME),
+        );
       userDb.verificationCode = verificationToken;
       await this.em.persistAndFlush(userDb);
-      this.sendMailConfirm(userDb.email, verificationCode);
+      this.sendMail(
+        userDb.email,
+        verificationCode,
+        userDb.firstName + ' ' + userDb.lastName,
+        './verification',
+        'Account confirmation - Rentally Team',
+      );
     } catch (error) {
       throw error;
     }
   }
-  async verifyToken(checkDto: CheckCodeDto) {
+  async verifyLoginToken(checkDto: CheckCodeDto) {
     try {
       const userDb = await this.userService.getUserByEmail(checkDto.email);
       if (userDb.isEnable)
@@ -167,19 +180,18 @@ export class AuthService {
           HttpStatus.FORBIDDEN,
         );
       const objToken = this.jwtService.decode(userDb.verificationCode);
-      if (new Date(objToken['expiry']) > new Date()) {
-        if (objToken['code'] === checkDto.code) {
-          userDb.isEnable = true;
-          await this.em.persistAndFlush(userDb);
-          return true;
-        } else {
-          throw new HttpException(
-            'Invalid verification code',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      } else {
+      if (new Date(objToken['expiry']) < new Date()) {
         throw new HttpException('Code is expired', HttpStatus.NOT_ACCEPTABLE);
+      }
+      if (objToken['code'] === checkDto.code) {
+        userDb.isEnable = true;
+        await this.em.persistAndFlush(userDb);
+        return true;
+      } else {
+        throw new HttpException(
+          'Invalid verification code',
+          HttpStatus.NOT_FOUND,
+        );
       }
     } catch (error) {
       throw error;
@@ -195,62 +207,49 @@ export class AuthService {
         );
       if (!userDb.isEnable)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
-      var verificationCode = 'R-' + this.randomFixedInteger(6);
-      var verificationToken = await this.jwtService.signAsync({
-        email: emailDTO.email,
-        code: verificationCode,
-        expiry: new Date(
-          new Date().getTime() +
-            parseInt(process.env.MAIL_FORGOT_PASS_EXPIRATION_TIME),
-        ), // 15 mins
-      });
+      var { verificationCode, verificationToken } =
+        await this.generateVerificationCode(
+          6,
+          emailDTO.email,
+          parseInt(process.env.MAIL_FORGOT_PASS_EXPIRATION_TIME),
+        );
       userDb.verificationCode = verificationToken;
       await this.em.persistAndFlush(userDb);
-      this.sendMailForgotPass(
+      this.sendMail(
         userDb.email,
-        userDb.lastName + ' ' + userDb.firstName,
         verificationCode,
+        userDb.firstName + ' ' + userDb.lastName,
+        './reset_password',
+        'Reset Password Confimation - Rentally Team',
       );
       return verificationToken;
     } catch (error) {
       throw error;
     }
   }
-  async sendMailForgotPass(
-    email: string,
-    fName: string,
-    verificationCode: string,
-  ) {
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'Forgot Password Confirmation Code - Rentally Team',
-      template: './reset_password',
-      context: {
-        name: fName,
-        code: verificationCode,
-      },
-    });
-  }
-  async checkResetPssVerificationCode(checkDto: CheckCodeDto) {
+
+  async verifyResetPassToken(checkDto: CheckCodeDto) {
     try {
       const userDb = await this.userService.getUserByEmail(checkDto.email);
       const objToken = this.jwtService.decode(userDb.verificationCode);
-      if (new Date(objToken['expiry']) > new Date()) {
-        if (objToken['code'] === checkDto.code) {
-          return true;
-        } else {
-          throw new HttpException(
-            'Invalid verification code',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-      } else {
+      if (new Date(objToken['expiry']) < new Date()) {
         throw new HttpException('Code is expired', HttpStatus.NOT_ACCEPTABLE);
+      }
+      if (objToken['code'] === checkDto.code) {
+        userDb.isEnable = true;
+        await this.em.persistAndFlush(userDb);
+        return true;
+      } else {
+        throw new HttpException(
+          'Invalid verification code',
+          HttpStatus.NOT_FOUND,
+        );
       }
     } catch (error) {
       throw error;
     }
   }
+
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     try {
       const userDb = await this.userService.getUserByEmail(
@@ -269,11 +268,19 @@ export class AuthService {
       throw error;
     }
   }
-  randomFixedInteger(length: number) {
-    return Math.floor(
-      Math.pow(10, length - 1) +
-        Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1),
-    );
+  async generateVerificationCode(length: number, email: string, exp: number) {
+    var verificationCode =
+      'R' +
+      Math.floor(
+        Math.pow(10, length - 1) +
+          Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1),
+      );
+    var verificationToken = await this.jwtService.signAsync({
+      email: email,
+      code: verificationCode,
+      expiry: new Date(new Date().getTime() + exp),
+    });
+    return { verificationCode, verificationToken };
   }
 
   async getUserByEmail(email: string) {
