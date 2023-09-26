@@ -270,7 +270,7 @@ export class AuthService {
   }
   async generateVerificationCode(length: number, email: string, exp: number) {
     var verificationCode =
-      'R' +
+      'R-' +
       Math.floor(
         Math.pow(10, length - 1) +
           Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1),
