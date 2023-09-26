@@ -16,7 +16,7 @@ export class AccountSeeder extends Seeder {
         lastName: faker.animal.bear(),
         photo: faker.image.avatar(),
         isEnable: true,
-        phone_number: faker.phone.number(),
+        phoneNumber: faker.phone.number(),
         role: Role.USER,
         verificationCode: null,
         timeStamp: null,

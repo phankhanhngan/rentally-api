@@ -43,7 +43,7 @@ export class UsersController {
     try {
       const user = await this.usersService.getUserById(id);
       const userDto = plainToInstance(UserDTO, user, {
-        excludePrefixes: ['password'],
+        excludePrefixes: ['password', 'verificationCode'],
       });
       res.status(200).json({
         message: 'Get user successfully',

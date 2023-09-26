@@ -59,7 +59,7 @@ export class UpdateUserDTO {
   @ValidateIf((obj, value) => value)
   @IsPhoneNumber('VN', { message: 'Invalid Phone number' })
   @IsString({ message: 'Photo must be a string' })
-  phone_number?: string;
+  phoneNumber?: string;
 
   @Expose()
   @ValidateIf((obj, value) => value)
