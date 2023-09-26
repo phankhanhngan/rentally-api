@@ -32,7 +32,7 @@ export class AuthController {
     private readonly oauth2Client: OAuth2Client,
   ) {}
 
-  @Post('egister')
+  @Post('register')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
