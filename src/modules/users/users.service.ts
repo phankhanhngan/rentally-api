@@ -76,6 +76,38 @@ export class UsersService {
     }
   }
 
+  async getUsers(keyword : String) {
+    try {
+      const fields = [
+        'id',
+        'googleId',
+        'email',
+        'firstName',
+        'role',
+        'phoneNumber',
+      ];
+
+      if (keyword === undefined) keyword = '';
+      const query = {};
+
+      // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
+      const searchConditions = fields.map((field) => ({
+        [field]: { $like: `%${keyword}%` },
+      }));
+
+      // Tạo một điều kiện $or để kết hợp tất cả điều kiện tìm kiếm
+      query['$or'] = searchConditions;
+
+      const users = await this.userRepository.findAndCount(query);
+      const usersDto = plainToClass(UserDTO, users[0], {
+        excludePrefixes: ['password', 'verificationCode'],
+      });
+      return usersDto;
+    } catch(error) {
+      throw error;
+    }
+  }
+
   async listByPage(filterMessageDto: FilterMessageDTO) {
     try {
       const fields = [
