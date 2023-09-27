@@ -42,10 +42,10 @@ export class UsersService {
     }
   }
 
-  async duplicatedPhoneNumber(phone_number: string) {
+  async duplicatedPhoneNumber(phoneNumber: string) {
     try {
       const user = await this.userRepository.findOne({
-        phone_number: phone_number,
+        phoneNumber: phoneNumber,
       });
       if (!user) return false;
       return true;
@@ -76,6 +76,38 @@ export class UsersService {
     }
   }
 
+  async getUsers(keyword : String) {
+    try {
+      const fields = [
+        'id',
+        'googleId',
+        'email',
+        'firstName',
+        'role',
+        'phoneNumber',
+      ];
+
+      if (keyword === undefined) keyword = '';
+      const query = {};
+
+      // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
+      const searchConditions = fields.map((field) => ({
+        [field]: { $like: `%${keyword}%` },
+      }));
+
+      // Tạo một điều kiện $or để kết hợp tất cả điều kiện tìm kiếm
+      query['$or'] = searchConditions;
+
+      const users = await this.userRepository.findAndCount(query);
+      const usersDto = plainToClass(UserDTO, users[0], {
+        excludePrefixes: ['password', 'verificationCode'],
+      });
+      return usersDto;
+    } catch(error) {
+      throw error;
+    }
+  }
+
   async listByPage(filterMessageDto: FilterMessageDTO) {
     try {
       const fields = [
@@ -84,7 +116,7 @@ export class UsersService {
         'email',
         'firstName',
         'role',
-        'phone_number',
+        'phoneNumber',
       ];
       const offset = (filterMessageDto.pageNo - 1) * filterMessageDto.limit;
 
@@ -94,7 +126,7 @@ export class UsersService {
       filterMessageDto.sortField.forEach((field) => {
         if (!fields.includes(field))
           throw new BadRequestException(
-            'sortField must be one of id, googleId, email, firstName, role, phone_number',
+            'sortField must be one of id, googleId, email, firstName, role, phoneNumber',
           );
       });
 
@@ -123,7 +155,7 @@ export class UsersService {
         orderBy,
       });
       const usersDto = plainToClass(UserDTO, users[0], {
-        excludePrefixes: ['password'],
+        excludePrefixes: ['password', 'verificationCode'],
       });
       return {
         users: usersDto,
@@ -146,8 +178,8 @@ export class UsersService {
         throw new BadRequestException('Email is already in use');
       }
       if (
-        userDto.phone_number !== undefined &&
-        (await this.duplicatedPhoneNumber(userDto.phone_number))
+        userDto.phoneNumber !== undefined &&
+        (await this.duplicatedPhoneNumber(userDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
       }
@@ -198,9 +230,9 @@ export class UsersService {
       }
 
       if (
-        updateUserDto.phone_number !== undefined &&
-        userEntity.phone_number !== updateUserDto.phone_number &&
-        (await this.duplicatedPhoneNumber(updateUserDto.phone_number))
+        updateUserDto.phoneNumber !== undefined &&
+        userEntity.phoneNumber !== updateUserDto.phoneNumber &&
+        (await this.duplicatedPhoneNumber(updateUserDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
       }

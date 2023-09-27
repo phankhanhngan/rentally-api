@@ -32,7 +32,7 @@ export class User extends Base {
   @Property({ nullable: false })
   @IsPhoneNumber()
   @Unique()
-  phone_number!: string;
+  phoneNumber!: string;
 
   @Property({ nullable: false })
   role: Role;

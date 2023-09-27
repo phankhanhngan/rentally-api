@@ -42,7 +42,7 @@ export class UserDTO {
 
   @Expose()
   @IsPhoneNumber('VN', { message: 'Invalid Phone number' })
-  phone_number!: string;
+  phoneNumber!: string;
 
   @Expose()
   role!: Role;

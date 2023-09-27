@@ -43,7 +43,7 @@ export class UsersController {
     try {
       const user = await this.usersService.getUserById(id);
       const userDto = plainToInstance(UserDTO, user, {
-        excludePrefixes: ['password'],
+        excludePrefixes: ['password', 'verificationCode'],
       });
       res.status(200).json({
         message: 'Get user successfully',
@@ -56,25 +56,41 @@ export class UsersController {
     }
   }
 
-  @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get()
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async listByPage(
-    @Res() res: Response,
-    @Query() filterMessageDto: FilterMessageDTO,
-  ) {
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
+  async getUsers(@Res() res: Response, @Query("keyword") keyword : String) {
     try {
-      const response = await this.usersService.listByPage(filterMessageDto);
+      const usersDto = await this.usersService.getUsers(keyword);
       res.status(200).json({
-        message: `Get page ${filterMessageDto.pageNo} successfully`,
+        message: 'Get user successfully',
         status: 'success',
-        data: response,
+        data: [usersDto],
       });
     } catch (error) {
-      this.logger.error('Calling listByPage()', error, UsersController.name);
+      this.logger.error('Calling getAll()', error, UsersController.name);
       throw error;
     }
   }
+
+  // @UseGuards(RoleAuthGuard([Role.ADMIN]))
+  // @Get()
+  // @UsePipes(new ValidationPipe({ transform: true }))
+  // async listByPage(
+  //   @Res() res: Response,
+  //   @Query() filterMessageDto: FilterMessageDTO,
+  // ) {
+  //   try {
+  //     const response = await this.usersService.listByPage(filterMessageDto);
+  //     res.status(200).json({
+  //       message: `Get page ${filterMessageDto.pageNo} successfully`,
+  //       status: 'success',
+  //       data: response,
+  //     });
+  //   } catch (error) {
+  //     this.logger.error('Calling listByPage()', error, UsersController.name);
+  //     throw error;
+  //   }
+  // }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Post()
