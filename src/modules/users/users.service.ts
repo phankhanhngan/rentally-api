@@ -34,8 +34,8 @@ export class UsersService {
 
   async duplicatedEmail(email: string) {
     try {
-      const user = await this.userRepository.findOne({ email: email });
-      if (!user) return false;
+      const count = await this.em.count('User', {email: email});
+      if (count < 1) return false;
       return true;
     } catch (error) {
       throw error;
@@ -44,10 +44,8 @@ export class UsersService {
 
   async duplicatedPhoneNumber(phoneNumber: string) {
     try {
-      const user = await this.userRepository.findOne({
-        phoneNumber: phoneNumber,
-      });
-      if (!user) return false;
+      const count = await this.em.count('User', {phoneNumber: phoneNumber});
+      if (count < 1) return false;
       return true;
     } catch (error) {
       throw error;
@@ -87,7 +85,7 @@ export class UsersService {
         'phoneNumber',
       ];
 
-      if (keyword === undefined) keyword = '';
+      if (!keyword) keyword = '';
       const query = {};
 
       // Xây dựng mảng các điều kiện tìm kiếm cho từng trường
@@ -178,7 +176,7 @@ export class UsersService {
         throw new BadRequestException('Email is already in use');
       }
       if (
-        userDto.phoneNumber !== undefined &&
+        userDto.phoneNumber &&
         (await this.duplicatedPhoneNumber(userDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
@@ -196,7 +194,7 @@ export class UsersService {
       }
 
       user.password = await this.hashPassword(user.password);
-      if (user.role === undefined) user.role = Role.USER;
+      if (!user.role) user.role = Role.USER;
       const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
       user.created_id = create_id;
       user.updated_id = create_id;
@@ -230,7 +228,7 @@ export class UsersService {
       }
 
       if (
-        updateUserDto.phoneNumber !== undefined &&
+        updateUserDto.phoneNumber &&
         userEntity.phoneNumber !== updateUserDto.phoneNumber &&
         (await this.duplicatedPhoneNumber(updateUserDto.phoneNumber))
       ) {
@@ -238,13 +236,13 @@ export class UsersService {
       }
 
       if (
-        updateUserDto.email !== undefined &&
+        updateUserDto.email &&
         userEntity.email !== updateUserDto.email
       ) {
         throw new BadRequestException('Email cannot be changed');
       }
 
-      if (file !== undefined) {
+      if (file) {
         const currentDate = new Date();
         const timestamp = currentDate.getTime();
         const photo: string = await this.awsService.bulkPutObject(
@@ -253,11 +251,11 @@ export class UsersService {
         );
         updateUserDto.photo = photo;
       }
-      if (userEntity.photo !== null) {
+      if (userEntity.photo) {
         await this.awsService.bulkDeleteObject(userEntity.photo);
       }
 
-      if (updateUserDto.password !== undefined)
+      if (updateUserDto.password)
         updateUserDto.password = await this.hashPassword(
           updateUserDto.password,
         );
