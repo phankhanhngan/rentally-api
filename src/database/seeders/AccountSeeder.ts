@@ -24,6 +24,7 @@ export class AccountSeeder extends Seeder {
         updated_at: new Date(),
         created_id: faker.number.int({ min: 0, max: 100 }),
         updated_id: faker.number.int({ min: 0, max: 100 }),
+        isRegister: false,
       });
     });
     em.insertMany(User, users);

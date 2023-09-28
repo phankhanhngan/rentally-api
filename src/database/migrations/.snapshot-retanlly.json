@@ -55,7 +55,9 @@
       "indexes": [
         {
           "keyName": "PRIMARY",
-          "columnNames": ["id"],
+          "columnNames": [
+            "id"
+          ],
           "composite": false,
           "primary": true,
           "unique": true
@@ -177,6 +179,16 @@
           "default": "true",
           "mappedType": "boolean"
         },
+        "is_register": {
+          "name": "is_register",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "true",
+          "mappedType": "boolean"
+        },
         "phone_number": {
           "name": "phone_number",
           "type": "varchar(255)",
@@ -218,21 +230,27 @@
       "name": "users",
       "indexes": [
         {
-          "columnNames": ["google_id"],
+          "columnNames": [
+            "google_id"
+          ],
           "composite": false,
           "keyName": "users_google_id_unique",
           "primary": false,
           "unique": true
         },
         {
-          "columnNames": ["email"],
+          "columnNames": [
+            "email"
+          ],
           "composite": false,
           "keyName": "users_email_unique",
           "primary": false,
           "unique": true
         },
         {
-          "columnNames": ["phone_number"],
+          "columnNames": [
+            "phone_number"
+          ],
           "composite": false,
           "keyName": "users_phone_number_unique",
           "primary": false,
@@ -240,7 +258,9 @@
         },
         {
           "keyName": "PRIMARY",
-          "columnNames": ["id"],
+          "columnNames": [
+            "id"
+          ],
           "composite": false,
           "primary": true,
           "unique": true

@@ -1,4 +1,4 @@
-import { Entity, Property, Unique } from '@mikro-orm/core';
+import { Entity, Enum, Property, Unique } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { IsEmail, IsPhoneNumber, MinLength } from 'class-validator';
 
@@ -29,12 +29,16 @@ export class User extends Base {
   @Property({ default: true })
   isEnable!: boolean;
 
+  @Property({ default: true })
+  isRegister!: boolean;
+
   @Property({ nullable: false })
   @IsPhoneNumber()
   @Unique()
   phoneNumber!: string;
 
   @Property({ nullable: false })
+  @Enum({ items: () => Role })
   role: Role;
 
   @Property({ nullable: true })

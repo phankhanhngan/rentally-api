@@ -14,8 +14,6 @@ export class Migration20230913133148_entity_user extends Migration {
   }
 
   async down(): Promise<void> {
-    this.addSql('drop table if exists `example`;');
-
     this.addSql('drop table if exists `users`;');
   }
 }

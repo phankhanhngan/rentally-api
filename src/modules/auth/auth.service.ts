@@ -20,6 +20,7 @@ import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { User } from 'src/entities';
 import { IUserAuthen } from './interfaces/auth-user.interface';
+import { use } from 'passport';
 @Injectable()
 export class AuthService {
   constructor(
@@ -62,6 +63,7 @@ export class AuthService {
           plainToInstance(UserDTO, user),
           null,
           true,
+          false,
         );
       } else {
         if (!userDb.googleId) {
@@ -121,6 +123,10 @@ export class AuthService {
       throw error;
     }
   }
+  async checkIsRegister(email: string) {
+    const userDb = await this.userService.getUserByEmail(email);
+    return userDb.isRegister;
+  }
   async performRegister(dto: RegisterDto) {
     try {
       var { verificationCode, verificationToken } =
@@ -130,10 +136,24 @@ export class AuthService {
           parseInt(process.env.MAIL_EXPIRATION_TIME),
         );
       dto.verificationCode = verificationToken;
+      if (await this.checkIsRegister(dto.email)) {
+        this.sendMail(
+          dto.email,
+          verificationCode,
+          dto.email.split('@')[0],
+          './verification',
+          'Account confirmation - Rentally Team',
+        );
+        throw new HttpException(
+          'Your email are already registed. Check your mail to verify your account',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       await this.userService.addUser(
         plainToInstance(UserDTO, dto),
         null,
         false,
+        true,
       );
       this.sendMail(
         dto.email,
@@ -185,6 +205,7 @@ export class AuthService {
       }
       if (objToken['code'] === checkDto.code) {
         userDb.isEnable = true;
+        userDb.isRegister = false;
         await this.em.persistAndFlush(userDb);
         return true;
       } else {
