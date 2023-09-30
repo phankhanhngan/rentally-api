@@ -81,6 +81,7 @@ export class UsersService {
         'googleId',
         'email',
         'firstName',
+        'lastName',
         'role',
         'phoneNumber',
       ];
@@ -113,6 +114,7 @@ export class UsersService {
         'googleId',
         'email',
         'firstName',
+        'lastName',
         'role',
         'phoneNumber',
       ];
