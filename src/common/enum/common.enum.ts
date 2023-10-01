@@ -1,0 +1,19 @@
+export enum Role {
+  ADMIN = 'ADMIN',
+  MOD = 'MOD',
+  USER = 'USER',
+}
+
+export enum Constant {
+  DEFAULT_PAGENO = 1,
+  // DEFAULT_SORTFIELD = 'id',
+  DEFAULT_SORTDIR = 'asc',
+  DEFAULT_KEYWORD = '',
+  DEFAULT_LIMIT = 10,
+}
+
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  DISABLED = 'DISABLED',
+  REGISTING = 'REGISTING',
+}

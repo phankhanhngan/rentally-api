@@ -169,25 +169,14 @@
           "nullable": true,
           "mappedType": "string"
         },
-        "is_enable": {
-          "name": "is_enable",
-          "type": "tinyint(1)",
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "true",
-          "mappedType": "boolean"
-        },
-        "is_register": {
-          "name": "is_register",
-          "type": "tinyint(1)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "true",
-          "mappedType": "boolean"
+          "mappedType": "string"
         },
         "phone_number": {
           "name": "phone_number",
@@ -209,11 +198,12 @@
         },
         "verification_code": {
           "name": "verification_code",
-          "type": "varchar(255)",
+          "type": "varchar(510)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 510,
           "mappedType": "string"
         },
         "time_stamp": {
