@@ -82,6 +82,7 @@ export class UsersService {
         'googleId',
         'email',
         'firstName',
+        'lastName',
         'role',
         'phoneNumber',
       ];
@@ -114,6 +115,7 @@ export class UsersService {
         'googleId',
         'email',
         'firstName',
+        'lastName',
         'role',
         'phoneNumber',
       ];
@@ -125,7 +127,7 @@ export class UsersService {
       filterMessageDto.sortField.forEach((field) => {
         if (!fields.includes(field))
           throw new BadRequestException(
-            'sortField must be one of id, googleId, email, firstName, role, phoneNumber',
+            'sortField must be one of id, googleId, email, firstName, lastName, role, phoneNumber',
           );
       });
 
