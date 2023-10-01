@@ -173,6 +173,7 @@ export class UsersService {
     file: Express.Multer.File,
     isEnable: boolean = true,
   ) {
+
     try {
       if (await this.duplicatedEmail(userDto.email)) {
         throw new BadRequestException('Email is already in use');
