@@ -45,7 +45,7 @@ export class UserDTO {
   phoneNumber!: string;
 
   @Expose()
-  isEnable?: boolean;
+  status?: string;
 
   @Expose()
   role!: Role;

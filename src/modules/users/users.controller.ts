@@ -36,8 +36,8 @@ export class UsersController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Get(':id')
-  async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
+  @Get()
+  async getUser(@Res() res: Response, @Query('id', ParseIntPipe) id: number) {
     try {
       const user = await this.usersService.getUserById(id);
       const userDto = plainToInstance(UserDTO, user, {
@@ -112,11 +112,11 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Patch(':id')
+  @Patch()
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Query('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDTO,
     @UploadedFile()
     file: Express.Multer.File,
@@ -134,10 +134,10 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Delete(':id')
+  @Delete()
   async deleteUser(
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Query('id', ParseIntPipe) id: number,
   ) {
     try {
       await this.usersService.deleteUser(id);

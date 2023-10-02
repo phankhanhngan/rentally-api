@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,7 +12,7 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
-import { Role } from 'src/common/enum/common.enum';
+import { Role, UserStatus } from 'src/common/enum/common.enum';
 
 @Exclude()
 export class UpdateUserDTO {
@@ -63,8 +64,10 @@ export class UpdateUserDTO {
 
   @Expose()
   @ValidateIf((obj, value) => value)
-  @IsBoolean({ message: 'isEnable must be a boolean' })
-  isEnable?: boolean;
+  @IsIn(['ACTIVE', 'DISABLED', 'REGISTING'], {
+    message: 'status must be one of ACTIVE, DISABLED, REGISTING',
+  })
+  status?: UserStatus;
 
   @Expose()
   @IsOptional()
