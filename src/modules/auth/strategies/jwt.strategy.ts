@@ -1,8 +1,9 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRtnDto } from '../dtos/UserRtnDto.dto';
 import { AuthService } from '../auth.service';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -21,8 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     try {
       const { email } = payload;
       console.log(payload);
-      const user = await this.authService.getUserByEmail(email);
-      return user;
+      const userDb = await this.authService.getUserByEmail(email);
+      if (!userDb) throw new UnauthorizedException('Please log in to continue');
+      return plainToInstance(UserRtnDto, userDb);
     } catch (error) {
       throw error;
     }

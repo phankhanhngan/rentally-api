@@ -6,13 +6,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, User } from 'src/entities';
+import { User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { AWSService } from '../aws/aws.service';
+import { Role, UserStatus } from 'src/common/enum/common.enum';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +35,7 @@ export class UsersService {
 
   async duplicatedEmail(email: string) {
     try {
-      const count = await this.em.count('User', {email: email});
+      const count = await this.em.count('User', { email: email });
       if (count < 1) return false;
       return true;
     } catch (error) {
@@ -44,7 +45,7 @@ export class UsersService {
 
   async duplicatedPhoneNumber(phoneNumber: string) {
     try {
-      const count = await this.em.count('User', {phoneNumber: phoneNumber});
+      const count = await this.em.count('User', { phoneNumber: phoneNumber });
       if (count < 1) return false;
       return true;
     } catch (error) {
@@ -74,7 +75,7 @@ export class UsersService {
     }
   }
 
-  async getUsers(keyword : String) {
+  async getUsers(keyword: String) {
     try {
       const fields = [
         'id',
@@ -102,7 +103,7 @@ export class UsersService {
         excludePrefixes: ['password', 'verificationCode'],
       });
       return usersDto;
-    } catch(error) {
+    } catch (error) {
       throw error;
     }
   }
@@ -171,7 +172,7 @@ export class UsersService {
   async addUser(
     userDto: UserDTO,
     file: Express.Multer.File,
-    isEnable: boolean = true,
+    status: UserStatus = UserStatus.ACTIVE,
   ) {
 
     try {
@@ -184,6 +185,7 @@ export class UsersService {
       ) {
         throw new BadRequestException('Phone number is already in use');
       }
+
       const user = plainToInstance(User, userDto);
 
       if (file) {
@@ -201,8 +203,7 @@ export class UsersService {
       const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
       user.created_id = create_id;
       user.updated_id = create_id;
-      user.isEnable = isEnable;
-
+      user.status = status;
       await this.em.persistAndFlush(user);
     } catch (error) {
       throw error;
@@ -238,10 +239,7 @@ export class UsersService {
         throw new BadRequestException('Phone number is already in use');
       }
 
-      if (
-        updateUserDto.email &&
-        userEntity.email !== updateUserDto.email
-      ) {
+      if (updateUserDto.email && userEntity.email !== updateUserDto.email) {
         throw new BadRequestException('Email cannot be changed');
       }
 

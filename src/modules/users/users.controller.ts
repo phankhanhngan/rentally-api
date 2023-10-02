@@ -26,7 +26,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from './helpers/file-filter.helper';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
-import { Role } from 'src/entities';
+import { Role } from 'src/common/enum/common.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -56,7 +56,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getUsers(@Res() res: Response, @Query("keyword") keyword : String) {
+  async getUsers(@Res() res: Response, @Query('keyword') keyword: String) {
     try {
       const usersDto = await this.usersService.getUsers(keyword);
       res.status(200).json({

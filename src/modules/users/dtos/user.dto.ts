@@ -7,7 +7,7 @@ import {
   IsPhoneNumber,
   MinLength,
 } from 'class-validator';
-import { Role } from 'src/entities';
+import { Role } from 'src/common/enum/common.enum';
 
 @Exclude()
 export class UserDTO {
