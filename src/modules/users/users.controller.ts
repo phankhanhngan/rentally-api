@@ -29,14 +29,14 @@ import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
 
 @UseGuards(JwtAuthGuard)
-@Controller('users')
+@Controller()
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Get()
+  @Get('/user')
   async getUser(@Res() res: Response, @Query('id', ParseIntPipe) id: number) {
     try {
       const user = await this.usersService.getUserById(id);
@@ -54,7 +54,7 @@ export class UsersController {
     }
   }
 
-  @Get()
+  @Get("users")
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   async getUsers(@Res() res: Response, @Query('keyword') keyword: String) {
     try {
@@ -91,7 +91,7 @@ export class UsersController {
   // }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Post()
+  @Post("users")
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async addUser(
     @Res() res: Response,
@@ -112,7 +112,7 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Patch()
+  @Patch("users")
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
@@ -134,7 +134,7 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Delete()
+  @Delete("users")
   async deleteUser(
     @Res() res: Response,
     @Query('id', ParseIntPipe) id: number,
