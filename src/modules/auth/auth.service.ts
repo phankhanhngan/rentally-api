@@ -59,7 +59,7 @@ export class AuthService {
       if (userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
       if (!userDb) {
-        await this.userService.addUser(plainToInstance(UserDTO, user), null);
+        await this.userService.addUser(plainToInstance(UserDTO, user), null, 0);
       } else {
         if (!userDb.googleId) {
           userDb.googleId = user.googleId;
@@ -151,6 +151,7 @@ export class AuthService {
       await this.userService.addUser(
         plainToInstance(UserDTO, dto),
         null,
+        0,
         UserStatus.REGISTING,
       );
       this.sendMail(

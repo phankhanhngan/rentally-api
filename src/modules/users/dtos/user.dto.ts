@@ -11,8 +11,6 @@ import { Role } from 'src/common/enum/common.enum';
 
 @Exclude()
 export class UserDTO {
-  idLogin?: number;
-
   @Expose()
   @IsEmpty({ message: 'Create without id' })
   id!: number;

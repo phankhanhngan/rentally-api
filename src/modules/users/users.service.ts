@@ -172,6 +172,7 @@ export class UsersService {
   async addUser(
     userDto: UserDTO,
     file: Express.Multer.File,
+    idlogin: number,
     status: UserStatus = UserStatus.ACTIVE,
   ) {
 
@@ -200,7 +201,7 @@ export class UsersService {
 
       user.password = await this.hashPassword(user.password);
       if (!user.role) user.role = Role.USER;
-      const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
+      const create_id = idlogin === undefined ? 0 : idlogin;
       user.created_id = create_id;
       user.updated_id = create_id;
       user.status = status;
@@ -214,16 +215,9 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserDTO,
     file: Express.Multer.File,
+    idlogin: number
   ) {
     try {
-      try {
-        await this.getUserById(updateUserDto.idLogin);
-      } catch (error) {
-        throw new BadRequestException(
-          `Can not find user login with id: ${updateUserDto.idLogin}`,
-        );
-      }
-
       const userEntity: Loaded<User> = await this.userRepository.findOne({
         id: id,
       });
@@ -265,7 +259,7 @@ export class UsersService {
         {
           ...updateUserDto,
           updated_at: new Date(),
-          updated_id: updateUserDto.idLogin,
+          updated_id: idlogin,
         },
         { updateByPrimaryKey: false },
       );

@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -29,15 +30,15 @@ import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
 
 @UseGuards(JwtAuthGuard)
-@Controller()
+@Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Get('/user')
-  async getUser(@Res() res: Response, @Query('id', ParseIntPipe) id: number) {
+  @Get(':id')
+  async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
     try {
       const user = await this.usersService.getUserById(id);
       const userDto = plainToInstance(UserDTO, user, {
@@ -54,7 +55,7 @@ export class UsersController {
     }
   }
 
-  @Get("users")
+  @Get()
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   async getUsers(@Res() res: Response, @Query('keyword') keyword: String) {
     try {
@@ -91,16 +92,18 @@ export class UsersController {
   // }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Post("users")
+  @Post()
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async addUser(
     @Res() res: Response,
+    @Req() req,
     @Body(new ValidationPipe({ transform: true })) userDto: UserDTO,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.addUser(userDto, file);
+      const idLogin = req.user.id;
+      await this.usersService.addUser(userDto, file, idLogin);
       res.status(200).json({
         message: 'Added user successfully',
         status: 'success',
@@ -112,17 +115,19 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Patch("users")
+  @Patch(":id")
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
-    @Query('id', ParseIntPipe) id: number,
+    @Req() req,
+    @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDTO,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.updateUser(id, updateUserDto, file);
+      const idlogin = req.user.id;
+      await this.usersService.updateUser(id, updateUserDto, file, idlogin);
       res.status(200).json({
         message: 'Updated user successfully',
         status: 'success',
@@ -134,10 +139,10 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Delete("users")
+  @Delete(":id")
   async deleteUser(
     @Res() res: Response,
-    @Query('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
   ) {
     try {
       await this.usersService.deleteUser(id);

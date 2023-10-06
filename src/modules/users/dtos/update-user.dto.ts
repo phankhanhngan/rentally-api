@@ -16,12 +16,6 @@ import { Role, UserStatus } from 'src/common/enum/common.enum';
 
 @Exclude()
 export class UpdateUserDTO {
-  @Expose()
-  @IsNotEmpty({ message: 'Id login cannot be null' })
-  @Type(() => Number)
-  @IsInt({ message: 'Id login must be an integer' })
-  idLogin!: number;
-
   // @Expose()
   // @IsNotEmpty({ message: 'Id update cannot be null' })
   // @Type(() => Number)
