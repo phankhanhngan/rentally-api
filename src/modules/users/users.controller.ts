@@ -14,7 +14,6 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
-  UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -23,7 +22,6 @@ import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
-import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from './helpers/file-filter.helper';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -58,7 +56,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getUsers(@Res() res: Response, @Query("keyword") keyword : String) {
+  async getUsers(@Res() res: Response, @Query('keyword') keyword: string) {
     try {
       const usersDto = await this.usersService.getUsers(keyword);
       res.status(200).json({
