@@ -1,6 +1,8 @@
 import { Entity, Enum, Property, Unique } from '@mikro-orm/core';
 import { Base } from './base.entity';
-import { IsEmail, IsPhoneNumber, MinLength } from 'class-validator';
+import { IsEmail, IsPhoneNumber, MaxLength, MinLength } from 'class-validator';
+import { Role, UserStatus } from '../common/enum/common.enum';
+// import { Role, UserStatus } from 'src/common/enum/common.enum';
 
 @Entity({ tableName: 'users' })
 export class User extends Base {
@@ -26,11 +28,9 @@ export class User extends Base {
   @Property({ nullable: true })
   photo?: string;
 
-  @Property({ default: true })
-  isEnable!: boolean;
-
-  @Property({ default: true })
-  isRegister!: boolean;
+  @Property({ nullable: false })
+  @Enum({ items: () => UserStatus })
+  status: UserStatus;
 
   @Property({ nullable: false })
   @IsPhoneNumber()
@@ -41,15 +41,9 @@ export class User extends Base {
   @Enum({ items: () => Role })
   role: Role;
 
-  @Property({ nullable: true })
+  @Property({ nullable: true, length: 510 })
   verificationCode: string;
 
   @Property({ nullable: true })
   timeStamp: Date = new Date();
-}
-
-export enum Role {
-  ADMIN = 'ADMIN',
-  MOD = 'MOD',
-  USER = 'USER',
 }

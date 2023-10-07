@@ -6,13 +6,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, User } from 'src/entities';
+import { User } from 'src/entities';
 import { UserDTO } from './dtos/user.dto';
 import * as bcrypt from 'bcrypt';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { AWSService } from '../aws/aws.service';
+import { Role, UserStatus } from 'src/common/enum/common.enum';
 
 @Injectable()
 export class UsersService {
@@ -34,7 +35,7 @@ export class UsersService {
 
   async duplicatedEmail(email: string) {
     try {
-      const count = await this.em.count('User', {email: email});
+      const count = await this.em.count('User', { email: email });
       if (count < 1) return false;
       return true;
     } catch (error) {
@@ -44,7 +45,7 @@ export class UsersService {
 
   async duplicatedPhoneNumber(phoneNumber: string) {
     try {
-      const count = await this.em.count('User', {phoneNumber: phoneNumber});
+      const count = await this.em.count('User', { phoneNumber: phoneNumber });
       if (count < 1) return false;
       return true;
     } catch (error) {
@@ -81,6 +82,7 @@ export class UsersService {
         'googleId',
         'email',
         'firstName',
+        'lastName',
         'role',
         'phoneNumber',
       ];
@@ -113,6 +115,7 @@ export class UsersService {
         'googleId',
         'email',
         'firstName',
+        'lastName',
         'role',
         'phoneNumber',
       ];
@@ -124,7 +127,7 @@ export class UsersService {
       filterMessageDto.sortField.forEach((field) => {
         if (!fields.includes(field))
           throw new BadRequestException(
-            'sortField must be one of id, googleId, email, firstName, role, phoneNumber',
+            'sortField must be one of id, googleId, email, firstName, lastName, role, phoneNumber',
           );
       });
 
@@ -169,8 +172,8 @@ export class UsersService {
   async addUser(
     userDto: UserDTO,
     file: Express.Multer.File,
-    isEnable: boolean = true,
-    isRegister: boolean = false,
+    idlogin: number,
+    status: UserStatus = UserStatus.ACTIVE,
   ) {
     try {
       if (await this.duplicatedEmail(userDto.email)) {
@@ -197,11 +200,10 @@ export class UsersService {
 
       user.password = await this.hashPassword(user.password);
       if (!user.role) user.role = Role.USER;
-      const create_id = userDto.idLogin === undefined ? 0 : userDto.idLogin;
+      const create_id = idlogin === undefined ? 0 : idlogin;
       user.created_id = create_id;
       user.updated_id = create_id;
-      user.isEnable = isEnable;
-      user.isRegister = isRegister;
+      user.status = status;
       await this.em.persistAndFlush(user);
     } catch (error) {
       throw error;
@@ -212,16 +214,9 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserDTO,
     file: Express.Multer.File,
+    idlogin: number
   ) {
     try {
-      try {
-        await this.getUserById(updateUserDto.idLogin);
-      } catch (error) {
-        throw new BadRequestException(
-          `Can not find user login with id: ${updateUserDto.idLogin}`,
-        );
-      }
-
       const userEntity: Loaded<User> = await this.userRepository.findOne({
         id: id,
       });
@@ -237,10 +232,7 @@ export class UsersService {
         throw new BadRequestException('Phone number is already in use');
       }
 
-      if (
-        updateUserDto.email &&
-        userEntity.email !== updateUserDto.email
-      ) {
+      if (updateUserDto.email && userEntity.email !== updateUserDto.email) {
         throw new BadRequestException('Email cannot be changed');
       }
 
@@ -266,7 +258,7 @@ export class UsersService {
         {
           ...updateUserDto,
           updated_at: new Date(),
-          updated_id: updateUserDto.idLogin,
+          updated_id: idlogin,
         },
         { updateByPrimaryKey: false },
       );
