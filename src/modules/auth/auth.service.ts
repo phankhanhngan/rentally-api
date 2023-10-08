@@ -52,7 +52,7 @@ export class AuthService {
   async validateGoogleLogin(user: IUserAuthen) {
     try {
       const userDb = await this.getUserByEmail(user.email);
-      if (userDb.status === UserStatus.DISABLED)
+      if (userDb && userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
       if (!userDb) {
         await this.userService.addUser(plainToInstance(UserDTO, user), null, 0);

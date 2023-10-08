@@ -197,8 +197,9 @@ export class UsersService {
         );
         user.photo = photo;
       }
-
-      user.password = await this.hashPassword(user.password);
+      if (!user.googleId) {
+        user.password = await this.hashPassword(user.password);
+      }
       if (!user.role) user.role = Role.USER;
       const create_id = idlogin === undefined ? 0 : idlogin;
       user.created_id = create_id;
@@ -214,7 +215,7 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserDTO,
     file: Express.Multer.File,
-    idlogin: number
+    idlogin: number,
   ) {
     try {
       const userEntity: Loaded<User> = await this.userRepository.findOne({
