@@ -9,7 +9,7 @@ export class AccountSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
     const users = [];
     const password = await bcrypt.hash('123456', 10);
-    Array.from(Array(50).keys()).forEach(async () => {
+    Array.from(Array(40).keys()).forEach(async () => {
       users.push({
         // id: faker.number.int({ min: 0, max: 100 }),
         googleId: faker.string.uuid(),

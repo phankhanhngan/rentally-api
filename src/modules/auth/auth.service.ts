@@ -16,6 +16,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { User } from 'src/entities';
 import { IUserAuthen } from './interfaces/auth-user.interface';
 import { UserStatus } from 'src/common/enum/common.enum';
+import { UpdateUserDTO } from '../users/dtos/update-user.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -50,7 +51,7 @@ export class AuthService {
 
   async validateGoogleLogin(user: IUserAuthen) {
     try {
-      const userDb = await this.userService.getUserByEmail(user.email);
+      const userDb = await this.getUserByEmail(user.email);
       if (userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
       if (!userDb) {
@@ -120,6 +121,7 @@ export class AuthService {
 
   async performRegister(dto: RegisterDto) {
     try {
+      const userDb = await this.getUserByEmail(dto.email);
       var { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
@@ -127,12 +129,23 @@ export class AuthService {
           parseInt(process.env.MAIL_EXPIRATION_TIME),
         );
       dto.verificationCode = verificationToken;
-      await this.userService.addUser(
-        plainToInstance(UserDTO, dto),
-        null,
-        0,
-        UserStatus.REGISTING,
-      );
+      if (this.checkIsRegister(userDb)) {
+        const updateDto = plainToInstance(UpdateUserDTO, userDb);
+        updateDto.status = UserStatus.REGISTING;
+        await this.userService.updateUser(
+          userDb.id,
+          plainToInstance(UpdateUserDTO, userDb),
+          null,
+          0,
+        );
+      } else {
+        await this.userService.addUser(
+          plainToInstance(UserDTO, dto),
+          null,
+          0,
+          UserStatus.REGISTING,
+        );
+      }
       this.sendMail(
         dto.email,
         verificationCode,
