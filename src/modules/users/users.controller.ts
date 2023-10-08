@@ -29,7 +29,7 @@ import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/entities';
 
 @UseGuards(JwtAuthGuard)
-@Controller('users')
+@Controller('admin/users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,

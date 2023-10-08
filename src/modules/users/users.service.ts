@@ -76,7 +76,7 @@ export class UsersService {
     }
   }
 
-  async getUsers(keyword : String) {
+  async getUsers(keyword: string) {
     try {
       const fields = [
         'id',
@@ -103,7 +103,7 @@ export class UsersService {
         excludePrefixes: ['password', 'verificationCode'],
       });
       return usersDto;
-    } catch(error) {
+    } catch (error) {
       throw error;
     }
   }

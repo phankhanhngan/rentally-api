@@ -1,15 +1,22 @@
-import { IsNotEmpty } from 'class-validator';
-import { Point } from 'src/entities/room-block.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { Point } from 'src/entities';
 
 export class AddRoomBlockDTO {
   @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
   address!: string;
 
   @IsNotEmpty()
-  longitude!: number;
+  @ApiProperty()
+  coordinate!: Point;
 
-  @IsNotEmpty()
-  latitude!: number;
-
+  @IsString()
+  @ApiProperty()
   description?: string;
+
+  @IsInt()
+  @ApiProperty()
+  landlordId?: number;
 }

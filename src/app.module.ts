@@ -13,6 +13,7 @@ import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
+import { RoomBlocksModule } from './modules/roomblocks/roomblocks.module';
 
 @Module({
   imports: [
@@ -54,9 +55,9 @@ import { AWSModule } from './modules/aws/aws.module';
         expiresIn: process.env.JWT_EXPIRATION_TIME,
       },
     }),
-    // ExampleModule,
     AuthModule,
     UsersModule,
+    RoomBlocksModule,
     AWSModule,
   ],
 
