@@ -197,7 +197,7 @@ export class UsersService {
         );
         user.photo = photo;
       }
-      if (!user.googleId) {
+      if (user.password) {
         user.password = await this.hashPassword(user.password);
       }
       if (!user.role) user.role = Role.USER;
