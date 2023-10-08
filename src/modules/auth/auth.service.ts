@@ -1,10 +1,5 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MailerService } from '@nest-modules/mailer';
 import { LoginDto } from './dtos/LoginDto.dto';
 import * as bcrypt from 'bcrypt';
@@ -20,6 +15,8 @@ import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { User } from 'src/entities';
 import { IUserAuthen } from './interfaces/auth-user.interface';
+import { UserStatus } from 'src/common/enum/common.enum';
+import { UpdateUserDTO } from '../users/dtos/update-user.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -54,15 +51,11 @@ export class AuthService {
 
   async validateGoogleLogin(user: IUserAuthen) {
     try {
-      const userDb = await this.userService.getUserByEmail(user.email);
-      if (!userDb.isEnable)
+      const userDb = await this.getUserByEmail(user.email);
+      if (userDb && userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
       if (!userDb) {
-        await this.userService.addUser(
-          plainToInstance(UserDTO, user),
-          null,
-          true,
-        );
+        await this.userService.addUser(plainToInstance(UserDTO, user), null, 0);
       } else {
         if (!userDb.googleId) {
           userDb.googleId = user.googleId;
@@ -86,19 +79,19 @@ export class AuthService {
 
   async validateLogin(loginDto: LoginDto) {
     try {
-      const userDb = await this.userService.getUserByEmail(loginDto.email);
+      const userDb = await this.getUserByEmail(loginDto.email);
       if (!userDb)
         throw new HttpException(
           'Invalid email or password',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.BAD_REQUEST,
         );
       if (!userDb.verificationCode)
         throw new HttpException(
           'Email has not been verified',
-          HttpStatus.FORBIDDEN,
+          HttpStatus.BAD_REQUEST,
         );
-      if (!userDb.isEnable)
-        throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      if (userDb.status === UserStatus.DISABLED)
+        throw new HttpException('User are disabled', HttpStatus.BAD_REQUEST);
       var isValidPass = await bcrypt.compare(
         loginDto.password,
         userDb.password,
@@ -114,15 +107,21 @@ export class AuthService {
       } else {
         throw new HttpException(
           'Invalid email or password',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.BAD_REQUEST,
         );
       }
     } catch (error) {
       throw error;
     }
   }
+
+  checkIsRegister(userDb: User) {
+    return userDb && userDb.status === UserStatus.REGISTING;
+  }
+
   async performRegister(dto: RegisterDto) {
     try {
+      const userDb = await this.getUserByEmail(dto.email);
       var { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
@@ -130,11 +129,23 @@ export class AuthService {
           parseInt(process.env.MAIL_EXPIRATION_TIME),
         );
       dto.verificationCode = verificationToken;
-      await this.userService.addUser(
-        plainToInstance(UserDTO, dto),
-        null,
-        false,
-      );
+      if (this.checkIsRegister(userDb)) {
+        const updateDto = plainToInstance(UpdateUserDTO, userDb);
+        updateDto.status = UserStatus.REGISTING;
+        await this.userService.updateUser(
+          userDb.id,
+          plainToInstance(UpdateUserDTO, userDb),
+          null,
+          0,
+        );
+      } else {
+        await this.userService.addUser(
+          plainToInstance(UserDTO, dto),
+          null,
+          0,
+          UserStatus.REGISTING,
+        );
+      }
       this.sendMail(
         dto.email,
         verificationCode,
@@ -151,7 +162,12 @@ export class AuthService {
     try {
       const userDb = await this.userService.getUserByEmail(email);
       if (!userDb)
-        throw new HttpException('Invalid email', HttpStatus.NOT_FOUND);
+        throw new HttpException('Invalid email', HttpStatus.BAD_REQUEST);
+      if (userDb.status === UserStatus.ACTIVE)
+        throw new HttpException(
+          'Email has been verified',
+          HttpStatus.BAD_REQUEST,
+        );
       var { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
@@ -174,23 +190,29 @@ export class AuthService {
   async verifyLoginToken(checkDto: CheckCodeDto) {
     try {
       const userDb = await this.userService.getUserByEmail(checkDto.email);
-      if (userDb.isEnable)
+      if (userDb.status == UserStatus.ACTIVE)
         throw new HttpException(
           'Email has been verified',
-          HttpStatus.FORBIDDEN,
+          HttpStatus.BAD_REQUEST,
         );
       const objToken = this.jwtService.decode(userDb.verificationCode);
       if (new Date(objToken['expiry']) < new Date()) {
-        throw new HttpException('Code is expired', HttpStatus.NOT_ACCEPTABLE);
+        throw new HttpException('Code is expired', HttpStatus.BAD_REQUEST);
       }
       if (objToken['code'] === checkDto.code) {
-        userDb.isEnable = true;
+        userDb.status = UserStatus.ACTIVE;
         await this.em.persistAndFlush(userDb);
-        return true;
+        const userRtn: UserRtnDto = plainToInstance(UserRtnDto, userDb);
+        var accessToken = await this.jwtService.signAsync({
+          ...userRtn,
+        });
+        return {
+          token: accessToken,
+        };
       } else {
         throw new HttpException(
           'Invalid verification code',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.BAD_REQUEST,
         );
       }
     } catch (error) {
@@ -203,10 +225,10 @@ export class AuthService {
       if (!userDb.verificationCode)
         throw new HttpException(
           'Email has not been verified',
-          HttpStatus.FORBIDDEN,
+          HttpStatus.BAD_REQUEST,
         );
-      if (!userDb.isEnable)
-        throw new HttpException('User are disabled', HttpStatus.FORBIDDEN);
+      if (userDb.status === UserStatus.DISABLED)
+        throw new HttpException('User are disabled', HttpStatus.BAD_REQUEST);
       var { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
@@ -233,16 +255,16 @@ export class AuthService {
       const userDb = await this.userService.getUserByEmail(checkDto.email);
       const objToken = this.jwtService.decode(userDb.verificationCode);
       if (new Date(objToken['expiry']) < new Date()) {
-        throw new HttpException('Code is expired', HttpStatus.NOT_ACCEPTABLE);
+        throw new HttpException('Code is expired', HttpStatus.BAD_REQUEST);
       }
       if (objToken['code'] === checkDto.code) {
-        userDb.isEnable = true;
+        userDb.status = UserStatus.ACTIVE;
         await this.em.persistAndFlush(userDb);
         return true;
       } else {
         throw new HttpException(
           'Invalid verification code',
-          HttpStatus.NOT_FOUND,
+          HttpStatus.BAD_REQUEST,
         );
       }
     } catch (error) {
@@ -262,7 +284,7 @@ export class AuthService {
         );
         await this.em.persistAndFlush(userDb);
       } else {
-        throw new HttpException('Code is invalid', HttpStatus.NOT_ACCEPTABLE);
+        throw new HttpException('Code is invalid', HttpStatus.BAD_REQUEST);
       }
     } catch (error) {
       throw error;
@@ -286,8 +308,7 @@ export class AuthService {
   async getUserByEmail(email: string) {
     try {
       const userDb = await this.userRepository.findOne({ email: email });
-      if (!userDb) throw new UnauthorizedException('Please log in to continue');
-      return plainToInstance(UserRtnDto, userDb);
+      return userDb;
     } catch (error) {
       throw error;
     }

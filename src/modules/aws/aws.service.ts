@@ -61,8 +61,8 @@ export class AWSService {
     folderPath: string,
   ): Promise<string> {
     try {
-      const fileName = `${folderPath}/${file.originalname}`;
       file.originalname = file.originalname.replace(/ /g, '');
+      const fileName = `${folderPath}/${file.originalname}`;
       const cmd = new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: fileName,

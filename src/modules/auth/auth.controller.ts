@@ -1,13 +1,11 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   Inject,
   Logger,
-  Param,
   Post,
   Res,
   UsePipes,
@@ -70,7 +68,10 @@ export class AuthController {
     try {
       const { accessToken } = body;
       if (!accessToken) {
-        throw new BadRequestException('Access Token can not be null');
+        throw new HttpException(
+          'Access Token can not be null',
+          HttpStatus.BAD_REQUEST,
+        );
       }
       const { id, email, name, picture } = await this.oauth2Client.getInfo(
         accessToken,
@@ -97,15 +98,15 @@ export class AuthController {
     }
   }
 
-  @Post('verify')
+  @Post('register/verify')
   async verifyToken(@Body() checkDto: CheckCodeDto, @Res() res: Response) {
     try {
-      if (await this.authService.verifyLoginToken(checkDto)) {
-        res.status(200).json({
-          message: 'Email verification successfully',
-          status: 'SUCCESS',
-        });
-      }
+      const response = await this.authService.verifyLoginToken(checkDto);
+      res.status(200).json({
+        message: 'Email verification successfully',
+        status: 'SUCCESS',
+        data: response,
+      });
     } catch (error) {
       this.logger.error('Calling verifyToken()', error, AuthController.name);
       throw error;

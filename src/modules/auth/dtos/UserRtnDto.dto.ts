@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Role } from 'src/entities';
+import { Role } from 'src/common/enum/common.enum';
 @Exclude()
 export class UserRtnDto {
   @Expose()

@@ -7,12 +7,10 @@ import {
   IsPhoneNumber,
   MinLength,
 } from 'class-validator';
-import { Role } from 'src/entities';
+import { Role } from 'src/common/enum/common.enum';
 
 @Exclude()
 export class UserDTO {
-  idLogin?: number;
-
   @Expose()
   @IsEmpty({ message: 'Create without id' })
   id!: number;
@@ -43,6 +41,9 @@ export class UserDTO {
   @Expose()
   @IsPhoneNumber('VN', { message: 'Invalid Phone number' })
   phoneNumber!: string;
+
+  @Expose()
+  status?: string;
 
   @Expose()
   role!: Role;

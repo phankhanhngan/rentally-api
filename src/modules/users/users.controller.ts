@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   Res,
   UploadedFile,
   UseGuards,
@@ -18,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './dtos/user.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
@@ -26,10 +27,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from './helpers/file-filter.helper';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
-import { Role } from 'src/entities';
+import { Role } from 'src/common/enum/common.enum';
 
 @UseGuards(JwtAuthGuard)
-@Controller('admin/users')
+@Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -46,7 +47,7 @@ export class UsersController {
       res.status(200).json({
         message: 'Get user successfully',
         status: 'success',
-        data: [userDto],
+        data: userDto,
       });
     } catch (error) {
       this.logger.error('Calling getUser()', error, UsersController.name);
@@ -56,13 +57,13 @@ export class UsersController {
 
   @Get()
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getUsers(@Res() res: Response, @Query('keyword') keyword: string) {
+  async getUsers(@Res() res: Response, @Query('keyword') keyword: String) {
     try {
       const usersDto = await this.usersService.getUsers(keyword);
       res.status(200).json({
         message: 'Get user successfully',
         status: 'success',
-        data: [usersDto],
+        data: usersDto,
       });
     } catch (error) {
       this.logger.error('Calling getAll()', error, UsersController.name);
@@ -95,12 +96,14 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async addUser(
     @Res() res: Response,
+    @Req() req,
     @Body(new ValidationPipe({ transform: true })) userDto: UserDTO,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.addUser(userDto, file);
+      const idLogin = req.user.id;
+      await this.usersService.addUser(userDto, file, idLogin);
       res.status(200).json({
         message: 'Added user successfully',
         status: 'success',
@@ -116,13 +119,15 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
+    @Req() req,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe()) updateUserDto: UpdateUserDTO,
     @UploadedFile()
     file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.updateUser(id, updateUserDto, file);
+      const idlogin = req.user.id;
+      await this.usersService.updateUser(id, updateUserDto, file, idlogin);
       res.status(200).json({
         message: 'Updated user successfully',
         status: 'success',
