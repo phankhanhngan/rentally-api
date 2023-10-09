@@ -197,6 +197,8 @@ export class UsersService {
           `photo_user/${timestamp}`,
         );
         user.photo = photo;
+      } else {
+        user.photo = 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/photo_user/user.png';
       }
 
       user.password = await this.hashPassword(user.password);
