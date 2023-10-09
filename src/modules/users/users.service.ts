@@ -14,6 +14,7 @@ import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { AWSService } from '../aws/aws.service';
 import { Role, UserStatus } from 'src/common/enum/common.enum';
+import { el } from '@faker-js/faker';
 
 @Injectable()
 export class UsersService {
@@ -196,7 +197,10 @@ export class UsersService {
           `photo_user/${timestamp}`,
         );
         user.photo = photo;
+      } else {
+        user.photo = process.env.AWS_IMAGE_DEFAULT;
       }
+
       if (user.password) {
         user.password = await this.hashPassword(user.password);
       }
@@ -274,7 +278,10 @@ export class UsersService {
     try {
       const userToDelete = await this.getUserById(id);
 
-      if (userToDelete.photo !== null) {
+      if (
+        userToDelete.photo !== null &&
+        userToDelete.photo !== process.env.AWS_IMAGE_DEFAULT
+      ) {
         await this.awsService.bulkDeleteObject(userToDelete.photo);
       }
 
