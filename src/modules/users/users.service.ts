@@ -175,7 +175,6 @@ export class UsersService {
     idlogin: number,
     status: UserStatus = UserStatus.ACTIVE,
   ) {
-
     try {
       if (await this.duplicatedEmail(userDto.email)) {
         throw new BadRequestException('Email is already in use');
@@ -200,8 +199,10 @@ export class UsersService {
       } else {
         user.photo = 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/photo_user/user.png';
       }
-
-      user.password = await this.hashPassword(user.password);
+        
+      if (user.password) {
+        user.password = await this.hashPassword(user.password);
+      }
       if (!user.role) user.role = Role.USER;
       const create_id = idlogin === undefined ? 0 : idlogin;
       user.created_id = create_id;
@@ -217,7 +218,7 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserDTO,
     file: Express.Multer.File,
-    idlogin: number
+    idlogin: number,
   ) {
     try {
       const userEntity: Loaded<User> = await this.userRepository.findOne({

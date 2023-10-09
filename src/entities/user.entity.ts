@@ -32,7 +32,7 @@ export class User extends Base {
   @Enum({ items: () => UserStatus })
   status: UserStatus;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   @IsPhoneNumber()
   @Unique()
   phoneNumber!: string;

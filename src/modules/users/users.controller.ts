@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './dtos/user.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
@@ -115,7 +115,7 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Patch(":id")
+  @Patch(':id')
   @UseInterceptors(FileInterceptor('photo', fileFilter))
   async updateUser(
     @Res() res: Response,
@@ -139,7 +139,7 @@ export class UsersController {
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  @Delete(":id")
+  @Delete(':id')
   async deleteUser(
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
