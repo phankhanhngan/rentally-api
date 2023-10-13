@@ -57,7 +57,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getUsers(@Res() res: Response, @Query('keyword') keyword: String) {
+  async getUsers(@Res() res: Response, @Query('keyword') keyword: string) {
     try {
       const usersDto = await this.usersService.getUsers(keyword);
       res.status(200).json({

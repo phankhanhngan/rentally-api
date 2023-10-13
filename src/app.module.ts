@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MorganModule, MorganInterceptor } from 'nest-morgan';
 import { APP_INTERCEPTOR } from '@nestjs/core';
@@ -14,7 +13,7 @@ import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
-import { RoomBlocksModule } from './modules/roomblocks/roomblocks.module';
+import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
 
 @Module({
   imports: [

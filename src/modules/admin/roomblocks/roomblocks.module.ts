@@ -1,11 +1,11 @@
 import { RoomBlock, User } from 'src/entities';
 import { RoomBlocksController } from './roomblocks.controller';
 import { RoomBlocksService } from './roomblocks.service';
-import { AuthModule } from '../auth/auth.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { AWSModule } from '../aws/aws.module';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { AWSModule } from 'src/modules/aws/aws.module';
+import { UsersService } from 'src/modules/users/users.service';
 
 @Module({
   imports: [
