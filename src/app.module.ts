@@ -14,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
 import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
+import { RoomsModule } from './modules/admin/rooms/rooms.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
     UsersModule,
     RoomBlocksModule,
     AWSModule,
+    RoomsModule,
   ],
 
   controllers: [AppController],

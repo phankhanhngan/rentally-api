@@ -1,8 +1,12 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
-import { Point, PointType } from 'src/entities';
+import { Point } from 'src/entities';
 
-export class UpdateRoomBlockAdminDTO {
+export class AddRoomBlockAdminDTO {
+  @IsInt()
+  @IsNotEmpty()
+  roomBlockId: number;
+
   @IsNotEmpty()
   @IsString()
   address!: string;

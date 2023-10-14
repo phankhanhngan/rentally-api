@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AddRoomBlockAdminDTO } from './dtos/add-room-block-admin.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { EntityManager, EntityRepository } from '@mikro-orm/core';
+import { EntityManager, EntityRepository, PopulateHint } from '@mikro-orm/core';
 import { plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { UpdateRoomBlockAdminDTO } from './dtos/update-room-block-admin.dto';
@@ -29,6 +29,8 @@ export class RoomBlocksService {
         );
       }
       const roomBlockEntity = plainToInstance(RoomBlock, dto);
+      console.log(roomBlockEntity.coordinate);
+
       roomBlockEntity.created_id = user.id;
       roomBlockEntity.updated_id = user.id;
       roomBlockEntity.landlord = this.em.getReference(User, landlordId);
@@ -122,28 +124,31 @@ export class RoomBlocksService {
 
   async getRoomBlockList(keyword: string) {
     try {
-      const fields = [
-        'address',
-        'description',
-        'u0.firstName',
-        'u0.lastName',
-        'u0.phoneNumber',
-      ];
-
       if (!keyword) keyword = '';
-      const query = {};
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [
+          {
+            landlord: {
+              $or: [
+                { firstName: likeQr },
+                { lastName: likeQr },
+                { phoneNumber: likeQr },
+              ],
+            },
+          },
+          { address: likeQr },
+          { description: likeQr },
+        ],
+      };
+      const roomBlockEntityList = await this.roomBlockRepository.find(
+        queryObj,
+        {
+          populate: ['landlord'],
+          populateWhere: PopulateHint.INFER,
+        },
+      );
 
-      const searchConditions = fields.map((field) => ({
-        [field]: { $like: `%${keyword}%` },
-      }));
-
-      query['$or'] = searchConditions;
-      console.log(searchConditions);
-      console.log(query);
-      const roomBlockEntityList = await this.roomBlockRepository.find(query, {
-        populate: ['landlord'],
-      });
-      console.log(roomBlockEntityList);
       const roomBlockDtoList = roomBlockEntityList.map((el) => {
         const dto = plainToInstance(RoomBlockAdminDTO, el);
         dto.landlord = {
@@ -154,11 +159,10 @@ export class RoomBlocksService {
         };
         return dto;
       });
-
       return roomBlockDtoList;
     } catch (error) {
       this.logger.error(
-        'Calling deleteRoomBlock()',
+        'Calling getRoomBlockList()',
         error,
         RoomBlocksService.name,
       );

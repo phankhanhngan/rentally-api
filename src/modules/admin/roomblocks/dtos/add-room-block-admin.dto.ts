@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { Point } from 'src/entities';
 

@@ -27,7 +27,7 @@ export class Room extends Base {
   images: string;
 
   @Property({ nullable: true, type: 'text' })
-  utilities: string[];
+  utilities: string;
 
   @Property({ nullable: true, type: 'text' })
   status: string;
