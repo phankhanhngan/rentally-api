@@ -29,8 +29,6 @@ export class RoomBlocksService {
         );
       }
       const roomBlockEntity = plainToInstance(RoomBlock, dto);
-      console.log(roomBlockEntity.coordinate);
-
       roomBlockEntity.created_id = user.id;
       roomBlockEntity.updated_id = user.id;
       roomBlockEntity.landlord = this.em.getReference(User, landlordId);
@@ -56,9 +54,14 @@ export class RoomBlocksService {
         );
       }
 
-      roomBlockEntity.address = dto.address;
+      roomBlockEntity.addressLine1 = dto.addressLine1;
+      roomBlockEntity.addressLine2 = dto.addressLine2;
+      roomBlockEntity.city = dto.city;
+      roomBlockEntity.state = dto.state;
+      roomBlockEntity.country = dto.country;
       roomBlockEntity.coordinate = dto.coordinate;
       roomBlockEntity.description = dto.description;
+      roomBlockEntity.landlord = this.em.getReference(User, dto.landlordId);
       roomBlockEntity.updated_id = user.id;
 
       await this.em.persistAndFlush(roomBlockEntity);
@@ -137,7 +140,11 @@ export class RoomBlocksService {
               ],
             },
           },
-          { address: likeQr },
+          { addressLine1: likeQr },
+          { addressLine2: likeQr },
+          { city: likeQr },
+          { state: likeQr },
+          { country: likeQr },
           { description: likeQr },
         ],
       };
