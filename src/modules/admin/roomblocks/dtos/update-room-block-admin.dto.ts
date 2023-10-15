@@ -1,5 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Validate,
+  ValidateIf,
+} from 'class-validator';
+import { CustomPointValidation } from 'src/common/customValidation/CustomPointValidation';
 import { Point, PointType } from 'src/entities';
 
 export class UpdateRoomBlockAdminDTO {
@@ -25,6 +32,7 @@ export class UpdateRoomBlockAdminDTO {
 
   @IsNotEmpty()
   @Type(() => Point)
+  @Validate(CustomPointValidation)
   coordinate!: Point;
 
   @IsString()

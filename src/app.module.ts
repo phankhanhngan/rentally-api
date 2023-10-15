@@ -15,6 +15,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
 import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
 import { RoomsModule } from './modules/admin/rooms/rooms.module';
+import { UtilitiesModule } from './modules/utilities/utilities.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { RoomsModule } from './modules/admin/rooms/rooms.module';
     RoomBlocksModule,
     AWSModule,
     RoomsModule,
+    UtilitiesModule,
   ],
 
   controllers: [AppController],
