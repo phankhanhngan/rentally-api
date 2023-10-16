@@ -76,4 +76,53 @@ export class AWSService {
       throw err;
     }
   }
+
+  async bulkPutObjects(
+    folderPath: string,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ): Promise<string[]> {
+    try {
+      if (!Array.isArray(files)) {
+        files = [].concat(files);
+      }
+      const commands = files.map((file) => {
+        file.originalname = file.originalname.replace(/ /g, '');
+        return new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: `${folderPath}/${file.originalname}`,
+          ContentType: file.mimetype,
+          Body: file.buffer,
+        });
+      });
+
+      await Promise.all(commands.map((cmd) => this.s3Client.send(cmd)));
+
+      return files.map((file) =>
+        this.getObjectUrl(folderPath, file.originalname),
+      );
+    } catch (err) {
+      this.logger.error('Calling bulkPutObject()', err, AWSService.name);
+      throw err;
+    }
+  }
+
+  async bulkDeleteObjects(filePaths: Array<string>) {
+    try {
+      if (filePaths.length > 0) {
+        const params = {
+          Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),
+          Delete: {
+            Objects: filePaths.map((path) => ({
+              Key: this.extractObjectNameFromUrl(path),
+            })),
+          },
+        };
+
+        await this.s3Client.send(new DeleteObjectsCommand(params));
+      }
+    } catch (err) {
+      this.logger.error('Calling deleteObject()', err, AWSService.name);
+      throw err;
+    }
+  }
 }

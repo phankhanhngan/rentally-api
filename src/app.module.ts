@@ -13,8 +13,8 @@ import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
-import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
-import { RoomsModule } from './modules/admin/rooms/rooms.module';
+import { ModRoomBlocksModule } from './modules/mod/roomblocks/roomblocks.module';
+import { ModRoomsModule } from './modules/mod/rooms/room.module';
 
 @Module({
   imports: [
@@ -58,12 +58,14 @@ import { RoomsModule } from './modules/admin/rooms/rooms.module';
     }),
     AuthModule,
     UsersModule,
-    RoomBlocksModule,
     AWSModule,
-    RoomsModule,
+    ModRoomBlocksModule,
+    ModRoomsModule
   ],
 
-  controllers: [AppController],
+  controllers: [
+    AppController,
+  ],
   providers: [
     AppService,
     {
