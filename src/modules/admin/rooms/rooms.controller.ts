@@ -39,6 +39,7 @@ export class RoomsController {
     roomDTO: AddRoomAdminDTO,
   ) {
     try {
+      aw
       res.status(200).json({
         status: 'success',
         message: 'Get room blocks successfully',

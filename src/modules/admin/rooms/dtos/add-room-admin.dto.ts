@@ -3,6 +3,7 @@ import {
   IsDecimal,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsString,
   ValidateIf,
 } from 'class-validator';
@@ -15,7 +16,7 @@ export class AddRoomAdminDTO {
 
   roomName?: string;
 
-  @IsDecimal()
+  @IsNumber()
   @IsNotEmpty()
   area!: number;
 
