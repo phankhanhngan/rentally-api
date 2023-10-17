@@ -21,6 +21,8 @@ import { RoomsService } from './rooms.service';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
 import { UpdateRoomBlockAdminDTO } from '../roomblocks/dtos/update-room-block-admin.dto';
+import { AddRoomAdminDTO } from './dtos/add-room-admin.dto';
+import { Request, Response } from 'express';
 @UseGuards(JwtAuthGuard)
 @Controller('admin/rooms')
 export class RoomsController {
@@ -34,9 +36,17 @@ export class RoomsController {
     @Req() req: Request,
     @Res() res: Response,
     @Body(new ValidationPipe({ transform: true }))
-    updateRoomBlockDto: UpdateRoomBlockAdminDTO,
+    roomDTO: AddRoomAdminDTO,
   ) {
     try {
+      
+      res.status(200).json({
+        status: 'success',
+        message: 'Get room blocks successfully',
+        data: {
+          room: roomDTO,
+        },
+      });
     } catch (error) {
       this.logger.error('Calling addRoom()', error, RoomsController.name);
       throw error;

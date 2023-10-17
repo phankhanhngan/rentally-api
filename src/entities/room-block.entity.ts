@@ -1,9 +1,15 @@
 import { Entity, Type, Property, ManyToOne } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { User } from './user.entity';
+import { IsIn, IsInt, IsNotEmpty } from 'class-validator';
 
 export class Point {
-  constructor(public latitude: number, public longitude: number) {}
+  latitude: number;
+  longitude: number;
+  constructor(latitude: number, longitude: number) {
+    this.latitude = latitude;
+    this.longitude = longitude;
+  }
 }
 
 export class PointType extends Type<Point | undefined, string | undefined> {

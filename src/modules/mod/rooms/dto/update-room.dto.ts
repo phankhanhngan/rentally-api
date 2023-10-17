@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsInt,
@@ -14,7 +15,7 @@ export class UpdateRoomModDTO {
   
   @ValidateIf((obj, value) => value)
   @IsString()
-  area?: string;
+  area?: number;
   
   @ValidateIf((obj, value) => value)
   @IsNumber({}, { message: 'price must be a number' })
@@ -25,7 +26,9 @@ export class UpdateRoomModDTO {
   depositAmount?: bigint;
 
   @ValidateIf((obj, value) => value)
-  files?: Express.Multer.File[];
+  @IsArray()
+  @IsString({each: true})
+  files: string[];
 
   @ValidateIf((obj, value) => value)
   @IsArray()

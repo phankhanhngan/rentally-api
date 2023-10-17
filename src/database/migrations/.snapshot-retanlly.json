@@ -423,12 +423,14 @@
         },
         "area": {
           "name": "area",
-          "type": "varchar(255)",
+          "type": "numeric(10,0)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "string"
+          "precision": 10,
+          "scale": 0,
+          "mappedType": "decimal"
         },
         "price": {
           "name": "price",

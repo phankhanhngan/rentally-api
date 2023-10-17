@@ -11,7 +11,7 @@ import {
   Query,
   Req,
   Res,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
   ValidationPipe,
@@ -35,19 +35,39 @@ export class ModRoomsController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly modRoomsService: ModRoomsService,
   ) {}
+
+  @UseGuards(RoleAuthGuard([Role.MOD]))
+  @Post('upload')
+  @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
+  async upload(
+    @Res() res: Response,
+    @UploadedFiles()
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ) {
+    try {
+      const urls = await this.modRoomsService.upload(files);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Upload images successfully',
+        data: urls
+      });
+    } catch (error) {
+      this.logger.error('Calling upload()', error, ModRoomsController.name);
+      throw error;
+    }
+  }
+
+
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Post()
-  @UseInterceptors(FilesInterceptor('files', 5, fileFilter))
   async addRoom(
     @Req() req,
     @Res() res: Response,
-    @Body(new ValidationPipe({ transform: true }))
+    @Body(new ValidationPipe())
     addRoomModDto: AddRoomModDTO,
-    @UploadedFile()
-    files: Express.Multer.File[] | Express.Multer.File[],
   ) {
     try {
-      await this.modRoomsService.addRooms(addRoomModDto, req.user.id, files);
+      await this.modRoomsService.addRooms(addRoomModDto, req.user.id);
       return res.status(200).json({
         status: 'success',
         message: 'Create rooms successfully',
@@ -60,18 +80,15 @@ export class ModRoomsController {
 
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Put('/:id')
-  @UseInterceptors(FilesInterceptor('files', 5, fileFilter))
   async updateRoom(
     @Req() req,
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe({transform: true}))
     updateRoomModDto: UpdateRoomModDTO,
-    @UploadedFile()
-    files: Express.Multer.File[] | Express.Multer.File[],
   ) {
     try {
-      await this.modRoomsService.updateRoom(id, req.user.id, updateRoomModDto, files)
+      await this.modRoomsService.updateRoom(id, req.user.id, updateRoomModDto)
       return res.status(200).json({
         status: 'success',
         message: 'Create rooms successfully',
@@ -138,6 +155,11 @@ export class ModRoomsController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
+      await this.modRoomsService.deleteRoomById(id);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Delete room successfully',
+      });
     } catch (error) {
       this.logger.error(
         'Calling deleteRoomById()',

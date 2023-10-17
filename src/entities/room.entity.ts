@@ -14,8 +14,8 @@ export class Room extends Base {
   @Property({ nullable: false })
   roomName!: string;
 
-  @Property({ nullable: false })
-  area!: string;
+  @Property({ nullable: false, type: 'decimal' })
+  area!: number;
 
   @Property({ nullable: false })
   price!: bigint;

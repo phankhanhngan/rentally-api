@@ -1,21 +1,32 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import {
+  IsDecimal,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
 import { Point } from 'src/entities';
 
-export class AddRoomBlockAdminDTO {
+export class AddRoomAdminDTO {
   @IsInt()
   @IsNotEmpty()
   roomBlockId: number;
 
-  @IsNotEmpty()
-  @IsString()
-  address!: string;
+  roomName?: string;
 
+  @IsNumber()
   @IsNotEmpty()
-  @Type(() => Point)
-  coordinate!: Point;
+  area!: number;
 
-  @IsString()
-  @ValidateIf((obj, value) => value)
-  description?: string;
+  @IsInt()
+  @IsNotEmpty()
+  price!: bigint;
+
+  @IsInt()
+  @IsNotEmpty()
+  depositAmount?: bigint;
+
+  utilities: number[];
 }

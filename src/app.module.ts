@@ -15,6 +15,8 @@ import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
 import { ModRoomBlocksModule } from './modules/mod/roomblocks/roomblocks.module';
 import { ModRoomsModule } from './modules/mod/rooms/room.module';
+import { RoomsModule } from './modules/admin/rooms/rooms.module';
+import { UtilitiesModule } from './modules/utilities/utilities.module';
 
 @Module({
   imports: [
@@ -60,7 +62,9 @@ import { ModRoomsModule } from './modules/mod/rooms/room.module';
     UsersModule,
     AWSModule,
     ModRoomBlocksModule,
-    ModRoomsModule
+    ModRoomsModule,
+    RoomsModule,
+    UtilitiesModule,
   ],
 
   controllers: [

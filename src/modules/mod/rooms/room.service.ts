@@ -13,10 +13,13 @@ import { AddRoomModDTO } from './dto/add-rooms.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ViewRoomDTO } from './dto/view-room.dto';
 import { UpdateRoomModDTO } from './dto/update-room.dto';
+import { ro } from '@faker-js/faker';
+import { RoomsService } from 'src/modules/admin/rooms/rooms.service';
+import { file } from 'googleapis/build/src/apis/file';
+import { AWSService } from 'src/modules/aws/aws.service';
 
 @Injectable()
 export class ModRoomsService {
-  awsService: any;
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @InjectRepository(Utility)
@@ -26,12 +29,29 @@ export class ModRoomsService {
     @InjectRepository(Room)
     private readonly roomRepository: EntityRepository<Room>,
     private readonly em: EntityManager,
+    private readonly awsService: AWSService,
   ) {}
+
+  async upload(files: Array<Express.Multer.File> | Express.Multer.File) {
+    try{
+      const currentDate = new Date();
+      const timestamp = currentDate.getTime();
+
+      const urlImages: string[] = await this.awsService.bulkPutObjects(
+        `RoomImages/${timestamp}`,
+        files,
+      );
+
+      return urlImages;
+    } catch(error) {
+      this.logger.error('Calling upload()', error, RoomsService.name);
+      throw error;
+    }
+  }
 
   async addRooms(
     addRoomDTO: AddRoomModDTO,
     idUser: number,
-    files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
       const roomBlockEntity: Loaded<RoomBlock> =
@@ -81,25 +101,15 @@ export class ModRoomsService {
           utilities.push({ name, note });
         }
         if (!room.roomName) {
-          if (indexRoom < 10) room.roomName = `R00${indexRoom}`;
-          else room.roomName = `R0${indexRoom}`;
+          if (indexRoom < 10) room.roomName = `R00${indexRoom+1}`;
+          else room.roomName = `R0${indexRoom+1}`;
         }
         const roomEntity = await plainToInstance(Room, room);
         roomEntity.utilities = await JSON.stringify(utilities);
         roomEntity.roomblock = roomBlockEntity;
         roomEntity.created_id = idUser;
         roomEntity.updated_id = idUser;
-
-        // if (files) {
-        //   const currentDate = new Date();
-        //   const timestamp = currentDate.getTime();
-        //   const urlImages: string[] = await this.awsService.bulkPutObject(
-        //     `RoomImages/${timestamp}`,
-        //     files,
-        //   );
-        // }
-
-        roomEntity.images = "";        
+        roomEntity.images = JSON.stringify(room.images);
         await this.em.persistAndFlush(roomEntity);
       }
     } catch (error) {
@@ -111,8 +121,7 @@ export class ModRoomsService {
   async updateRoom(
     idRoom: number,
     idlogin: number,
-    updateRoomModDto: UpdateRoomModDTO,
-    files: Express.Multer.File[] | Express.Multer.File[],
+    updateRoomModDto: UpdateRoomModDTO
   ) {
     try {
       const roomEntity: Loaded<Room> = await this.roomRepository.findOne({
@@ -152,10 +161,6 @@ export class ModRoomsService {
         roomEntity.utilities = JSON.stringify(utilities);
       }
 
-      if (updateRoomModDto.files) {
-        roomEntity.images = JSON.stringify(updateRoomModDto.files);
-      }
-
       if (updateRoomModDto.idRoomBlock) {
         const roomBlockEntity: Loaded<RoomBlock> =
           await this.roomBlockRepository.findOne({
@@ -170,18 +175,8 @@ export class ModRoomsService {
         roomEntity.roomblock = roomBlockEntity;
       }
 
-      if (files) {
-        console.log(JSON.parse(roomEntity.images));
-        
-        await this.awsService.bulkDeleteObjects(JSON.parse(roomEntity.images));
-
-        const currentDate = new Date();
-        const timestamp = currentDate.getTime();
-        const urlImages: string[] = await this.awsService.bulkPutObject(
-          `RoomImages/${timestamp}`,
-          files,
-        );
-        roomEntity.images = JSON.stringify(urlImages);
+      if(updateRoomModDto.files) {
+        roomEntity.images = JSON.stringify(updateRoomModDto.files);
       }
 
       wrap(roomEntity).assign(
@@ -226,4 +221,18 @@ export class ModRoomsService {
       throw error;
     }
   }
+
+  async deleteRoomById(id: number) {
+    try {
+      const roomEntity = await this.roomRepository.findOne({ id });
+      if (!roomEntity) {
+        throw new BadRequestException(`Can not find room with id=[${id}]`);
+      }
+      await this.em.removeAndFlush(this.roomRepository.getReference(id));
+    } catch (error) {
+      this.logger.error('Calling deleteRoomById()', error, ModRoomsService.name);
+      throw error;
+    }
+  }
+
 }

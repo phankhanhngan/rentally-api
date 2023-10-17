@@ -1,6 +1,7 @@
+import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, ValidateIf } from 'class-validator';
 
-export class RoomDTO {
+export class AddRoomDTO {
   @ValidateIf((obj, value) => value)
   @IsString({message: "roomName must be a string"})
   roomName: string;
@@ -17,7 +18,11 @@ export class RoomDTO {
   @IsNumber({}, { message: 'Deposit Amount must be a number' })
   depositAmount!: number;
 
-  files: Express.Multer.File[];
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({each: true})
+  // @Transform(({ value }) => JSON.stringify(value || '[]'), { toClassOnly: true, toPlainOnly: true })
+  images: string;
 
   @ValidateIf((obj, value) => value)
   @IsArray()
