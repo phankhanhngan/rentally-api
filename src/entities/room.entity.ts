@@ -1,6 +1,7 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { RoomBlock } from './room-block.entity';
+import { RoomStatus } from '../common/enum/common.enum';;
 
 @Entity({ tableName: 'rooms' })
 export class Room extends Base {
@@ -30,5 +31,5 @@ export class Room extends Base {
   utilities: string;
 
   @Property({ nullable: true, type: 'text' })
-  status: string;
+  status: RoomStatus;
 }

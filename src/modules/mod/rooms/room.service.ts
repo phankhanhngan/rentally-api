@@ -13,10 +13,9 @@ import { AddRoomModDTO } from './dto/add-rooms.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ViewRoomDTO } from './dto/view-room.dto';
 import { UpdateRoomModDTO } from './dto/update-room.dto';
-import { ro } from '@faker-js/faker';
 import { RoomsService } from 'src/modules/admin/rooms/rooms.service';
-import { file } from 'googleapis/build/src/apis/file';
 import { AWSService } from 'src/modules/aws/aws.service';
+import { RoomStatus } from 'src/common/enum/common.enum';
 
 @Injectable()
 export class ModRoomsService {
@@ -32,27 +31,28 @@ export class ModRoomsService {
     private readonly awsService: AWSService,
   ) {}
 
-  async upload(files: Array<Express.Multer.File> | Express.Multer.File) {
-    try{
-      const currentDate = new Date();
-      const timestamp = currentDate.getTime();
-
+  async upload(
+    files: Array<Express.Multer.File> | Express.Multer.File,
+    id: number = 0
+  ) {
+    try {
+      let folder: number = id;
+      if(id === 0) {
+        const currentDate = new Date();
+        folder = currentDate.getTime();
+      }  
       const urlImages: string[] = await this.awsService.bulkPutObjects(
-        `RoomImages/${timestamp}`,
+        `RoomImages/${folder}`,
         files,
       );
-
       return urlImages;
-    } catch(error) {
+    } catch (error) {
       this.logger.error('Calling upload()', error, RoomsService.name);
       throw error;
     }
   }
 
-  async addRooms(
-    addRoomDTO: AddRoomModDTO,
-    idUser: number,
-  ) {
+  async addRooms(addRoomDTO: AddRoomModDTO, idUser: number) {
     try {
       const roomBlockEntity: Loaded<RoomBlock> =
         await this.roomBlockRepository.findOne({
@@ -64,12 +64,14 @@ export class ModRoomsService {
         );
       }
       // Kiem tra loi khong tim thay utility
+      const setIdRoom = new Set();
       for (
         let indexRoom = 0;
         indexRoom < addRoomDTO.rooms.length;
         indexRoom++
       ) {
         const room = addRoomDTO.rooms[indexRoom];
+        setIdRoom.add(Number(room.images[0].split('/')[4]));
         for (let i = 0; i < room.utilities.length; i++) {
           const utilityId = room.utilities[i];
           const utility = await this.utilityRepository.findOne({
@@ -81,6 +83,11 @@ export class ModRoomsService {
             );
           }
         }
+      }
+      if (setIdRoom.size != addRoomDTO.rooms.length) {
+        throw new BadRequestException(
+          'The two rooms cannot have the same photo link',
+        );
       }
 
       for (
@@ -101,8 +108,8 @@ export class ModRoomsService {
           utilities.push({ name, note });
         }
         if (!room.roomName) {
-          if (indexRoom < 10) room.roomName = `R00${indexRoom+1}`;
-          else room.roomName = `R0${indexRoom+1}`;
+          if (indexRoom < 10) room.roomName = `R00${indexRoom + 1}`;
+          else room.roomName = `R0${indexRoom + 1}`;
         }
         const roomEntity = await plainToInstance(Room, room);
         roomEntity.utilities = await JSON.stringify(utilities);
@@ -110,6 +117,9 @@ export class ModRoomsService {
         roomEntity.created_id = idUser;
         roomEntity.updated_id = idUser;
         roomEntity.images = JSON.stringify(room.images);
+        roomEntity.status = RoomStatus.EMPTY;
+        roomEntity.id = Number(room.images[0].split('/')[4]);
+
         await this.em.persistAndFlush(roomEntity);
       }
     } catch (error) {
@@ -121,7 +131,7 @@ export class ModRoomsService {
   async updateRoom(
     idRoom: number,
     idlogin: number,
-    updateRoomModDto: UpdateRoomModDTO
+    updateRoomModDto: UpdateRoomModDTO,
   ) {
     try {
       const roomEntity: Loaded<Room> = await this.roomRepository.findOne({
@@ -175,7 +185,10 @@ export class ModRoomsService {
         roomEntity.roomblock = roomBlockEntity;
       }
 
-      if(updateRoomModDto.files) {
+      if (updateRoomModDto.files) {        
+        const urls = JSON.parse(roomEntity.images);
+        await this.awsService.bulkDeleteObjects(urls);
+
         roomEntity.images = JSON.stringify(updateRoomModDto.files);
       }
 
@@ -225,14 +238,21 @@ export class ModRoomsService {
   async deleteRoomById(id: number) {
     try {
       const roomEntity = await this.roomRepository.findOne({ id });
+
+      const urls = JSON.parse(roomEntity.images);
+      await this.awsService.bulkDeleteObjects(urls);
+
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
       }
       await this.em.removeAndFlush(this.roomRepository.getReference(id));
     } catch (error) {
-      this.logger.error('Calling deleteRoomById()', error, ModRoomsService.name);
+      this.logger.error(
+        'Calling deleteRoomById()',
+        error,
+        ModRoomsService.name,
+      );
       throw error;
     }
   }
-
 }

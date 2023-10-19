@@ -14,7 +14,7 @@ export class UpdateRoomModDTO {
   roomName?: string;
   
   @ValidateIf((obj, value) => value)
-  @IsString()
+  @IsNumber()
   area?: number;
   
   @ValidateIf((obj, value) => value)

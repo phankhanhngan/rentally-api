@@ -14,10 +14,11 @@ import {
 } from '@nestjs/common';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { User, RoomBlock } from 'src/entities';
+import { User, RoomBlock, Room } from 'src/entities';
 import { AddRoomBlockModDTO } from './dtos/add-room-block.dto';
 import { UpdateRoomBlockModDTO } from './dtos/update-room-block-admin.dto';
 import { RoomBlockModDTO } from './dtos/room-block.dto';
+import { RoomStatus } from 'src/common/enum/common.enum';
 
 @Injectable()
 export class ModRoomBlocksService {
@@ -27,6 +28,8 @@ export class ModRoomBlocksService {
     private readonly userRepository: EntityRepository<User>,
     @InjectRepository(RoomBlock)
     private readonly roomBlockRepository: EntityRepository<RoomBlock>,
+    @InjectRepository(Room)
+    private readonly roomRepository: EntityRepository<Room>,
     private readonly em: EntityManager,
   ) {}
 
@@ -110,6 +113,14 @@ export class ModRoomBlocksService {
       }
       const roomBlockDto = plainToInstance(RoomBlockModDTO, roomBlockEntity);
 
+      roomBlockDto.quantityRooms = await this.roomRepository.count({
+        roomblock: { id: roomBlockDto.id },
+      });
+      roomBlockDto.emptyRooms = await this.roomRepository.count({
+        roomblock: { id: roomBlockDto.id },
+        status: RoomStatus.EMPTY,
+      });
+
       return roomBlockDto;
     } catch (error) {
       this.logger.error(
@@ -146,7 +157,7 @@ export class ModRoomBlocksService {
       };
       const roomBlockEntityList = await this.roomBlockRepository.find(
         {
-          $and: [queryObj, { landlord: {id: idUser} }],
+          $and: [queryObj, { landlord: { id: idUser } }],
         },
         {
           populate: ['landlord'],
@@ -155,6 +166,16 @@ export class ModRoomBlocksService {
       );
 
       const dtos = plainToClass(RoomBlockModDTO, roomBlockEntityList);
+
+      for(var i=0; i<dtos.length; i++) {
+        dtos[i].quantityRooms = await this.roomRepository.count({
+          roomblock: { id: dtos[i].id },
+        });
+        dtos[i].emptyRooms = await this.roomRepository.count({
+          roomblock: { id: dtos[i].id },
+          status: RoomStatus.EMPTY,
+        });
+      }
 
       return dtos;
     } catch (error) {

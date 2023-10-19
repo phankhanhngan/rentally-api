@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, ValidateIf } from 'class-validator';
 
 export class AddRoomDTO {
@@ -21,8 +20,7 @@ export class AddRoomDTO {
   @IsNotEmpty()
   @IsArray()
   @IsString({each: true})
-  // @Transform(({ value }) => JSON.stringify(value || '[]'), { toClassOnly: true, toPlainOnly: true })
-  images: string;
+  images: string[];
 
   @ValidateIf((obj, value) => value)
   @IsArray()

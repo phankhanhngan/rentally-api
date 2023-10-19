@@ -19,4 +19,6 @@ export class RoomBlockModDTO {
   coordinate!: Point;
   @Expose()
   description!: string;
+  quantityRooms!: number;
+  emptyRooms!: number;
 }
