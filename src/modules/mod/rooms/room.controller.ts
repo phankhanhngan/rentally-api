@@ -61,7 +61,7 @@ export class ModRoomsController {
   @Post('upload/:id')
   @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
   async updateImageRoom(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Res() res: Response,
     @UploadedFiles()
     files: Array<Express.Multer.File> | Express.Multer.File,
@@ -106,7 +106,7 @@ export class ModRoomsController {
   async updateRoom(
     @Req() req,
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body(new ValidationPipe({transform: true}))
     updateRoomModDto: UpdateRoomModDTO,
   ) {
@@ -151,7 +151,7 @@ export class ModRoomsController {
   async findRoomById(
     @Req() req: Request,
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
   ) {
     try {
       const roomDto = await this.modRoomsService.findRoomById(id);
@@ -175,7 +175,7 @@ export class ModRoomsController {
   async deleteRoomById(
     @Req() req: Request,
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
   ) {
     try {
       await this.modRoomsService.deleteRoomById(id);

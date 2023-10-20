@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsInt,
@@ -33,7 +32,7 @@ export class UpdateRoomModDTO {
   @ValidateIf((obj, value) => value)
   @IsArray()
   @IsInt({each: true})
-  utilitiesArray?: number[];
+  utility?: number[];
 
   @ValidateIf((obj, value) => value)
   @IsNumber()

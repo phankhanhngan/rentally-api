@@ -1,10 +1,25 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
-import { Base } from './base.entity';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { RoomBlock } from './room-block.entity';
-import { RoomStatus } from '../common/enum/common.enum';;
+import { RoomStatus } from '../common/enum/common.enum';
 
 @Entity({ tableName: 'rooms' })
-export class Room extends Base {
+export class Room {
+  @PrimaryKey()
+  @Property({ type: 'uuid', nullable: false })
+  id: string;
+
+  @Property({ nullable: false })
+  created_at: Date = new Date();
+
+  @Property({ nullable: false })
+  updated_at: Date = new Date();
+
+  @Property({ nullable: false })
+  created_id: number;
+
+  @Property({ nullable: false })
+  updated_id: number;
+
   @ManyToOne({
     entity: () => RoomBlock,
     onDelete: 'cascade',

@@ -48,7 +48,8 @@
     "hbs": "^4.2.0",
     "nodemailer": "^6.9.5",
     "passport": "^0.6.0",
-    "passport-jwt": "^4.0.1"
+    "passport-jwt": "^4.0.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.1.0",

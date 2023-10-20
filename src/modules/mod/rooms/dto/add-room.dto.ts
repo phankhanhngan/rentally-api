@@ -25,5 +25,5 @@ export class AddRoomDTO {
   @ValidateIf((obj, value) => value)
   @IsArray()
   @IsInt({each: true})
-  utilities?: number[];
+  utility?: number[];
 }

@@ -16,6 +16,7 @@ import { UpdateRoomModDTO } from './dto/update-room.dto';
 import { RoomsService } from 'src/modules/admin/rooms/rooms.service';
 import { AWSService } from 'src/modules/aws/aws.service';
 import { RoomStatus } from 'src/common/enum/common.enum';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ModRoomsService {
@@ -33,14 +34,20 @@ export class ModRoomsService {
 
   async upload(
     files: Array<Express.Multer.File> | Express.Multer.File,
-    id: number = 0
+    id: string = null
   ) {
     try {
-      let folder: number = id;
-      if(id === 0) {
-        const currentDate = new Date();
-        folder = currentDate.getTime();
-      }  
+      let folder: string = id;
+      if(!id) {
+        folder = uuidv4();
+      } else {
+        const roomEntity = await this.roomRepository.findOne({ id });
+
+        if (!roomEntity) {
+          throw new BadRequestException(`Can not find room with id=[${id}]`);
+        }
+      }
+
       const urlImages: string[] = await this.awsService.bulkPutObjects(
         `RoomImages/${folder}`,
         files,
@@ -71,9 +78,9 @@ export class ModRoomsService {
         indexRoom++
       ) {
         const room = addRoomDTO.rooms[indexRoom];
-        setIdRoom.add(Number(room.images[0].split('/')[4]));
-        for (let i = 0; i < room.utilities.length; i++) {
-          const utilityId = room.utilities[i];
+        setIdRoom.add(room.images[0].split('/')[4]);
+        for (let i = 0; i < room.utility.length; i++) {
+          const utilityId = room.utility[i];
           const utility = await this.utilityRepository.findOne({
             id: utilityId,
           });
@@ -97,8 +104,8 @@ export class ModRoomsService {
       ) {
         const utilities = [];
         const room = addRoomDTO.rooms[indexRoom];
-        for (let i = 0; i < room.utilities.length; i++) {
-          const utilityId = room.utilities[i];
+        for (let i = 0; i < room.utility.length; i++) {
+          const utilityId = room.utility[i];
           const utility = await this.utilityRepository.findOne(
             { id: utilityId },
             { fields: ['name', 'note'] },
@@ -118,7 +125,7 @@ export class ModRoomsService {
         roomEntity.updated_id = idUser;
         roomEntity.images = JSON.stringify(room.images);
         roomEntity.status = RoomStatus.EMPTY;
-        roomEntity.id = Number(room.images[0].split('/')[4]);
+        roomEntity.id = room.images[0].split('/')[4];
 
         await this.em.persistAndFlush(roomEntity);
       }
@@ -129,7 +136,7 @@ export class ModRoomsService {
   }
 
   async updateRoom(
-    idRoom: number,
+    idRoom: string,
     idlogin: number,
     updateRoomModDto: UpdateRoomModDTO,
   ) {
@@ -142,9 +149,9 @@ export class ModRoomsService {
         throw new BadRequestException(`Can not find room with id: ${idRoom}`);
       }
 
-      if (updateRoomModDto.utilitiesArray) {
-        for (let i = 0; i < updateRoomModDto.utilitiesArray.length; i++) {
-          const utilityId = updateRoomModDto.utilitiesArray[i];
+      if (updateRoomModDto.utility) {
+        for (let i = 0; i < updateRoomModDto.utility.length; i++) {
+          const utilityId = updateRoomModDto.utility[i];
           const utility = await this.utilityRepository.findOne({
             id: utilityId,
           });
@@ -156,10 +163,10 @@ export class ModRoomsService {
         }
       }
 
-      if (updateRoomModDto.utilitiesArray) {
+      if (updateRoomModDto.utility) {
         const utilities = [];
-        for (let i = 0; i < updateRoomModDto.utilitiesArray.length; i++) {
-          const utilityId = updateRoomModDto.utilitiesArray[i];
+        for (let i = 0; i < updateRoomModDto.utility.length; i++) {
+          const utilityId = updateRoomModDto.utility[i];
           const utility = await this.utilityRepository.findOne(
             { id: utilityId },
             { fields: ['name', 'note'] },
@@ -208,7 +215,7 @@ export class ModRoomsService {
     }
   }
 
-  async findRoomById(id: number) {
+  async findRoomById(id: string) {
     try {
       const roomEntity = await this.roomRepository.findOne({ id });
       if (!roomEntity) {
@@ -235,16 +242,15 @@ export class ModRoomsService {
     }
   }
 
-  async deleteRoomById(id: number) {
+  async deleteRoomById(id: string) {
     try {
       const roomEntity = await this.roomRepository.findOne({ id });
-
-      const urls = JSON.parse(roomEntity.images);
-      await this.awsService.bulkDeleteObjects(urls);
 
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
       }
+      const urls = JSON.parse(roomEntity.images);
+      await this.awsService.bulkDeleteObjects(urls);
       await this.em.removeAndFlush(this.roomRepository.getReference(id));
     } catch (error) {
       this.logger.error(
