@@ -78,7 +78,16 @@ export class ModRoomsService {
         indexRoom++
       ) {
         const room = addRoomDTO.rooms[indexRoom];
-        setIdRoom.add(room.images[0].split('/')[4]);
+
+        const roomEntityById = await this.roomRepository.findOne({id: room.files[0].split('/')[4]});
+        
+        if(roomEntityById) {
+          throw new BadRequestException(
+            'The photo link already exists in another room',
+          );
+        }
+
+        setIdRoom.add(room.files[0].split('/')[4]);
         for (let i = 0; i < room.utility.length; i++) {
           const utilityId = room.utility[i];
           const utility = await this.utilityRepository.findOne({
@@ -123,9 +132,9 @@ export class ModRoomsService {
         roomEntity.roomblock = roomBlockEntity;
         roomEntity.created_id = idUser;
         roomEntity.updated_id = idUser;
-        roomEntity.images = JSON.stringify(room.images);
+        roomEntity.images = JSON.stringify(room.files);
         roomEntity.status = RoomStatus.EMPTY;
-        roomEntity.id = room.images[0].split('/')[4];
+        roomEntity.id = room.files[0].split('/')[4];
 
         await this.em.persistAndFlush(roomEntity);
       }
@@ -192,7 +201,15 @@ export class ModRoomsService {
         roomEntity.roomblock = roomBlockEntity;
       }
 
-      if (updateRoomModDto.files) {        
+      if (updateRoomModDto.files) {       
+        const roomEntityById = await this.roomRepository.findOne({id: updateRoomModDto.files[0].split('/')[4]});
+        
+        if(roomEntityById && updateRoomModDto.files[0].split('/')[4] !== idRoom) {
+          throw new BadRequestException(
+            'The photo link already exists in another room',
+          );
+        }
+        
         const urls = JSON.parse(roomEntity.images);
         await this.awsService.bulkDeleteObjects(urls);
 

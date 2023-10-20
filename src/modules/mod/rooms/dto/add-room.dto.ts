@@ -20,7 +20,7 @@ export class AddRoomDTO {
   @IsNotEmpty()
   @IsArray()
   @IsString({each: true})
-  images: string[];
+  files: string[];
 
   @ValidateIf((obj, value) => value)
   @IsArray()

@@ -1,22 +1,10 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { RoomBlock } from './room-block.entity';
 import { RoomStatus } from '../common/enum/common.enum';
+import { BaseUUID } from './baseUUID.enity';
 
 @Entity({ tableName: 'rooms' })
-export class Room {
-  @PrimaryKey()
-  @Property({ type: 'uuid', nullable: false })
-  id: string;
-
-  @Property({ nullable: false })
-  created_at: Date = new Date();
-
-  @Property({ nullable: false })
-  updated_at: Date = new Date();
-
-  @Property({ nullable: false })
-  created_id: number;
-
+export class Room extends BaseUUID {
   @Property({ nullable: false })
   updated_id: number;
 
