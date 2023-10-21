@@ -34,11 +34,11 @@ export class ModRoomsService {
 
   async upload(
     files: Array<Express.Multer.File> | Express.Multer.File,
-    id: string = null
+    id: string = null,
   ) {
     try {
       let folder: string = id;
-      if(!id) {
+      if (!id) {
         folder = uuidv4();
       } else {
         const roomEntity = await this.roomRepository.findOne({ id });
@@ -79,9 +79,11 @@ export class ModRoomsService {
       ) {
         const room = addRoomDTO.rooms[indexRoom];
 
-        const roomEntityById = await this.roomRepository.findOne({id: room.files[0].split('/')[4]});
-        
-        if(roomEntityById) {
+        const roomEntityById = await this.roomRepository.findOne({
+          id: room.files[0].split('/')[4],
+        });
+
+        if (roomEntityById) {
           throw new BadRequestException(
             'The photo link already exists in another room',
           );
@@ -201,15 +203,20 @@ export class ModRoomsService {
         roomEntity.roomblock = roomBlockEntity;
       }
 
-      if (updateRoomModDto.files) {       
-        const roomEntityById = await this.roomRepository.findOne({id: updateRoomModDto.files[0].split('/')[4]});
-        
-        if(roomEntityById && updateRoomModDto.files[0].split('/')[4] !== idRoom) {
+      if (updateRoomModDto.files) {
+        const roomEntityById = await this.roomRepository.findOne({
+          id: updateRoomModDto.files[0].split('/')[4],
+        });
+
+        if (
+          roomEntityById &&
+          updateRoomModDto.files[0].split('/')[4] !== idRoom
+        ) {
           throw new BadRequestException(
             'The photo link already exists in another room',
           );
         }
-        
+
         const urls = JSON.parse(roomEntity.images);
         await this.awsService.bulkDeleteObjects(urls);
 

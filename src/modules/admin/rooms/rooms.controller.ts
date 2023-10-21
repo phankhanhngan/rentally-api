@@ -20,9 +20,9 @@ import { Logger } from 'winston';
 import { RoomsService } from './rooms.service';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
-import { UpdateRoomBlockAdminDTO } from '../roomblocks/dtos/update-room-block-admin.dto';
 import { AddRoomAdminDTO } from './dtos/add-room-admin.dto';
 import { Request, Response } from 'express';
+import { UpdateRoomAdminDTO } from './dtos/update-room-admin.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('admin/rooms')
 export class RoomsController {
@@ -33,18 +33,16 @@ export class RoomsController {
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Post()
   async addRoom(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
     @Body(new ValidationPipe({ transform: true }))
     roomDTO: AddRoomAdminDTO,
   ) {
     try {
+      await this.roomsService.addRoom(roomDTO, req.user);
       res.status(200).json({
         status: 'success',
-        message: 'Get room blocks successfully',
-        data: {
-          room: roomDTO,
-        },
+        message: 'Create room successfully',
       });
     } catch (error) {
       this.logger.error('Calling addRoom()', error, RoomsController.name);
@@ -55,13 +53,18 @@ export class RoomsController {
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Put('/:id')
   async updateRoom(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body(new ValidationPipe({ transform: true }))
-    updateRoomBlockDto: UpdateRoomBlockAdminDTO,
+    updateRoomDto: UpdateRoomAdminDTO,
   ) {
     try {
+      await this.roomsService.updateRoom(id, updateRoomDto, req.user);
+      res.status(200).json({
+        status: 'success',
+        message: 'Update room successfully',
+      });
     } catch (error) {
       this.logger.error('Calling updateRoom()', error, RoomsController.name);
       throw error;
@@ -70,12 +73,16 @@ export class RoomsController {
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get()
-  async findAllRoom(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Query('keyword') keyword: string,
-  ) {
+  async findAllRoom(@Req() req, @Res() res: Response) {
     try {
+      const rooms = await this.roomsService.findAllRoom();
+      res.status(200).json({
+        status: 'success',
+        message: 'Create rooms successfully',
+        data: {
+          rooms: rooms,
+        },
+      });
     } catch (error) {
       this.logger.error('Calling findAllRoom()', error, RoomsController.name);
       throw error;
@@ -85,11 +92,20 @@ export class RoomsController {
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get('/:id')
   async findRoomById(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
   ) {
     try {
+      const { room, roomBlockId } = await this.roomsService.findRoomById(id);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Create rooms successfully',
+        data: {
+          roomBlockId: roomBlockId,
+          room: room,
+        },
+      });
     } catch (error) {
       this.logger.error('Calling findRoomById()', error, RoomsController.name);
       throw error;
@@ -99,11 +115,16 @@ export class RoomsController {
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Delete('/:id')
   async deleteRoomById(
-    @Req() req: Request,
+    @Param('id') id: string,
+    @Req() req,
     @Res() res: Response,
-    @Param('id', ParseIntPipe) id: number,
   ) {
     try {
+      await this.roomsService.deleteRoomById(id);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Delete room successfully',
+      });
     } catch (error) {
       this.logger.error(
         'Calling deleteRoomById()',

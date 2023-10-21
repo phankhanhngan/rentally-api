@@ -5,7 +5,6 @@ import {
   Get,
   Inject,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -49,7 +48,7 @@ export class ModRoomsController {
       return res.status(200).json({
         status: 'success',
         message: 'Upload images successfully',
-        data: urls
+        data: urls,
       });
     } catch (error) {
       this.logger.error('Calling upload()', error, ModRoomsController.name);
@@ -71,15 +70,13 @@ export class ModRoomsController {
       return res.status(200).json({
         status: 'success',
         message: 'Upload images successfully',
-        data: urls
+        data: urls,
       });
     } catch (error) {
       this.logger.error('Calling upload()', error, ModRoomsController.name);
       throw error;
     }
   }
-
-
 
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Post()
@@ -107,7 +104,7 @@ export class ModRoomsController {
     @Req() req,
     @Res() res: Response,
     @Param('id') id: string,
-    @Body(new ValidationPipe({transform: true}))
+    @Body(new ValidationPipe({ transform: true }))
     updateRoomModDto: UpdateRoomModDTO,
   ) {
     try {

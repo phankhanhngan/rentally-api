@@ -25,7 +25,7 @@ import { Role } from 'src/common/enum/common.enum';
 import { UpdateRoomBlockAdminDTO } from './dtos/update-room-block-admin.dto';
 
 @UseGuards(JwtAuthGuard)
-@Controller('admin/room-blocks')
+@Controller('/admin/room-blocks')
 export class RoomBlocksController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

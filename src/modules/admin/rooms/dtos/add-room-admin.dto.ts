@@ -1,13 +1,4 @@
-import { Type } from 'class-transformer';
-import {
-  IsDecimal,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  ValidateIf,
-} from 'class-validator';
-import { Point } from 'src/entities';
+import { IsArray, IsInt, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class AddRoomAdminDTO {
   @IsInt()
@@ -28,5 +19,9 @@ export class AddRoomAdminDTO {
   @IsNotEmpty()
   depositAmount?: bigint;
 
+  @IsArray()
+  images: string[];
+
+  @IsArray()
   utilities: number[];
 }

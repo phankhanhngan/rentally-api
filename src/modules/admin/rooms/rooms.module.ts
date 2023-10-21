@@ -7,6 +7,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Room, RoomBlock, User } from 'src/entities';
 import { UsersModule } from 'src/modules/users/users.module';
 import { UsersService } from 'src/modules/users/users.service';
+import { Utility } from 'src/entities/utility.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersService } from 'src/modules/users/users.service';
     MikroOrmModule.forFeature([User]),
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RoomBlock]),
+    MikroOrmModule.forFeature([Utility]),
   ],
   controllers: [RoomsController],
   providers: [RoomsService, UsersService],
