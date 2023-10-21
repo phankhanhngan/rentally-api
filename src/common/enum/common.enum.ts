@@ -4,6 +4,11 @@ export enum Role {
   USER = 'USER',
 }
 
+export enum RoomStatus {
+  OCCUPIED = 'Occupied',
+  EMPTY = 'Empty',
+}
+
 export enum Constant {
   DEFAULT_PAGENO = 1,
   // DEFAULT_SORTFIELD = 'id',

@@ -1,9 +1,13 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
-import { Base } from './base.entity';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { RoomBlock } from './room-block.entity';
+import { RoomStatus } from '../common/enum/common.enum';
+import { BaseUUID } from './baseUUID.enity';
 
 @Entity({ tableName: 'rooms' })
-export class Room extends Base {
+export class Room extends BaseUUID {
+  @Property({ nullable: false })
+  updated_id: number;
+
   @ManyToOne({
     entity: () => RoomBlock,
     onDelete: 'cascade',
@@ -30,5 +34,5 @@ export class Room extends Base {
   utilities: string;
 
   @Property({ nullable: true, type: 'text' })
-  status: string;
+  status: RoomStatus;
 }

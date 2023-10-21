@@ -1,7 +1,6 @@
 import { Entity, Type, Property, ManyToOne } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { User } from './user.entity';
-import { IsIn, IsInt, IsNotEmpty } from 'class-validator';
 
 export class Point {
   latitude: number;
