@@ -12,11 +12,7 @@ import { CustomPointValidation } from '../../../../common/customValidation/Custo
 export class AddRoomBlockAdminDTO {
   @IsString()
   @ValidateIf((obj, value) => value)
-  addressLine1?: string;
-
-  @IsString()
-  @ValidateIf((obj, value) => value)
-  addressLine2?: string;
+  address?: string;
 
   @IsString()
   @ValidateIf((obj, value) => value)
@@ -24,7 +20,7 @@ export class AddRoomBlockAdminDTO {
 
   @IsString()
   @ValidateIf((obj, value) => value)
-  state?: string;
+  district?: string;
 
   @IsString()
   @ValidateIf((obj, value) => value)

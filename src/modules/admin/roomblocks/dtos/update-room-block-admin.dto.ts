@@ -7,16 +7,12 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { CustomPointValidation } from 'src/common/customValidation/CustomPointValidation';
-import { Point, PointType } from 'src/entities';
+import { Point } from 'src/entities';
 
 export class UpdateRoomBlockAdminDTO {
   @IsString()
   @ValidateIf((obj, value) => value)
-  addressLine1?: string;
-
-  @IsString()
-  @ValidateIf((obj, value) => value)
-  addressLine2?: string;
+  address?: string;
 
   @IsString()
   @ValidateIf((obj, value) => value)
@@ -24,7 +20,7 @@ export class UpdateRoomBlockAdminDTO {
 
   @IsString()
   @ValidateIf((obj, value) => value)
-  state?: string;
+  district?: string;
 
   @IsString()
   @ValidateIf((obj, value) => value)

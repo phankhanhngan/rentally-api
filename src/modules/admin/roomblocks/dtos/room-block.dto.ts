@@ -7,13 +7,11 @@ export class RoomBlockAdminDTO {
   @Expose()
   id!: number;
   @Expose()
-  addressLine1?: string;
-  @Expose()
-  addressLine2?: string;
+  address?: string;
   @Expose()
   city?: string;
   @Expose()
-  state?: string;
+  district?: string;
   @Expose()
   country?: string;
   @Expose()

@@ -243,17 +243,8 @@
           "nullable": false,
           "mappedType": "integer"
         },
-        "address_line1": {
-          "name": "address_line1",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "text"
-        },
-        "address_line2": {
-          "name": "address_line2",
+        "address": {
+          "name": "address",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,
@@ -270,8 +261,8 @@
           "nullable": true,
           "mappedType": "text"
         },
-        "state": {
-          "name": "state",
+        "district": {
+          "name": "district",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,

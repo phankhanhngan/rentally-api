@@ -131,9 +131,14 @@ export class RoomsService {
     }
   }
 
-  async findAllRoom() {
+  async findAllRoom(keyword: string) {
     try {
-      const roomsEntity = await this.em.find(Room, {});
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [{ roomName: likeQr }],
+      };
+      const roomsEntity = await this.em.find(Room, queryObj);
       const roomsDto = plainToInstance(ViewRoomDTO, roomsEntity);
       return roomsDto;
     } catch (error) {

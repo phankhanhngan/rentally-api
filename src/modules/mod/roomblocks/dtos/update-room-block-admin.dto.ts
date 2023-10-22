@@ -6,11 +6,7 @@ import { IsCoordinateFormat } from '../helpers/IsCoordinate.helper';
 export class UpdateRoomBlockModDTO {
   @IsString()
   @ValidateIf((obj, value) => value)
-  addressLine1?: string;
-
-  @IsString()
-  @ValidateIf((obj, value) => value)
-  addressLine2?: string;
+  address?: string;
 
   @IsString()
   @ValidateIf((obj, value) => value)
@@ -18,7 +14,7 @@ export class UpdateRoomBlockModDTO {
 
   @IsString()
   @ValidateIf((obj, value) => value)
-  state?: string;
+  district?: string;
 
   @IsString()
   @ValidateIf((obj, value) => value)
@@ -32,5 +28,4 @@ export class UpdateRoomBlockModDTO {
   @IsString()
   @ValidateIf((obj, value) => value)
   description?: string;
-
 }

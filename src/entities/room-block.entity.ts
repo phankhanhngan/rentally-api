@@ -13,9 +13,6 @@ export class Point {
 
 export class PointType extends Type<Point | undefined, string | undefined> {
   convertToDatabaseValue(value: Point | undefined): string | undefined {
-    // if (!value) {
-    //   return value;
-    // }
     return `point(${value.latitude} ${value.longitude})`;
   }
 
@@ -45,16 +42,13 @@ export class PointType extends Type<Point | undefined, string | undefined> {
 @Entity({ tableName: 'roomblocks' })
 export class RoomBlock extends Base {
   @Property({ type: 'text', nullable: true })
-  addressLine1?: string;
-
-  @Property({ type: 'text', nullable: true })
-  addressLine2?: string;
+  address?: string;
 
   @Property({ type: 'text', nullable: true })
   city?: string;
 
   @Property({ type: 'text', nullable: true })
-  state?: string;
+  district?: string;
 
   @Property({ type: 'text', nullable: true })
   country?: string;

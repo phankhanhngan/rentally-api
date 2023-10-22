@@ -73,9 +73,9 @@ export class RoomsController {
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get()
-  async findAllRoom(@Req() req, @Res() res: Response) {
+  async findAllRoom(@Query('keyword') keyword: string, @Res() res: Response) {
     try {
-      const rooms = await this.roomsService.findAllRoom();
+      const rooms = await this.roomsService.findAllRoom(keyword);
       res.status(200).json({
         status: 'success',
         message: 'Create rooms successfully',

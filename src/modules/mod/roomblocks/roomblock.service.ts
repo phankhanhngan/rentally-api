@@ -147,10 +147,9 @@ export class ModRoomBlocksService {
               ],
             },
           },
-          { addressLine1: likeQr },
-          { addressLine2: likeQr },
+          { address: likeQr },
           { city: likeQr },
-          { state: likeQr },
+          { district: likeQr },
           { country: likeQr },
           { description: likeQr },
         ],
@@ -167,7 +166,7 @@ export class ModRoomBlocksService {
 
       const dtos = plainToClass(RoomBlockModDTO, roomBlockEntityList);
 
-      for(var i=0; i<dtos.length; i++) {
+      for (let i = 0; i < dtos.length; i++) {
         dtos[i].quantityRooms = await this.roomRepository.count({
           roomblock: { id: dtos[i].id },
         });

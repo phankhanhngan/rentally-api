@@ -54,10 +54,9 @@ export class RoomBlocksService {
         );
       }
 
-      roomBlockEntity.addressLine1 = dto.addressLine1;
-      roomBlockEntity.addressLine2 = dto.addressLine2;
+      roomBlockEntity.address = dto.address;
       roomBlockEntity.city = dto.city;
-      roomBlockEntity.state = dto.state;
+      roomBlockEntity.district = dto.district;
       roomBlockEntity.country = dto.country;
       roomBlockEntity.coordinate = dto.coordinate;
       roomBlockEntity.description = dto.description;
@@ -140,10 +139,9 @@ export class RoomBlocksService {
               ],
             },
           },
-          { addressLine1: likeQr },
-          { addressLine2: likeQr },
+          { address: likeQr },
           { city: likeQr },
-          { state: likeQr },
+          { district: likeQr },
           { country: likeQr },
           { description: likeQr },
         ],

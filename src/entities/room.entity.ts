@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { RoomBlock } from './room-block.entity';
 import { RoomStatus } from '../common/enum/common.enum';
 import { BaseUUID } from './baseUUID.enity';
