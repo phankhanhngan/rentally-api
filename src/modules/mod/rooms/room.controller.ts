@@ -22,8 +22,6 @@ import { Role } from 'src/common/enum/common.enum';
 import { ModRoomsService } from './room.service';
 import { UpdateRoomModDTO } from './dto/update-room.dto';
 import { AddRoomModDTO } from './dto/add-rooms.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { fileFilter } from 'src/modules/users/helpers/file-filter.helper';
 
 @UseGuards(JwtAuthGuard)
 @Controller('mod/rooms')
