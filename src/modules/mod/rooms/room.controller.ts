@@ -10,9 +10,7 @@ import {
   Query,
   Req,
   Res,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -34,49 +32,6 @@ export class ModRoomsController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly modRoomsService: ModRoomsService,
   ) {}
-
-  @UseGuards(RoleAuthGuard([Role.MOD]))
-  @Post('upload')
-  @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
-  async addImageRoom(
-    @Res() res: Response,
-    @UploadedFiles()
-    files: Array<Express.Multer.File> | Express.Multer.File,
-  ) {
-    try {
-      const urls = await this.modRoomsService.upload(files);
-      return res.status(200).json({
-        status: 'success',
-        message: 'Upload images successfully',
-        data: urls,
-      });
-    } catch (error) {
-      this.logger.error('Calling upload()', error, ModRoomsController.name);
-      throw error;
-    }
-  }
-
-  @UseGuards(RoleAuthGuard([Role.MOD]))
-  @Post('upload/:id')
-  @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
-  async updateImageRoom(
-    @Param('id') id: string,
-    @Res() res: Response,
-    @UploadedFiles()
-    files: Array<Express.Multer.File> | Express.Multer.File,
-  ) {
-    try {
-      const urls = await this.modRoomsService.upload(files, id);
-      return res.status(200).json({
-        status: 'success',
-        message: 'Upload images successfully',
-        data: urls,
-      });
-    } catch (error) {
-      this.logger.error('Calling upload()', error, ModRoomsController.name);
-      throw error;
-    }
-  }
 
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Post()

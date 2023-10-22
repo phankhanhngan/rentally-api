@@ -13,10 +13,8 @@ import { AddRoomModDTO } from './dto/add-rooms.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ViewRoomDTO } from './dto/view-room.dto';
 import { UpdateRoomModDTO } from './dto/update-room.dto';
-import { RoomsService } from 'src/modules/admin/rooms/rooms.service';
 import { AWSService } from 'src/modules/aws/aws.service';
 import { RoomStatus } from 'src/common/enum/common.enum';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ModRoomsService {
@@ -31,33 +29,6 @@ export class ModRoomsService {
     private readonly em: EntityManager,
     private readonly awsService: AWSService,
   ) {}
-
-  async upload(
-    files: Array<Express.Multer.File> | Express.Multer.File,
-    id: string = null,
-  ) {
-    try {
-      let folder: string = id;
-      if (!id) {
-        folder = uuidv4();
-      } else {
-        const roomEntity = await this.roomRepository.findOne({ id });
-
-        if (!roomEntity) {
-          throw new BadRequestException(`Can not find room with id=[${id}]`);
-        }
-      }
-
-      const urlImages: string[] = await this.awsService.bulkPutObjects(
-        `RoomImages/${folder}`,
-        files,
-      );
-      return urlImages;
-    } catch (error) {
-      this.logger.error('Calling upload()', error, RoomsService.name);
-      throw error;
-    }
-  }
 
   async addRooms(addRoomDTO: AddRoomModDTO, idUser: number) {
     try {

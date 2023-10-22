@@ -1,7 +1,6 @@
 import {
   Controller,
   Inject,
-  Param,
   Post,
   Query,
   Res,
@@ -33,22 +32,24 @@ export class AwsController {
   @Post('upload')
   @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
   async addImageRoom(
-    @Query() id: string,
+    @Query('id') id: string,
     @Res() res: Response,
     @UploadedFiles()
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
-      if ((!id || id.length < 1) && !this.roomsService.findRoomById(id)) {
+      if ((id || id.length > 0) && !this.roomsService.findRoomById(id)) {
         return res.status(404).json({
           status: 'fail',
           message: `Can not find room with id=[${id}]`,
         });
       }
-      const path =
-        id || id.length > 0 ? `RoomImages/${id}` : `RoomImages/${uuidv4()}`;
+      const u_id: string = id || id.length > 0 ? id : uuidv4();
 
-      const urls = await this.awsService.bulkPutObjects(path, files);
+      const urls = await this.awsService.bulkPutObjects(
+        `RoomImages/${u_id}`,
+        files,
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Upload images successfully',
