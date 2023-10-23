@@ -224,10 +224,21 @@ export class ModRoomsService {
     }
   }
 
-  async findAllRoom(id: number) {
+  async findAllRoom(id: number, keyword: string) {
     try {
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [
+          { roomName: likeQr },
+          { area: likeQr },
+          { price: likeQr },
+          { depositAmount: likeQr },
+          { utilities: likeQr },
+        ],
+      };
       const roomsEntity = await this.em.find(Room, {
-        roomblock: { landlord: id },
+        $and: [queryObj, { roomblock: { landlord: id } }],
       });
       const roomsDto = plainToClass(ViewRoomDTO, roomsEntity);
       return roomsDto;

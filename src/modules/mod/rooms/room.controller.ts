@@ -80,7 +80,7 @@ export class ModRoomsController {
     @Query('keyword') keyword: string,
   ) {
     try {
-      const roomsDto = await this.modRoomsService.findAllRoom(req.user.id);
+      const roomsDto = await this.modRoomsService.findAllRoom(req.user.id, keyword);
       return res.status(200).json({
         status: 'success',
         message: 'Create rooms successfully',
