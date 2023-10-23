@@ -38,13 +38,13 @@ export class AwsController {
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
-      if ((id || id.length > 0) && !this.roomsService.findRoomById(id)) {
+      if ((id && id.length > 0) && !this.roomsService.findRoomById(id)) {
         return res.status(404).json({
           status: 'fail',
           message: `Can not find room with id=[${id}]`,
         });
       }
-      const u_id: string = id || id.length > 0 ? id : uuidv4();
+      const u_id: string = id && id.length > 0 ? id : uuidv4();
 
       const urls = await this.awsService.bulkPutObjects(
         `RoomImages/${u_id}`,
