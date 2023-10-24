@@ -5,8 +5,6 @@ import { BaseUUID } from './baseUUID.enity';
 
 @Entity({ tableName: 'rooms' })
 export class Room extends BaseUUID {
-  @Property({ nullable: false })
-  updated_id: number;
 
   @ManyToOne({
     entity: () => RoomBlock,
