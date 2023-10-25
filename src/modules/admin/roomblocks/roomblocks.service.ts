@@ -3,11 +3,12 @@ import { AddRoomBlockAdminDTO } from './dtos/add-room-block-admin.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { EntityManager, EntityRepository, PopulateHint } from '@mikro-orm/core';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { UpdateRoomBlockAdminDTO } from './dtos/update-room-block-admin.dto';
-import { RoomBlock, User } from 'src/entities';
+import { Room, RoomBlock, User } from 'src/entities';
 import { RoomBlockAdminDTO } from './dtos/room-block.dto';
+import { ViewRoomDTO } from '../rooms/dtos/view-room.dto';
 
 @Injectable()
 export class RoomBlocksService {
@@ -168,6 +169,34 @@ export class RoomBlocksService {
     } catch (error) {
       this.logger.error(
         'Calling getRoomBlockList()',
+        error,
+        RoomBlocksService.name,
+      );
+      throw error;
+    }
+  }
+
+  async getRoomsByIdBlockRoom(idBlockRoom: number, keyword: string) {
+    try {
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [
+          { roomName: likeQr },
+          { area: likeQr },
+          { price: likeQr },
+          { depositAmount: likeQr },
+          { utilities: likeQr },
+        ],
+      };
+      const roomsEntity = await this.em.find(Room, {
+        $and: [queryObj, { roomblock: { id: idBlockRoom } }],
+      });
+      const roomsDto = plainToClass(ViewRoomDTO, roomsEntity);
+      return roomsDto;
+    } catch (error) {
+      this.logger.error(
+        'Calling getRoomsByIdBlockRoom()',
         error,
         RoomBlocksService.name,
       );

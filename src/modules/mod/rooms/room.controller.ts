@@ -64,7 +64,7 @@ export class ModRoomsController {
       await this.modRoomsService.updateRoom(id, req.user.id, updateRoomModDto);
       return res.status(200).json({
         status: 'success',
-        message: 'Create rooms successfully',
+        message: 'Update room successfully',
       });
     } catch (error) {
       this.logger.error('Calling updateRoom()', error, ModRoomsController.name);
@@ -83,7 +83,7 @@ export class ModRoomsController {
       const roomsDto = await this.modRoomsService.findAllRoom(req.user.id, keyword);
       return res.status(200).json({
         status: 'success',
-        message: 'Create rooms successfully',
+        message: 'Get rooms successfully',
         data: roomsDto,
       });
     } catch (error) {
@@ -107,7 +107,7 @@ export class ModRoomsController {
       const roomDto = await this.modRoomsService.findRoomById(id);
       return res.status(200).json({
         status: 'success',
-        message: 'Create rooms successfully',
+        message: 'Get room by id successfully',
         data: roomDto,
       });
     } catch (error) {

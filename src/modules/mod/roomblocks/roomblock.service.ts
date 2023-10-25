@@ -19,6 +19,7 @@ import { AddRoomBlockModDTO } from './dtos/add-room-block.dto';
 import { UpdateRoomBlockModDTO } from './dtos/update-room-block-admin.dto';
 import { RoomBlockModDTO } from './dtos/room-block.dto';
 import { RoomStatus } from 'src/common/enum/common.enum';
+import { ViewRoomDTO } from '../rooms/dto/view-room.dto';
 
 @Injectable()
 export class ModRoomBlocksService {
@@ -183,6 +184,30 @@ export class ModRoomBlocksService {
         error,
         ModRoomBlocksService.name,
       );
+      throw error;
+    }
+  }
+
+  async getRoomsByIdBlockRoom(idBlockRoom: number, keyword: string) {
+    try {
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [
+          { roomName: likeQr },
+          { area: likeQr },
+          { price: likeQr },
+          { depositAmount: likeQr },
+          { utilities: likeQr },
+        ],
+      };
+      const roomsEntity = await this.em.find(Room, {
+        $and: [queryObj, { roomblock: { id: idBlockRoom } }],
+      });
+      const roomsDto = plainToClass(ViewRoomDTO, roomsEntity);
+      return roomsDto;
+    } catch (error) {
+      this.logger.error('Calling getRoomsByIdBlockRoom()', error, ModRoomBlocksService.name);
       throw error;
     }
   }
