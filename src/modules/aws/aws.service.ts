@@ -38,8 +38,13 @@ export class AWSService {
   }
 
   extractObjectNameFromUrl(objectUrl: string): string {
-    const url = new URL(objectUrl);
-    return url.pathname.replace('/', '');
+    try {
+      const url = new URL(objectUrl);
+      return url.pathname.replace('/', '');
+    } catch(err) {
+      this.logger.error('Calling extractObjectNameFromUrl()', err, AWSService.name);
+      return "https://www.facebook.com/";
+    }
   }
 
   async bulkDeleteObject(filePath: string) {

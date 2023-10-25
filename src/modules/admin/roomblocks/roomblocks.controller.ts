@@ -157,4 +157,35 @@ export class RoomBlocksController {
       throw error;
     }
   }
+
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
+  @Get(':id/rooms')
+  async getRoomsByIdBlockRoom(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+    @Query('keyword') keyword: string,
+  ) {
+    try {
+      const rooms = await this.roomBlocksService.getRoomsByIdBlockRoom(
+        id,
+        keyword
+      );
+      res.status(200).json({
+        status: 'success',
+        message: 'Get rooms in blocks successfully',
+        data: {
+          roomBlocks: rooms,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getRoomsByIdBlockRoom()',
+        error,
+        RoomBlocksController.name,
+      );
+      throw error;
+    }
+  }
+
 }

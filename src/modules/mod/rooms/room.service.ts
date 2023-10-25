@@ -179,16 +179,9 @@ export class ModRoomsService {
       }
 
       if (updateRoomModDto.files) {
-        const roomEntityById = await this.roomRepository.findOne({
-          id: updateRoomModDto.files[0].split('/')[4],
-        });
-
-        if (
-          roomEntityById &&
-          updateRoomModDto.files[0].split('/')[4] !== idRoom
-        ) {
+        if (updateRoomModDto.files[0].split('/')[4] !== idRoom) {
           throw new BadRequestException(
-            'The photo link already exists in another room',
+            'The photo must be in folder of room',
           );
         }
 
