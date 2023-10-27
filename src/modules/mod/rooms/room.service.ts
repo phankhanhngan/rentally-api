@@ -51,9 +51,8 @@ export class ModRoomsService {
         indexRoom++
       ) {
         const room = addRoomDTO.rooms[indexRoom];
-
         const roomEntityById = await this.roomRepository.findOne({
-          id: room.files[0].split('/')[4],
+          id: room.images[0].split('/')[4],
         });
 
         if (roomEntityById) {
@@ -62,19 +61,7 @@ export class ModRoomsService {
             HttpStatus.CONFLICT,
           );
         }
-
-        setIdRoom.add(room.files[0].split('/')[4]);
-        for (let i = 0; i < room.utility.length; i++) {
-          const utilityId = room.utility[i];
-          const utility = await this.utilityRepository.findOne({
-            id: utilityId,
-          });
-          if (!utility) {
-            throw new BadRequestException(
-              `Can not find utility with id=[${utilityId}] at room ${indexRoom}`,
-            );
-          }
-        }
+        setIdRoom.add(room.images[0].split('/')[4]);
       }
       if (setIdRoom.size != addRoomDTO.rooms.length) {
         throw new HttpException(
@@ -88,30 +75,19 @@ export class ModRoomsService {
         indexRoom < addRoomDTO.rooms.length;
         indexRoom++
       ) {
-        const utilities = [];
         const room = addRoomDTO.rooms[indexRoom];
-        for (let i = 0; i < room.utility.length; i++) {
-          const utilityId = room.utility[i];
-          const utility = await this.utilityRepository.findOne(
-            { id: utilityId },
-            { fields: ['name', 'note'] },
-          );
-
-          const { name, note } = utility;
-          utilities.push({ name, note });
-        }
         if (!room.roomName) {
           if (indexRoom < 10) room.roomName = `R00${indexRoom + 1}`;
           else room.roomName = `R0${indexRoom + 1}`;
         }
         const roomEntity = await plainToInstance(Room, room);
-        roomEntity.utilities = await JSON.stringify(utilities);
+        roomEntity.utilities = await JSON.stringify(room.utilities);
         roomEntity.roomblock = roomBlockEntity;
         roomEntity.created_id = idUser;
         roomEntity.updated_id = idUser;
-        roomEntity.images = JSON.stringify(room.files);
+        roomEntity.images = JSON.stringify(room.images);
         roomEntity.status = RoomStatus.EMPTY;
-        roomEntity.id = room.files[0].split('/')[4];
+        roomEntity.id = room.images[0].split('/')[4];
 
         await this.em.persistAndFlush(roomEntity);
       }
@@ -135,33 +111,8 @@ export class ModRoomsService {
         throw new BadRequestException(`Can not find room with id: ${idRoom}`);
       }
 
-      if (updateRoomModDto.utility) {
-        for (let i = 0; i < updateRoomModDto.utility.length; i++) {
-          const utilityId = updateRoomModDto.utility[i];
-          const utility = await this.utilityRepository.findOne({
-            id: utilityId,
-          });
-          if (!utility) {
-            throw new BadRequestException(
-              `Can not find utility with id=[${utilityId}]`,
-            );
-          }
-        }
-      }
-
-      if (updateRoomModDto.utility) {
-        const utilities = [];
-        for (let i = 0; i < updateRoomModDto.utility.length; i++) {
-          const utilityId = updateRoomModDto.utility[i];
-          const utility = await this.utilityRepository.findOne(
-            { id: utilityId },
-            { fields: ['name', 'note'] },
-          );
-
-          const { name, note } = utility;
-          utilities.push({ name, note });
-        }
-        roomEntity.utilities = JSON.stringify(utilities);
+      if (updateRoomModDto.utilities) {
+        roomEntity.utilities = JSON.stringify(updateRoomModDto.utilities);
       }
 
       if (updateRoomModDto.idRoomBlock) {
@@ -178,8 +129,8 @@ export class ModRoomsService {
         roomEntity.roomblock = roomBlockEntity;
       }
 
-      if (updateRoomModDto.files) {
-        if (updateRoomModDto.files[0].split('/')[4] !== idRoom) {
+      if (updateRoomModDto.images) {
+        if (updateRoomModDto.images[0].split('/')[4] !== idRoom) {
           throw new BadRequestException(
             'The photo must be in folder of room',
           );
@@ -188,12 +139,14 @@ export class ModRoomsService {
         const urls = JSON.parse(roomEntity.images);
         await this.awsService.bulkDeleteObjects(urls);
 
-        roomEntity.images = JSON.stringify(updateRoomModDto.files);
+        roomEntity.images = JSON.stringify(updateRoomModDto.images);
       }
+
+      const { images, utilities, ...updated } = updateRoomModDto;
 
       wrap(roomEntity).assign(
         {
-          ...updateRoomModDto,
+          ...updated,
           updated_at: new Date(),
           updated_id: idlogin,
         },

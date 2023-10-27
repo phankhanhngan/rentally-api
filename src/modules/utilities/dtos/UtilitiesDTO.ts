@@ -5,6 +5,10 @@ import { IsNotEmpty } from 'class-validator';
 export class UtilitiesDTO {
   @Expose()
   @IsNotEmpty()
+  id: number;
+
+  @Expose()
+  @IsNotEmpty()
   name: string;
 
   @Expose()
