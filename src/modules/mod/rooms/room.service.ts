@@ -57,7 +57,7 @@ export class ModRoomsService {
 
         if (roomEntityById) {
           throw new HttpException(
-            `The room with ID=[${room.files[0].split('/')[4]}] already exists`,
+            `The room with ID=[${room.images[0].split('/')[4]}] already exists`,
             HttpStatus.CONFLICT,
           );
         }
@@ -131,9 +131,7 @@ export class ModRoomsService {
 
       if (updateRoomModDto.images) {
         if (updateRoomModDto.images[0].split('/')[4] !== idRoom) {
-          throw new BadRequestException(
-            'The photo must be in folder of room',
-          );
+          throw new BadRequestException('The photo must be in folder of room');
         }
 
         const urls = JSON.parse(roomEntity.images);
