@@ -27,12 +27,12 @@ export class UpdateRoomModDTO {
   @ValidateIf((obj, value) => value)
   @IsArray()
   @IsString({each: true})
-  files: string[];
+  images: string[];
 
   @ValidateIf((obj, value) => value)
   @IsArray()
   @IsInt({each: true})
-  utility?: number[];
+  utilities?: number[];
 
   @ValidateIf((obj, value) => value)
   @IsNumber()
