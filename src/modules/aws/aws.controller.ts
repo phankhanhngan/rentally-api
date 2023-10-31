@@ -1,6 +1,7 @@
 import {
   Controller,
   Inject,
+  ParseFilePipe,
   Post,
   Query,
   Res,
@@ -34,7 +35,7 @@ export class AwsController {
   async addImageRoom(
     @Query('id') id: string,
     @Res() res: Response,
-    @UploadedFiles()
+    @UploadedFiles(new ParseFilePipe({}))
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
