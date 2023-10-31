@@ -1,6 +1,12 @@
 import { EntityManager, EntityRepository, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Room, RoomBlock, User } from 'src/entities';
 import { AddRoomAdminDTO } from './dtos/add-room-admin.dto';
 import { Utility } from 'src/entities/utility.entity';
@@ -28,6 +34,18 @@ export class RoomsService {
 
   async addRoom(addRoomDTO: AddRoomAdminDTO, user: User) {
     try {
+      const imageSet = new Set();
+      addRoomDTO.images.forEach((el) => {
+        imageSet.add(el);
+      });
+
+      if (imageSet.size < addRoomDTO.images.length) {
+        throw new HttpException(
+          'The two rooms cannot have the same photo link',
+          HttpStatus.CONFLICT,
+        );
+      }
+
       const roomBlockEntity: Loaded<RoomBlock> =
         await this.roomBlockRepository.findOne({
           id: addRoomDTO.roomBlockId,
@@ -48,8 +66,18 @@ export class RoomsService {
       if (utilityCount != addRoomDTO.utilities.length) {
         throw new BadRequestException(`There is a utility not found in system`);
       }
-      if (!addRoomDTO.roomName) {
-        throw new BadRequestException(`Missing room name`);
+
+      const roomEntityById = await this.roomRepository.findOne({
+        id: addRoomDTO.images[0].split('/')[4],
+      });
+
+      if (roomEntityById) {
+        throw new HttpException(
+          `The room with ID=[${
+            addRoomDTO.images[0].split('/')[4]
+          }] already exists`,
+          HttpStatus.CONFLICT,
+        );
       }
 
       const roomEntity = plainToInstance(Room, addRoomDTO);

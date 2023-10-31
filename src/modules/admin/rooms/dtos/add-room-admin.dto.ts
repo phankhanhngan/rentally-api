@@ -1,23 +1,29 @@
-import { IsArray, IsInt, IsNotEmpty, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class AddRoomAdminDTO {
   @IsInt()
-  @IsNotEmpty()
   roomBlockId: number;
 
-  roomName?: string;
+  @IsString()
+  @IsNotEmpty()
+  roomName: string;
 
   @IsNumber()
-  @IsNotEmpty()
   area!: number;
 
   @IsInt()
-  @IsNotEmpty()
   price!: bigint;
 
   @IsInt()
-  @IsNotEmpty()
-  depositAmount?: bigint;
+  depositAmount: bigint;
 
   @IsArray()
   images: string[];

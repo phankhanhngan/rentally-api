@@ -2,6 +2,8 @@ import { EntityManager, EntityRepository, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -54,15 +56,17 @@ export class ModRoomsService {
         });
 
         if (roomEntityById) {
-          throw new BadRequestException(
-            'The photo link already exists in another room',
+          throw new HttpException(
+            `The room with ID=[${room.images[0].split('/')[4]}] already exists`,
+            HttpStatus.CONFLICT,
           );
         }
         setIdRoom.add(room.images[0].split('/')[4]);
       }
       if (setIdRoom.size != addRoomDTO.rooms.length) {
-        throw new BadRequestException(
+        throw new HttpException(
           'The two rooms cannot have the same photo link',
+          HttpStatus.CONFLICT,
         );
       }
 
@@ -127,9 +131,7 @@ export class ModRoomsService {
 
       if (updateRoomModDto.images) {
         if (updateRoomModDto.images[0].split('/')[4] !== idRoom) {
-          throw new BadRequestException(
-            'The photo must be in folder of room',
-          );
+          throw new BadRequestException('The photo must be in folder of room');
         }
 
         const urls = JSON.parse(roomEntity.images);

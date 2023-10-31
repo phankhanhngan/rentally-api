@@ -49,6 +49,7 @@
     "nodemailer": "^6.9.5",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
+    "url-parse": "^1.5.10",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
