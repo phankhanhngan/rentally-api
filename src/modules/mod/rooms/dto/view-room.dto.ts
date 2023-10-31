@@ -30,4 +30,7 @@ export class ViewRoomDTO {
     toPlainOnly: true,
   })
   utilities?: string[];
+
+  @Expose()
+  status: string;
 }

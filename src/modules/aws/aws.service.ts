@@ -66,7 +66,8 @@ export class AWSService {
     folderPath: string,
   ): Promise<string> {
     try {
-      file.originalname = file.originalname.replace(/ /g, '');
+      const date = new Date();
+      file.originalname = date.getTime() + file.originalname.replace(/ /g, '');
       const fileName = `${folderPath}/${file.originalname}`;
       const cmd = new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -91,7 +92,8 @@ export class AWSService {
         files = [].concat(files);
       }
       const commands = files.map((file) => {
-        file.originalname = file.originalname.replace(/ /g, '');
+        const date = new Date();
+        file.originalname = date.getTime() + file.originalname.replace(/ /g, '');
         return new PutObjectCommand({
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: `${folderPath}/${file.originalname}`,
