@@ -174,7 +174,7 @@ export class ModRoomBlocksController {
     try {
       const rooms = await this.modRoomBlocksService.getRoomsByIdBlockRoom(
         id,
-        keyword
+        keyword,
       );
       res.status(200).json({
         status: 'success',

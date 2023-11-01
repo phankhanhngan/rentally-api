@@ -72,7 +72,7 @@ export class RoomBlocksController {
       );
       res.status(200).json({
         status: 'success',
-        message: 'Update room blocks successfully',
+        message: 'Update room block successfully',
       });
     } catch (error) {
       this.logger.error(
@@ -137,25 +137,24 @@ export class RoomBlocksController {
     @Res() res: Response,
     @Query('keyword') keyword: string,
   ) {
-    try {
-      const roomBlockList = await this.roomBlocksService.getRoomBlockList(
-        keyword,
-      );
-      res.status(200).json({
-        status: 'success',
-        message: 'Get room blocks successfully',
-        data: {
-          roomBlocks: roomBlockList,
-        },
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling getRoomBlockList()',
-        error,
-        RoomBlocksController.name,
-      );
-      throw error;
-    }
+    const roomBlockList = await this.roomBlocksService.getRoomBlockList(
+      keyword,
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Get room blocks successfully',
+      data: {
+        roomBlocks: roomBlockList,
+      },
+    });
+  }
+  catch(error) {
+    this.logger.error(
+      'Calling getRoomBlockList()',
+      error,
+      RoomBlocksController.name,
+    );
+    throw error;
   }
 
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
@@ -169,7 +168,7 @@ export class RoomBlocksController {
     try {
       const rooms = await this.roomBlocksService.getRoomsByIdBlockRoom(
         id,
-        keyword
+        keyword,
       );
       res.status(200).json({
         status: 'success',
@@ -187,5 +186,4 @@ export class RoomBlocksController {
       throw error;
     }
   }
-
 }

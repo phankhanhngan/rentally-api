@@ -207,7 +207,11 @@ export class ModRoomBlocksService {
       const roomsDto = plainToClass(ViewRoomDTO, roomsEntity);
       return roomsDto;
     } catch (error) {
-      this.logger.error('Calling getRoomsByIdBlockRoom()', error, ModRoomBlocksService.name);
+      this.logger.error(
+        'Calling getRoomsByIdBlockRoom()',
+        error,
+        ModRoomBlocksService.name,
+      );
       throw error;
     }
   }
