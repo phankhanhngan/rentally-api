@@ -11,8 +11,7 @@ export class RoomBlockSeeder extends Seeder {
       Array.from(Array(30).keys()).map(async () => {
         const landlord = await this.randomLandLord(em);
         return {
-          addressLine1: faker.location.streetAddress(),
-          addressLine2: faker.location.secondaryAddress(),
+          address: faker.location.streetAddress(),
           city: faker.location.city(),
           state: faker.location.state(),
           country: faker.location.country(),
