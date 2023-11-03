@@ -1083,20 +1083,198 @@
           "unique": false
         },
         {
-          "columnNames": [
-            "renter_id"
-          ],
+<<<<<<< HEAD
+=======
+          "columnNames": ["renter_id"],
           "composite": false,
           "keyName": "room_ratings_renter_id_index",
           "primary": false,
           "unique": false
         },
         {
+          "columnNames": ["rental_id"],
+          "composite": false,
+          "keyName": "room_ratings_rental_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": ["id"],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "room_ratings_room_id_foreign": {
+          "constraintName": "room_ratings_room_id_foreign",
+          "columnNames": ["room_id"],
+          "localTableName": "room_ratings",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "rooms",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "room_ratings_renter_id_foreign": {
+          "constraintName": "room_ratings_renter_id_foreign",
+          "columnNames": ["renter_id"],
+          "localTableName": "room_ratings",
+<<<<<<<< HEAD:src/database/migrations/.snapshot-retanlly.json
+          "referencedColumnNames": ["id"],
+========
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "users",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "created_id": {
+          "name": "created_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "updated_id": {
+          "name": "updated_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "landlord_id": {
+          "name": "landlord_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "renter_id": {
+          "name": "renter_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "rental_detail_id": {
+          "name": "rental_detail_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "rental",
+      "indexes": [
+        {
           "columnNames": [
+            "landlord_id"
+          ],
+          "composite": false,
+          "keyName": "rental_landlord_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating)
+          "columnNames": [
+            "renter_id"
+          ],
+          "composite": false,
+<<<<<<< HEAD
+          "keyName": "room_ratings_renter_id_index",
+=======
+          "keyName": "rental_renter_id_index",
+>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating)
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+<<<<<<< HEAD
             "rental_id"
           ],
           "composite": false,
           "keyName": "room_ratings_rental_id_unique",
+=======
+            "room_id"
+          ],
+          "composite": false,
+          "keyName": "rental_room_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "rental_detail_id"
+          ],
+          "composite": false,
+          "keyName": "rental_rental_detail_id_unique",
+>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating)
           "primary": false,
           "unique": true
         },
@@ -1112,6 +1290,7 @@
       ],
       "checks": [],
       "foreignKeys": {
+<<<<<<< HEAD
         "room_ratings_room_id_foreign": {
           "constraintName": "room_ratings_room_id_foreign",
           "columnNames": [
@@ -1131,6 +1310,36 @@
             "renter_id"
           ],
           "localTableName": "room_ratings",
+=======
+        "rental_landlord_id_foreign": {
+          "constraintName": "rental_landlord_id_foreign",
+          "columnNames": [
+            "landlord_id"
+          ],
+          "localTableName": "rental",
+          "referencedColumnNames": [
+            "id"
+          ],
+>>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating):src/database/migrations/.snapshot-rentally.json
+          "referencedTableName": "users",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+<<<<<<<< HEAD:src/database/migrations/.snapshot-retanlly.json
+        "room_ratings_rental_id_foreign": {
+          "constraintName": "room_ratings_rental_id_foreign",
+          "columnNames": ["rental_id"],
+          "localTableName": "room_ratings",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "rental",
+========
+        "rental_renter_id_foreign": {
+          "constraintName": "rental_renter_id_foreign",
+          "columnNames": [
+            "renter_id"
+          ],
+          "localTableName": "rental",
+>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating)
           "referencedColumnNames": [
             "id"
           ],
@@ -1138,6 +1347,7 @@
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
+<<<<<<< HEAD
         "room_ratings_rental_id_foreign": {
           "constraintName": "room_ratings_rental_id_foreign",
           "columnNames": [
@@ -1148,6 +1358,32 @@
             "id"
           ],
           "referencedTableName": "rental",
+=======
+        "rental_room_id_foreign": {
+          "constraintName": "rental_room_id_foreign",
+          "columnNames": [
+            "room_id"
+          ],
+          "localTableName": "rental",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "rooms",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "rental_rental_detail_id_foreign": {
+          "constraintName": "rental_rental_detail_id_foreign",
+          "columnNames": [
+            "rental_detail_id"
+          ],
+          "localTableName": "rental",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "rental_details",
+>>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating):src/database/migrations/.snapshot-rentally.json
+>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating)
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1225,9 +1461,13 @@
       "indexes": [
         {
           "keyName": "PRIMARY",
+<<<<<<< HEAD
           "columnNames": [
             "id"
           ],
+=======
+          "columnNames": ["id"],
+>>>>>>> 8ddc146 (add seeder for rental, rental detail, rating)
           "composite": false,
           "primary": true,
           "unique": true
