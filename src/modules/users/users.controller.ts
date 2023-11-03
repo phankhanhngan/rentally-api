@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './dtos/user.dto';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';
@@ -35,7 +35,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-  ) {}
+  ) { }
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get(':id')
   async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {
