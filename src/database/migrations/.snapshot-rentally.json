@@ -971,6 +971,33 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "rental_detail_id": {
+          "name": "rental_detail_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
         }
       },
       "name": "rental",
@@ -989,7 +1016,25 @@
             "renter_id"
           ],
           "composite": false,
-          "keyName": "rental_renter_id_unique",
+          "keyName": "rental_renter_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "room_id"
+          ],
+          "composite": false,
+          "keyName": "rental_room_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "rental_detail_id"
+          ],
+          "composite": false,
+          "keyName": "rental_rental_detail_id_unique",
           "primary": false,
           "unique": true
         },
@@ -1028,6 +1073,33 @@
             "id"
           ],
           "referencedTableName": "users",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "rental_room_id_foreign": {
+          "constraintName": "rental_room_id_foreign",
+          "columnNames": [
+            "room_id"
+          ],
+          "localTableName": "rental",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "rooms",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "rental_rental_detail_id_foreign": {
+          "constraintName": "rental_rental_detail_id_foreign",
+          "columnNames": [
+            "rental_detail_id"
+          ],
+          "localTableName": "rental",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "rental_details",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       }
