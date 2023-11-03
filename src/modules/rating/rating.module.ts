@@ -5,8 +5,10 @@ import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { AWSModule } from '../aws/aws.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Room, User } from 'src/entities';
+import { Room, RoomBlock, User } from 'src/entities';
 import { RoomsService } from '../admin/rooms/rooms.service';
+import { Utility } from 'src/entities/utility.entity';
+import { UsersService } from '../users/users.service';
 
 @Module({
   imports: [
@@ -15,8 +17,10 @@ import { RoomsService } from '../admin/rooms/rooms.service';
     AWSModule,
     MikroOrmModule.forFeature([User]),
     MikroOrmModule.forFeature([Room]),
+    MikroOrmModule.forFeature([RoomBlock]),
+    MikroOrmModule.forFeature([Utility]),
   ],
-  providers: [RatingService, RoomsService],
+  providers: [RatingService, RoomsService, UsersService],
   controllers: [RatingController]
 })
 export class RatingModule {}
