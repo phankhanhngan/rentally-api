@@ -3,7 +3,7 @@ import { Base } from './base.entity';
 import { User } from './user.entity';
 import { Room } from './room.entity';
 import { RentalDetail } from './rental_detail.entity';
-import { RentalStatus } from 'src/common/enum/common.enum';
+import { RentalStatus } from '../common/enum/common.enum';
 
 @Entity({ tableName: 'rental' })
 export class Rental extends Base {
@@ -14,7 +14,7 @@ export class Rental extends Base {
   })
   landlord!: User;
 
-  @OneToOne({
+  @ManyToOne({
     entity: () => User,
     onDelete: 'cascade',
     onUpdateIntegrity: 'cascade',
