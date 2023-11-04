@@ -13,6 +13,12 @@ import { join } from 'path';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from './modules/users/users.module';
 import { AWSModule } from './modules/aws/aws.module';
+import { ModRoomBlocksModule } from './modules/mod/roomblocks/roomblocks.module';
+import { ModRoomsModule } from './modules/mod/rooms/room.module';
+import { RoomsModule } from './modules/admin/rooms/rooms.module';
+import { UtilitiesModule } from './modules/utilities/utilities.module';
+import { RoomBlock } from './entities';
+import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
 
 @Module({
   imports: [
@@ -54,10 +60,15 @@ import { AWSModule } from './modules/aws/aws.module';
         expiresIn: process.env.JWT_EXPIRATION_TIME,
       },
     }),
-    // ExampleModule,
     AuthModule,
     UsersModule,
     AWSModule,
+    ModRoomBlocksModule,
+    ModRoomsModule,
+    RoomsModule,
+    RoomBlocksModule,
+    AWSModule,
+    UtilitiesModule,
   ],
 
   controllers: [AppController],

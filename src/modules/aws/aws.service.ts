@@ -38,8 +38,17 @@ export class AWSService {
   }
 
   extractObjectNameFromUrl(objectUrl: string): string {
-    const url = new URL(objectUrl);
-    return url.pathname.replace('/', '');
+    try {
+      const url = new URL(objectUrl);
+      return url.pathname.replace('/', '');
+    } catch (err) {
+      this.logger.error(
+        'Calling extractObjectNameFromUrl()',
+        err,
+        AWSService.name,
+      );
+      return 'https://www.facebook.com/';
+    }
   }
 
   async bulkDeleteObject(filePath: string) {
@@ -61,7 +70,8 @@ export class AWSService {
     folderPath: string,
   ): Promise<string> {
     try {
-      file.originalname = file.originalname.replace(/ /g, '');
+      const date = new Date();
+      file.originalname = date.getTime() + file.originalname.replace(/ /g, '');
       const fileName = `${folderPath}/${file.originalname}`;
       const cmd = new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -73,6 +83,57 @@ export class AWSService {
       return this.getObjectUrl(folderPath, file.originalname);
     } catch (err) {
       this.logger.error('Calling bulkPutObject()', err, AWSService.name);
+      throw err;
+    }
+  }
+
+  async bulkPutObjects(
+    folderPath: string,
+    files: Array<Express.Multer.File> | Express.Multer.File,
+  ): Promise<string[]> {
+    try {
+      if (!Array.isArray(files)) {
+        files = [].concat(files);
+      }
+      const commands = files.map((file) => {
+        const date = new Date();
+        file.originalname =
+          date.getTime() + file.originalname.replace(/ /g, '');
+        return new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: `${folderPath}/${file.originalname}`,
+          ContentType: file.mimetype,
+          Body: file.buffer,
+        });
+      });
+
+      await Promise.all(commands.map((cmd) => this.s3Client.send(cmd)));
+
+      return files.map((file) =>
+        this.getObjectUrl(folderPath, file.originalname),
+      );
+    } catch (err) {
+      this.logger.error('Calling bulkPutObject()', err, AWSService.name);
+      throw err;
+    }
+  }
+
+  async bulkDeleteObjects(filePaths: Array<string>) {
+    try {
+      if (filePaths.length > 0) {
+        const params = {
+          Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),
+          Delete: {
+            Objects: filePaths.map((path) => ({
+              Key: this.extractObjectNameFromUrl(path),
+            })),
+          },
+        };
+
+        await this.s3Client.send(new DeleteObjectsCommand(params));
+      }
+    } catch (err) {
+      this.logger.error('Calling deleteObject()', err, AWSService.name);
       throw err;
     }
   }

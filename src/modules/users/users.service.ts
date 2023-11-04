@@ -75,7 +75,7 @@ export class UsersService {
     }
   }
 
-  async getUsers(keyword: String) {
+  async getUsers(keyword: string) {
     try {
       const fields = [
         'id',
