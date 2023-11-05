@@ -3,7 +3,6 @@ import { Seeder } from '@mikro-orm/seeder';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import {
-  RatingStatus,
   RentalStatus,
   Role,
   RoomStatus,
@@ -57,7 +56,7 @@ export class DatabaseSeeder extends Seeder {
         return {
           address: faker.location.streetAddress(),
           city: faker.location.city(),
-          state: faker.location.state(),
+          district: faker.location.state(),
           country: faker.location.country(),
           coordinate: new Point(
             faker.location.latitude(),
@@ -115,7 +114,6 @@ export class DatabaseSeeder extends Seeder {
         rentalDetail: rentalDetail,
         tenants: 1,
         status: RentalStatus.COMPLETED,
-        ratingStatus: RatingStatus.NONE,
         created_at: new Date(),
         updated_at: new Date(),
         created_id: 1,
