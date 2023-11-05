@@ -6,19 +6,23 @@ import { RentalStatus, Role, RoomStatus } from '../../common/enum/common.enum';
 import { Room, User } from '../../entities';
 
 export class RentalSeeder extends Seeder {
-  leaseTerm = [3, 6, 9, 12]
+  leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
     const rentals = [];
     for (let i = 0; i < 10; i++) {
-      const rentalDetail = await em.insert(RentalDetail, this.createRentalDetail());
+      const rentalDetail = await em.insert(
+        RentalDetail,
+        this.createRentalDetail(),
+      );
       const landlord = await this.randomLandLord(em);
       const renter = await this.randomRenter(em);
-      const room = await this.randomRoom(em, i);
+      const room = await this.randomRoom(em);
       rentals.push({
         landlord: landlord,
         renter: renter,
         room: room,
         rentalDetail: rentalDetail,
+        tenants: 1,
         status: RentalStatus.COMPLETED,
         created_at: new Date(),
         updated_at: new Date(),
@@ -34,12 +38,16 @@ export class RentalSeeder extends Seeder {
   createRentalDetail() {
     return {
       moveInDate: new Date(),
-      moveOutDate: new Date("2023-12-30"),
+      moveOutDate: new Date('2023-12-30'),
       leaseTerm: this.randomArr(this.leaseTerm),
       monthlyRent: 2000000,
       leaseTerminationCost: 500000,
-      renterIdentifyNo: `192${Math.floor(100 + Math.random() * 900)}${Math.floor(100 + Math.random() * 900)}`,
-      landlordIdentifyNo: `192${Math.floor(100 + Math.random() * 900)}${Math.floor(100 + Math.random() * 900)}`,
+      renterIdentifyNo: `192${Math.floor(
+        100 + Math.random() * 900,
+      )}${Math.floor(100 + Math.random() * 900)}`,
+      landlordIdentifyNo: `192${Math.floor(
+        100 + Math.random() * 900,
+      )}${Math.floor(100 + Math.random() * 900)}`,
       renterIdentifyDate: faker.date.birthdate(),
       landlordIdentifyDate: faker.date.birthdate(),
       renterIdentifyAddress: faker.address.streetAddress(),
@@ -63,8 +71,8 @@ export class RentalSeeder extends Seeder {
     const users = await em.find(User, { role: Role.USER });
     return users[Math.floor(Math.random() * users.length)];
   }
-  async randomRoom(em: EntityManager, i: number) {
-    const rooms = await em.find(Room, { status: RoomStatus.EMPTY});
-    return rooms[i];
+  async randomRoom(em: EntityManager) {
+    const rooms = await em.find(Room, { status: RoomStatus.EMPTY });
+    return rooms[Math.floor(Math.random() * rooms.length)];
   }
 }

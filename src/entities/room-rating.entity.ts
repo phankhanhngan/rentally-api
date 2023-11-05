@@ -1,7 +1,8 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property, OneToOne } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { Room } from './room.entity';
 import { User } from './user.entity';
+import { Rental } from './rental.entity';
 
 @Entity({ tableName: 'room_ratings' })
 export class RoomRating extends Base {
@@ -18,6 +19,13 @@ export class RoomRating extends Base {
     onUpdateIntegrity: 'cascade',
   })
   renter!: User;
+
+  @OneToOne({
+    entity: () => Rental,
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+  })
+  rental!: Rental;
 
   @Property({ nullable: true, type: 'text' })
   comment: string;

@@ -23,31 +23,41 @@ export class RatingService {
         idLogin,
         RentalStatus.COMPLETED,
       );
-      if (!rental)
+      if (!rental) {
         throw new BadRequestException('You are not rent this rental!');
-      const ratingDb = this.findByRenterAndRoom(
+      }
+      const ratingDb = await this.findByRenterAndRoomAndRental(
         rental.room.id,
         rental.renter.id,
+        rental.id,
       );
-      // if (ratingDb)
-      //   throw new BadRequestException('You are already rated this room');
-      // const rating = new RoomRating();
-      // rating.comment = ratingDto.comment;
-      // rating.cleanRate = ratingDto.cleanRate;
-      // rating.locationRate = ratingDto.locationRate;
-      // rating.securityRate = ratingDto.securityRate;
-      // rating.supportRate = ratingDto.supportRate;
-      // rating.created_id = idLogin;
-      // rating.updated_id = idLogin;
-      // rating.created_at = new Date();
-      // rating.updated_at = new Date();
-      // await this.em.persistAndFlush(rating);
-      return ratingDb;
+      if (ratingDb) {
+        throw new BadRequestException('You are already rated this room');
+      }
+      const rating = new RoomRating();
+      rating.comment = ratingDto.comment;
+      rating.rental = rental;
+      rating.room = rental.room;
+      rating.renter = rental.renter;
+      rating.cleanRate = ratingDto.cleanRate;
+      rating.locationRate = ratingDto.locationRate;
+      rating.securityRate = ratingDto.securityRate;
+      rating.supportRate = ratingDto.supportRate;
+      rating.created_id = idLogin;
+      rating.updated_id = idLogin;
+      rating.created_at = new Date();
+      rating.updated_at = new Date();
+      await this.em.persistAndFlush(rating);
+      return rating;
     } catch (error) {
       throw error;
     }
   }
-  async findByRenterAndRoom(roomId: string, renterId: number) {
+  async findByRenterAndRoomAndRental(
+    roomId: string,
+    renterId: number,
+    rentalId: number,
+  ) {
     const queryObj = {
       $and: [
         {
@@ -60,10 +70,15 @@ export class RatingService {
             $and: [{ id: roomId }],
           },
         },
+        {
+          rental: {
+            $and: [{ id: rentalId }],
+          },
+        },
       ],
     };
     const rating = await this.em.findOne(RoomRating, queryObj, {
-      populate: ['renter', 'room'],
+      populate: ['renter', 'room', 'rental'],
     });
     return rating;
   }

@@ -3,7 +3,7 @@ import { Base } from './base.entity';
 import { User } from './user.entity';
 import { Room } from './room.entity';
 import { RentalDetail } from './rental_detail.entity';
-import { RentalStatus } from '../common/enum/common.enum';
+import { RatingStatus, RentalStatus } from '../common/enum/common.enum';
 
 @Entity({ tableName: 'rental' })
 export class Rental extends Base {
@@ -40,5 +40,9 @@ export class Rental extends Base {
   status: RentalStatus;
 
   @Property({ nullable: false })
-  attendance: number;
+  @Enum({ items: () => RatingStatus })
+  ratingStatus: RatingStatus;
+
+  @Property({ nullable: false })
+  tenants: number;
 }
