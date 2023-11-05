@@ -56,7 +56,7 @@ export class DatabaseSeeder extends Seeder {
         return {
           address: faker.location.streetAddress(),
           city: faker.location.city(),
-          state: faker.location.state(),
+          district: faker.location.state(),
           country: faker.location.country(),
           coordinate: new Point(
             faker.location.latitude(),
