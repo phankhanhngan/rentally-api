@@ -32,3 +32,8 @@ export enum RentalStatus {
   BROKEN = 'BROKEN',
   ENDED = 'ENDED',
 }
+
+export enum RatingStatus {
+  RATED = 'RATED',
+  NONE = 'NONE',
+}

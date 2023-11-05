@@ -26,15 +26,17 @@ export class RatingService {
       if (!rental) {
         throw new BadRequestException('You are not rent this rental!');
       }
-      const ratingDb = await this.findByRenterAndRoom(
+      const ratingDb = await this.findByRenterAndRoomAndRental(
         rental.room.id,
         rental.renter.id,
+        rental.id,
       );
       if (ratingDb) {
         throw new BadRequestException('You are already rated this room');
       }
       const rating = new RoomRating();
       rating.comment = ratingDto.comment;
+      rating.rental = rental;
       rating.room = rental.room;
       rating.renter = rental.renter;
       rating.cleanRate = ratingDto.cleanRate;
@@ -51,7 +53,11 @@ export class RatingService {
       throw error;
     }
   }
-  async findByRenterAndRoom(roomId: string, renterId: number) {
+  async findByRenterAndRoomAndRental(
+    roomId: string,
+    renterId: number,
+    rentalId: number,
+  ) {
     const queryObj = {
       $and: [
         {
@@ -64,10 +70,15 @@ export class RatingService {
             $and: [{ id: roomId }],
           },
         },
+        {
+          rental: {
+            $and: [{ id: rentalId }],
+          },
+        },
       ],
     };
     const rating = await this.em.findOne(RoomRating, queryObj, {
-      populate: ['renter', 'room'],
+      populate: ['renter', 'room', 'rental'],
     });
     return rating;
   }

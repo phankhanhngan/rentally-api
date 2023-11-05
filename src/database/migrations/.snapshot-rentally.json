@@ -826,6 +826,15 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "rating_status": {
+          "name": "rating_status",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
         "tenants": {
           "name": "tenants",
           "type": "int",
