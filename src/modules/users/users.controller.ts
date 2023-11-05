@@ -35,7 +35,26 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-  ) { }
+  ) {}
+
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
+  @Get('/mods')
+  async getMods(@Res() res: Response) {
+    try {
+      const mods = await this.usersService.getMods();
+      res.status(200).json({
+        message: 'Get list MOD users successfully',
+        status: 'success',
+        data: {
+          modList: mods,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Calling getMods()', error, UsersController.name);
+      throw error;
+    }
+  }
+
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get(':id')
   async getUser(@Res() res: Response, @Param('id', ParseIntPipe) id: number) {

@@ -5,7 +5,6 @@ import {
   Get,
   Inject,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -20,9 +19,9 @@ import { Logger } from 'winston';
 import { RoomsService } from './rooms.service';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
-import { AddRoomAdminDTO } from './dtos/add-room-admin.dto';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { UpdateRoomAdminDTO } from './dtos/update-room-admin.dto';
+import { AddRoomsAdminDTO } from './dtos/add-rooms-admin.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('admin/rooms')
 export class RoomsController {
@@ -36,10 +35,10 @@ export class RoomsController {
     @Req() req,
     @Res() res: Response,
     @Body(new ValidationPipe({ transform: true }))
-    roomDTO: AddRoomAdminDTO,
+    addRoomsDTO: AddRoomsAdminDTO,
   ) {
     try {
-      await this.roomsService.addRoom(roomDTO, req.user);
+      await this.roomsService.addRooms(addRoomsDTO, req.user);
       res.status(200).json({
         status: 'success',
         message: 'Create room successfully',

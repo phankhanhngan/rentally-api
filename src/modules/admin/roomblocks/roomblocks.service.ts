@@ -10,6 +10,7 @@ import { Room, RoomBlock, User } from 'src/entities';
 import { RoomBlockAdminDTO } from './dtos/room-block.dto';
 import { ViewRoomDTO } from '../rooms/dtos/view-room.dto';
 import { RoomStatus } from 'src/common/enum/common.enum';
+import { GetUserDTO } from 'src/modules/users/dtos/get-user.dto';
 
 @Injectable()
 export class RoomBlocksService {
@@ -109,14 +110,12 @@ export class RoomBlocksService {
           `Can not find room block with id=[${id}]`,
         );
       }
-      const { landlord } = roomBlockEntity;
       const roomBlockDto = plainToInstance(RoomBlockAdminDTO, roomBlockEntity);
-      roomBlockDto.landlord = {
-        id: landlord.id,
-        name: `${landlord.firstName} ${landlord.lastName}`,
-        phoneNumber: landlord.phoneNumber,
-        photo: landlord.photo,
-      };
+      roomBlockDto.landlord = plainToInstance(
+        GetUserDTO,
+        roomBlockEntity.landlord,
+      );
+
       roomBlockDto['quantityRooms'] = await this.roomRepository.count({
         roomblock: this.em.getReference(RoomBlock, roomBlockDto.id),
       });
@@ -181,12 +180,7 @@ export class RoomBlocksService {
 
       const roomBlockDtoList = roomBlockEntityList.map((el) => {
         const dto = plainToInstance(RoomBlockAdminDTO, el);
-        dto.landlord = {
-          id: el.id,
-          name: `${el.landlord.firstName} ${el.landlord.lastName}`,
-          phoneNumber: el.landlord.phoneNumber,
-          photo: el.landlord.photo,
-        };
+        dto.landlord = plainToInstance(GetUserDTO, el.landlord);
         dto['quantityRooms'] = roomQuantity.get(el.id)[0];
         dto['emptyRooms'] = roomQuantity.get(el.id)[1];
         return dto;

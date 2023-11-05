@@ -1,33 +1,36 @@
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsInt,
   IsNotEmpty,
   IsNumber,
   IsString,
-  ValidateNested,
+  ValidateIf,
 } from 'class-validator';
 
 export class AddRoomAdminDTO {
-  @IsInt()
-  roomBlockId: number;
-
-  @IsString()
-  @IsNotEmpty()
+  @ValidateIf((obj, value) => value)
+  @IsString({ message: 'roomName must be a string' })
   roomName: string;
 
-  @IsNumber()
+  @IsNotEmpty({ message: 'area should not be empty' })
+  @IsNumber({}, { message: 'area must be a number' })
   area!: number;
 
-  @IsInt()
-  price!: bigint;
+  @IsNotEmpty({ message: 'price should not be empty' })
+  @IsNumber({}, { message: 'price must be a number' })
+  price!: number;
 
-  @IsInt()
-  depositAmount: bigint;
+  @IsNotEmpty({ message: 'Deposit Amount should not be empty' })
+  @IsNumber({}, { message: 'Deposit Amount must be a number' })
+  depositAmount!: number;
 
+  @IsNotEmpty()
   @IsArray()
+  @IsString({ each: true })
   images: string[];
 
+  @ValidateIf((obj, value) => value)
   @IsArray()
-  utilities: number[];
+  @IsInt({ each: true })
+  utilities?: number[];
 }

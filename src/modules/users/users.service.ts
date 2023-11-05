@@ -14,6 +14,7 @@ import { UpdateUserDTO } from './dtos/update-user.dto';
 import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { AWSService } from '../aws/aws.service';
 import { Role, UserStatus } from 'src/common/enum/common.enum';
+import { GetUserDTO } from './dtos/get-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -279,6 +280,17 @@ export class UsersService {
       }
 
       await this.em.removeAndFlush(this.userRepository.getReference(id));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getMods() {
+    try {
+      const mods = await this.userRepository.find({
+        role: Role.MOD,
+      });
+      return plainToInstance(GetUserDTO, mods);
     } catch (error) {
       throw error;
     }

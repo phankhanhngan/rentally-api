@@ -8,7 +8,6 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Room, RoomBlock, User } from 'src/entities';
-import { AddRoomAdminDTO } from './dtos/add-room-admin.dto';
 import { Utility } from 'src/entities/utility.entity';
 import { plainToInstance } from 'class-transformer';
 import { RoomStatus } from 'src/common/enum/common.enum';
@@ -17,6 +16,7 @@ import { Logger } from 'winston';
 import { UpdateRoomAdminDTO } from './dtos/update-room-admin.dto';
 import { AWSService } from 'src/modules/aws/aws.service';
 import { ViewRoomDTO } from './dtos/view-room.dto';
+import { AddRoomsAdminDTO } from './dtos/add-rooms-admin.dto';
 
 @Injectable()
 export class RoomsService {
@@ -32,64 +32,68 @@ export class RoomsService {
     private readonly awsService: AWSService,
   ) {}
 
-  async addRoom(addRoomDTO: AddRoomAdminDTO, user: User) {
+  async addRooms(addRoomsDTO: AddRoomsAdminDTO, user: User) {
     try {
-      const imageSet = new Set();
-      addRoomDTO.images.forEach((el) => {
-        imageSet.add(el);
-      });
+      const roomBlockEntity: Loaded<RoomBlock> =
+        await this.roomBlockRepository.findOne({
+          id: addRoomsDTO.roomBlockId,
+        });
+      if (!roomBlockEntity) {
+        throw new BadRequestException(
+          `Can not find room block with id=[${addRoomsDTO.roomBlockId}]`,
+        );
+      }
+      const setIdRoom = new Set();
+      for (const room of addRoomsDTO.rooms) {
+        const roomEntityById = await this.roomRepository.findOne({
+          id: room.images[0].split('/')[4],
+        });
 
-      if (imageSet.size < addRoomDTO.images.length) {
+        if (roomEntityById) {
+          throw new HttpException(
+            `The room with ID=[${room.images[0].split('/')[4]}] already exists`,
+            HttpStatus.CONFLICT,
+          );
+        }
+        setIdRoom.add(room.images[0].split('/')[4]);
+        const utilityCount = await this.utilityRepository.count({
+          id: {
+            $in: room.utilities,
+          },
+        });
+
+        if (utilityCount != room.utilities.length) {
+          throw new BadRequestException(
+            `There is a utility not found in system`,
+          );
+        }
+      }
+
+      if (setIdRoom.size != addRoomsDTO.rooms.length) {
         throw new HttpException(
           'The two rooms cannot have the same photo link',
           HttpStatus.CONFLICT,
         );
       }
 
-      const roomBlockEntity: Loaded<RoomBlock> =
-        await this.roomBlockRepository.findOne({
-          id: addRoomDTO.roomBlockId,
-        });
+      const roomEntities = [];
+      addRoomsDTO.rooms.forEach(async (room, index) => {
+        if (!room.roomName) {
+          if (index < 10) room.roomName = `R00${index + 1}`;
+          else room.roomName = `R0${index + 1}`;
+        }
+        const roomEntity = plainToInstance(Room, room);
+        roomEntity.utilities = JSON.stringify(room.utilities);
+        roomEntity.roomblock = roomBlockEntity;
+        roomEntity.created_id = user.id;
+        roomEntity.updated_id = user.id;
+        roomEntity.images = JSON.stringify(room.images);
+        roomEntity.status = RoomStatus.EMPTY;
+        roomEntity.id = room.images[0].split('/')[4];
 
-      if (!roomBlockEntity) {
-        throw new BadRequestException(
-          `Can not find room block with id=[${addRoomDTO.roomBlockId}]`,
-        );
-      }
-
-      const utilityCount = await this.utilityRepository.count({
-        id: {
-          $in: addRoomDTO.utilities,
-        },
+        roomEntities.push(roomEntity);
       });
-
-      if (utilityCount != addRoomDTO.utilities.length) {
-        throw new BadRequestException(`There is a utility not found in system`);
-      }
-
-      const roomEntityById = await this.roomRepository.findOne({
-        id: addRoomDTO.images[0].split('/')[4],
-      });
-
-      if (roomEntityById) {
-        throw new HttpException(
-          `The room with ID=[${
-            addRoomDTO.images[0].split('/')[4]
-          }] already exists`,
-          HttpStatus.CONFLICT,
-        );
-      }
-
-      const roomEntity = plainToInstance(Room, addRoomDTO);
-      roomEntity.utilities = JSON.stringify(addRoomDTO.utilities);
-      roomEntity.roomblock = roomBlockEntity;
-      roomEntity.created_id = user.id;
-      roomEntity.updated_id = user.id;
-      roomEntity.images = JSON.stringify(addRoomDTO.images);
-      roomEntity.status = RoomStatus.EMPTY;
-      roomEntity.id = addRoomDTO.images[0].split('/')[4];
-
-      await this.em.persistAndFlush(roomEntity);
+      await this.em.persistAndFlush(roomEntities);
     } catch (error) {
       this.logger.error('Calling addRooms()', error, RoomsService.name);
       throw error;
