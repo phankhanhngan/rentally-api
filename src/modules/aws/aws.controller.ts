@@ -34,13 +34,14 @@ export class AwsController {
   @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
   async addImageRoom(
     @Query('id') id: string,
+    @Res() req,
     @Res() res: Response,
     @UploadedFiles(new ParseFilePipe({}))
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
       if (id && id.length > 0) {
-        await this.roomsService.findRoomById(id);
+        await this.roomsService.findRoomById(id, req.user.id);
       }
       const u_id: string = id && id.length > 0 ? id : uuidv4();
 

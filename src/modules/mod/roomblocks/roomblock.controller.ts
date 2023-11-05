@@ -90,11 +90,12 @@ export class ModRoomBlocksController {
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Delete('/:id')
   async deleteRoomBlock(
+    @Req() req,
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
-      await this.modRoomBlocksService.deleteRoomBlock(id);
+      await this.modRoomBlocksService.deleteRoomBlock(id, req.user.id);
       res.status(200).json({
         status: 'success',
         message: 'Delete room block successfully',
@@ -112,11 +113,12 @@ export class ModRoomBlocksController {
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Get('/:id')
   async getRoomBlock(
+    @Req() req,
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
-      const roomBlock = await this.modRoomBlocksService.getRoomBlock(id);
+      const roomBlock = await this.modRoomBlocksService.getRoomBlock(id, req.user.id);
       res.status(200).json({
         status: 'success',
         message: 'Get room block successfully',
@@ -175,6 +177,7 @@ export class ModRoomBlocksController {
       const rooms = await this.modRoomBlocksService.getRoomsByIdBlockRoom(
         id,
         keyword,
+        req.user.id
       );
       res.status(200).json({
         status: 'success',

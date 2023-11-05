@@ -13,7 +13,7 @@ export class RentalSeeder extends Seeder {
       const rentalDetail = await em.insert(RentalDetail, this.createRentalDetail());
       const landlord = await this.randomLandLord(em);
       const renter = await this.randomRenter(em);
-      const room = await this.randomRoom(em);
+      const room = await this.randomRoom(em, i);
       rentals.push({
         landlord: landlord,
         renter: renter,
@@ -63,8 +63,8 @@ export class RentalSeeder extends Seeder {
     const users = await em.find(User, { role: Role.USER });
     return users[Math.floor(Math.random() * users.length)];
   }
-  async randomRoom(em: EntityManager) {
+  async randomRoom(em: EntityManager, i: number) {
     const rooms = await em.find(Room, { status: RoomStatus.EMPTY});
-    return rooms[Math.floor(Math.random() * rooms.length)];
+    return rooms[i];
   }
 }

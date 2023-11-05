@@ -86,9 +86,14 @@ export class ModRoomBlocksService {
     }
   }
 
-  async deleteRoomBlock(id: number) {
+  async deleteRoomBlock(id: number, idUser: number) {
     try {
-      if ((await this.roomBlockRepository.count({ id })) < 1) {
+      if (
+        (await this.roomBlockRepository.count({
+          id,
+          landlord: { id: idUser },
+        })) < 1
+      ) {
         throw new BadRequestException(
           `Can not find room block with id=[${id}]`,
         );
@@ -104,9 +109,12 @@ export class ModRoomBlocksService {
     }
   }
 
-  async getRoomBlock(id: number): Promise<RoomBlockModDTO> {
+  async getRoomBlock(id: number, idUser: number): Promise<RoomBlockModDTO> {
     try {
-      const roomBlockEntity = await this.roomBlockRepository.findOne({ id });
+      const roomBlockEntity = await this.roomBlockRepository.findOne({
+        id,
+        landlord: { id: idUser },
+      });
       if (!roomBlockEntity) {
         throw new BadRequestException(
           `Can not find room block with id=[${id}]`,
@@ -188,7 +196,11 @@ export class ModRoomBlocksService {
     }
   }
 
-  async getRoomsByIdBlockRoom(idBlockRoom: number, keyword: string) {
+  async getRoomsByIdBlockRoom(
+    idBlockRoom: number,
+    keyword: string,
+    idUser: number,
+  ) {
     try {
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
@@ -202,7 +214,10 @@ export class ModRoomBlocksService {
         ],
       };
       const roomsEntity = await this.em.find(Room, {
-        $and: [queryObj, { roomblock: { id: idBlockRoom } }],
+        $and: [
+          queryObj,
+          { roomblock: { id: idBlockRoom, landlord: { id: idUser } } },
+        ],
       });
       const roomsDto = plainToClass(ViewRoomDTO, roomsEntity);
       return roomsDto;
