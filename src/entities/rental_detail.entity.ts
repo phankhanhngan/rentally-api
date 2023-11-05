@@ -3,25 +3,25 @@ import { Base } from './base.entity';
 
 @Entity({ tableName: 'rental_details' })
 export class RentalDetail extends Base {
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   moveInDate: Date;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   moveOutDate: Date;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   leaseTerm: number;
 
-  @Property({ nullable: false, type: 'decimal' })
+  @Property({ nullable: true, type: 'decimal' })
   monthlyRent: number;
 
   @Property({ nullable: true, type: 'decimal' })
   leaseTerminationCost: number;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   renterIdentifyNo: string;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   landlordIdentifyNo: string;
 
   @Property({ nullable: true })
@@ -36,18 +36,18 @@ export class RentalDetail extends Base {
   @Property({ nullable: true })
   landlordIdentifyAddress: string;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   renterBirthday: Date;
 
-  @Property({ nullable: false })
+  @Property({ nullable: true })
   landlordBirthday: Date;
 
-  @Property({ nullable: false, type: 'decimal' })
+  @Property({ nullable: true, type: 'decimal' })
   electricPrice: number;
 
-  @Property({ nullable: false, type: 'decimal' })
+  @Property({ nullable: true, type: 'decimal' })
   waterPrice: number;
 
-  @Property({ nullable: false, type: 'decimal' })
+  @Property({ nullable: true, type: 'decimal' })
   addtionalPrice: number;
 }
