@@ -37,6 +37,7 @@ export class ModRoomsService {
       const roomBlockEntity: Loaded<RoomBlock> =
         await this.roomBlockRepository.findOne({
           id: addRoomDTO.roomBlockId,
+          landlord: { id: idUser },
         });
       if (!roomBlockEntity) {
         throw new BadRequestException(
