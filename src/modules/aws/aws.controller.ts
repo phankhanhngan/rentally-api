@@ -3,6 +3,7 @@ import {
   Inject,
   Post,
   Query,
+  Req,
   Res,
   UploadedFiles,
   UseGuards,
@@ -33,12 +34,17 @@ export class AwsController {
   @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
   async addImageRoom(
     @Query('id') id: string,
+    @Req() req,
     @Res() res: Response,
     @UploadedFiles()
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
-      if ((id && id.length > 0) && !this.roomsService.findRoomById(id)) {
+      if (
+        id &&
+        id.length > 0 &&
+        !this.roomsService.findRoomById(id, req.user.id)
+      ) {
         return res.status(404).json({
           status: 'fail',
           message: `Can not find room with id=[${id}]`,

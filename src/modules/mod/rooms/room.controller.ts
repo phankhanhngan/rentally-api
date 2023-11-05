@@ -61,7 +61,12 @@ export class ModRoomsController {
     updateRoomModDto: UpdateRoomModDTO,
   ) {
     try {
-      await this.modRoomsService.updateRoom(id, req.user.id, updateRoomModDto);
+      await this.modRoomsService.updateRoom(
+        id,
+        req.user.id,
+        updateRoomModDto,
+        req.user.id,
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Update room successfully',
@@ -80,7 +85,10 @@ export class ModRoomsController {
     @Query('keyword') keyword: string,
   ) {
     try {
-      const roomsDto = await this.modRoomsService.findAllRoom(req.user.id, keyword);
+      const roomsDto = await this.modRoomsService.findAllRoom(
+        req.user.id,
+        keyword,
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Get rooms successfully',
@@ -99,12 +107,12 @@ export class ModRoomsController {
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Get('/:id')
   async findRoomById(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
     @Param('id') id: string,
   ) {
     try {
-      const roomDto = await this.modRoomsService.findRoomById(id);
+      const roomDto = await this.modRoomsService.findRoomById(id, req.user.id);
       return res.status(200).json({
         status: 'success',
         message: 'Get room by id successfully',
@@ -123,12 +131,12 @@ export class ModRoomsController {
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Delete('/:id')
   async deleteRoomById(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
     @Param('id') id: string,
   ) {
     try {
-      await this.modRoomsService.deleteRoomById(id);
+      await this.modRoomsService.deleteRoomById(id, req.user.id);
       return res.status(200).json({
         status: 'success',
         message: 'Delete room successfully',

@@ -58,6 +58,7 @@ export class ModRoomBlocksService {
       const roomBlockEntity: Loaded<RoomBlock> =
         await this.roomBlockRepository.findOne({
           id: id,
+          landlord: { id: user.id },
         });
       if (!roomBlockEntity) {
         throw new BadRequestException(
@@ -86,9 +87,14 @@ export class ModRoomBlocksService {
     }
   }
 
-  async deleteRoomBlock(id: number) {
+  async deleteRoomBlock(id: number, idUser: number) {
     try {
-      if ((await this.roomBlockRepository.count({ id })) < 1) {
+      if (
+        (await this.roomBlockRepository.count({
+          id,
+          landlord: { id: idUser },
+        })) < 1
+      ) {
         throw new BadRequestException(
           `Can not find room block with id=[${id}]`,
         );
@@ -104,9 +110,12 @@ export class ModRoomBlocksService {
     }
   }
 
-  async getRoomBlock(id: number): Promise<RoomBlockModDTO> {
+  async getRoomBlock(id: number, idUser: number): Promise<RoomBlockModDTO> {
     try {
-      const roomBlockEntity = await this.roomBlockRepository.findOne({ id });
+      const roomBlockEntity = await this.roomBlockRepository.findOne({
+        id,
+        landlord: { id: idUser },
+      });
       if (!roomBlockEntity) {
         throw new BadRequestException(
           `Can not find room block with id=[${id}]`,
@@ -188,8 +197,20 @@ export class ModRoomBlocksService {
     }
   }
 
-  async getRoomsByIdBlockRoom(idBlockRoom: number, keyword: string) {
+  async getRoomsByIdBlockRoom(
+    idBlockRoom: number,
+    keyword: string,
+    idUser: number,
+  ) {
     try {
+      const roomBlock = await this.roomBlockRepository.count({
+        id: idBlockRoom,
+        landlord: { id: idUser },
+      });
+      
+      if(!roomBlock) {
+        throw new BadRequestException(`Not found RoomBlock ID = [${idBlockRoom}]`);
+      }
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
       const queryObj = {
@@ -207,7 +228,11 @@ export class ModRoomBlocksService {
       const roomsDto = plainToClass(ViewRoomDTO, roomsEntity);
       return roomsDto;
     } catch (error) {
-      this.logger.error('Calling getRoomsByIdBlockRoom()', error, ModRoomBlocksService.name);
+      this.logger.error(
+        'Calling getRoomsByIdBlockRoom()',
+        error,
+        ModRoomBlocksService.name,
+      );
       throw error;
     }
   }

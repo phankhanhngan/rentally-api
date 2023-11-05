@@ -101,10 +101,12 @@ export class ModRoomsService {
     idRoom: string,
     idlogin: number,
     updateRoomModDto: UpdateRoomModDTO,
+    idUser: number,
   ) {
     try {
       const roomEntity: Loaded<Room> = await this.roomRepository.findOne({
         id: idRoom,
+        roomblock: { landlord: idUser },
       });
 
       if (!roomEntity) {
@@ -158,9 +160,12 @@ export class ModRoomsService {
     }
   }
 
-  async findRoomById(id: string) {
+  async findRoomById(id: string, idUser: number) {
     try {
-      const roomEntity = await this.roomRepository.findOne({ id });
+      const roomEntity = await this.roomRepository.findOne({
+        id,
+        roomblock: { landlord: { id: idUser } },
+      });
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
       }
@@ -196,9 +201,12 @@ export class ModRoomsService {
     }
   }
 
-  async deleteRoomById(id: string) {
+  async deleteRoomById(id: string, idUser: number) {
     try {
-      const roomEntity = await this.roomRepository.findOne({ id });
+      const roomEntity = await this.roomRepository.findOne({
+        id,
+        roomblock: { landlord: { id: idUser } },
+      });
 
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
