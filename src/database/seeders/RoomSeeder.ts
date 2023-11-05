@@ -8,8 +8,6 @@ import { Role, RoomStatus } from '../../common/enum/common.enum';
 export class RoomSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
     const roomBlocks = await em.find<RoomBlock>(RoomBlock, {});
-    console.log(roomBlocks);
-
     const rooms = [];
     Array.from(Array(50).keys()).forEach(async () => {
       rooms.push({
