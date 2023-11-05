@@ -1,5 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
-import { Point, PointType } from 'src/entities';
+import { Point } from 'src/entities';
 import { GetUserDTO } from 'src/modules/users/dtos/get-user.dto';
 
 @Exclude()

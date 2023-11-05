@@ -6,9 +6,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { AddRoomDTO } from './add-room.dto';
+import { AddRoomAdminDTO } from './add-room-admin.dto';
 
-export class AddRoomModDTO {
+export class AddRoomsAdminDTO {
   @IsOptional()
   @Transform(({ value }) => parseInt(value))
   @Type(() => Number)
@@ -19,6 +19,6 @@ export class AddRoomModDTO {
   @IsNotEmpty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AddRoomDTO)
-  rooms: AddRoomDTO[];
+  @Type(() => AddRoomAdminDTO)
+  rooms: AddRoomAdminDTO[];
 }

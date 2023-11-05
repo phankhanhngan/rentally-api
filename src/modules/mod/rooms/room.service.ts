@@ -43,14 +43,8 @@ export class ModRoomsService {
           `Can not find room block with id=[${addRoomDTO.roomBlockId}]`,
         );
       }
-      // Kiem tra loi khong tim thay utility
       const setIdRoom = new Set();
-      for (
-        let indexRoom = 0;
-        indexRoom < addRoomDTO.rooms.length;
-        indexRoom++
-      ) {
-        const room = addRoomDTO.rooms[indexRoom];
+      for (const room of addRoomDTO.rooms) {
         const roomEntityById = await this.roomRepository.findOne({
           id: room.images[0].split('/')[4],
         });
@@ -62,7 +56,19 @@ export class ModRoomsService {
           );
         }
         setIdRoom.add(room.images[0].split('/')[4]);
+        const utilityCount = await this.utilityRepository.count({
+          id: {
+            $in: room.utilities,
+          },
+        });
+
+        if (utilityCount != room.utilities.length) {
+          throw new BadRequestException(
+            `There is a utility not found in system`,
+          );
+        }
       }
+
       if (setIdRoom.size != addRoomDTO.rooms.length) {
         throw new HttpException(
           'The two rooms cannot have the same photo link',
@@ -70,18 +76,14 @@ export class ModRoomsService {
         );
       }
 
-      for (
-        let indexRoom = 0;
-        indexRoom < addRoomDTO.rooms.length;
-        indexRoom++
-      ) {
-        const room = addRoomDTO.rooms[indexRoom];
+      const roomEntities = [];
+      addRoomDTO.rooms.forEach(async (room, index) => {
         if (!room.roomName) {
-          if (indexRoom < 10) room.roomName = `R00${indexRoom + 1}`;
-          else room.roomName = `R0${indexRoom + 1}`;
+          if (index < 10) room.roomName = `R00${index + 1}`;
+          else room.roomName = `R0${index + 1}`;
         }
-        const roomEntity = await plainToInstance(Room, room);
-        roomEntity.utilities = await JSON.stringify(room.utilities);
+        const roomEntity = plainToInstance(Room, room);
+        roomEntity.utilities = JSON.stringify(room.utilities);
         roomEntity.roomblock = roomBlockEntity;
         roomEntity.created_id = idUser;
         roomEntity.updated_id = idUser;
@@ -89,8 +91,9 @@ export class ModRoomsService {
         roomEntity.status = RoomStatus.EMPTY;
         roomEntity.id = room.images[0].split('/')[4];
 
-        await this.em.persistAndFlush(roomEntity);
-      }
+        roomEntities.push(roomEntity);
+      });
+      await this.em.persistAndFlush(roomEntities);
     } catch (error) {
       this.logger.error('Calling addRooms()', error, ModRoomsService.name);
       throw error;

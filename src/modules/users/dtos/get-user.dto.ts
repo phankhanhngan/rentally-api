@@ -6,6 +6,9 @@ export class GetUserDTO {
   id!: number;
 
   @Expose()
+  @Transform(({ value, key, obj }) => {
+    return `${obj.firstName + obj.lastName}`;
+  })
   name: string;
 
   @Expose()
@@ -13,4 +16,7 @@ export class GetUserDTO {
 
   @Expose()
   phoneNumber: string;
+
+  firstName?: string;
+  lastName?: string;
 }
