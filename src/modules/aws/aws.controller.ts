@@ -4,6 +4,7 @@ import {
   ParseFilePipe,
   Post,
   Query,
+  Req,
   Res,
   UploadedFiles,
   UseGuards,
@@ -34,7 +35,7 @@ export class AwsController {
   @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
   async addImageRoom(
     @Query('id') id: string,
-    @Res() req,
+    @Req() req,
     @Res() res: Response,
     @UploadedFiles(new ParseFilePipe({}))
     files: Array<Express.Multer.File> | Express.Multer.File,

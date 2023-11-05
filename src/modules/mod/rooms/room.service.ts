@@ -104,11 +104,12 @@ export class ModRoomsService {
   async updateRoom(
     idRoom: string,
     idlogin: number,
-    updateRoomModDto: UpdateRoomModDTO,
+    updateRoomModDto: UpdateRoomModDTO
   ) {
     try {
       const roomEntity: Loaded<Room> = await this.roomRepository.findOne({
         id: idRoom,
+        roomblock: { landlord: idlogin },
       });
 
       if (!roomEntity) {

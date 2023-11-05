@@ -61,7 +61,11 @@ export class ModRoomsController {
     updateRoomModDto: UpdateRoomModDTO,
   ) {
     try {
-      await this.modRoomsService.updateRoom(id, req.user.id, updateRoomModDto);
+      await this.modRoomsService.updateRoom(
+        id,
+        req.user.id,
+        updateRoomModDto
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Update room successfully',

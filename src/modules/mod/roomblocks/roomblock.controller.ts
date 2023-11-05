@@ -118,7 +118,10 @@ export class ModRoomBlocksController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
-      const roomBlock = await this.modRoomBlocksService.getRoomBlock(id, req.user.id);
+      const roomBlock = await this.modRoomBlocksService.getRoomBlock(
+        id,
+        req.user.id,
+      );
       res.status(200).json({
         status: 'success',
         message: 'Get room block successfully',

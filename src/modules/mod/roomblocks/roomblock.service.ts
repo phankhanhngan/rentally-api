@@ -58,6 +58,7 @@ export class ModRoomBlocksService {
       const roomBlockEntity: Loaded<RoomBlock> =
         await this.roomBlockRepository.findOne({
           id: id,
+          landlord: { id: user.id },
         });
       if (!roomBlockEntity) {
         throw new BadRequestException(
@@ -202,6 +203,14 @@ export class ModRoomBlocksService {
     idUser: number,
   ) {
     try {
+      const roomBlock = await this.roomBlockRepository.count({
+        id: idBlockRoom,
+        landlord: { id: idUser },
+      });
+      
+      if(!roomBlock) {
+        throw new BadRequestException(`Not found RoomBlock ID = [${idBlockRoom}]`);
+      }
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
       const queryObj = {
