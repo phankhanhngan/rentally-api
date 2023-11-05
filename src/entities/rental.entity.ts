@@ -40,5 +40,5 @@ export class Rental extends Base {
   status: RentalStatus;
 
   @Property({ nullable: false })
-  attendance: number;
+  tenants: number;
 }

@@ -23,26 +23,30 @@ export class RatingService {
         idLogin,
         RentalStatus.COMPLETED,
       );
-      if (!rental)
+      if (!rental) {
         throw new BadRequestException('You are not rent this rental!');
-      const ratingDb = this.findByRenterAndRoom(
+      }
+      const ratingDb = await this.findByRenterAndRoom(
         rental.room.id,
         rental.renter.id,
       );
-      // if (ratingDb)
-      //   throw new BadRequestException('You are already rated this room');
-      // const rating = new RoomRating();
-      // rating.comment = ratingDto.comment;
-      // rating.cleanRate = ratingDto.cleanRate;
-      // rating.locationRate = ratingDto.locationRate;
-      // rating.securityRate = ratingDto.securityRate;
-      // rating.supportRate = ratingDto.supportRate;
-      // rating.created_id = idLogin;
-      // rating.updated_id = idLogin;
-      // rating.created_at = new Date();
-      // rating.updated_at = new Date();
-      // await this.em.persistAndFlush(rating);
-      return ratingDb;
+      if (ratingDb) {
+        throw new BadRequestException('You are already rated this room');
+      }
+      const rating = new RoomRating();
+      rating.comment = ratingDto.comment;
+      rating.room = rental.room;
+      rating.renter = rental.renter;
+      rating.cleanRate = ratingDto.cleanRate;
+      rating.locationRate = ratingDto.locationRate;
+      rating.securityRate = ratingDto.securityRate;
+      rating.supportRate = ratingDto.supportRate;
+      rating.created_id = idLogin;
+      rating.updated_id = idLogin;
+      rating.created_at = new Date();
+      rating.updated_at = new Date();
+      await this.em.persistAndFlush(rating);
+      return rating;
     } catch (error) {
       throw error;
     }
