@@ -21,7 +21,7 @@ export class Rental extends Base {
   })
   renter!: User;
 
-  @OneToOne({
+  @ManyToOne({
     entity: () => Room,
     onDelete: 'cascade',
     onUpdateIntegrity: 'cascade',
@@ -38,4 +38,7 @@ export class Rental extends Base {
   @Property({ nullable: false })
   @Enum({ items: () => RentalStatus })
   status: RentalStatus;
+
+  @Property({ nullable: false })
+  attendance: number;
 }

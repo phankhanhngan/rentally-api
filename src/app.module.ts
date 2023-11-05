@@ -20,6 +20,8 @@ import { UtilitiesModule } from './modules/utilities/utilities.module';
 import { RoomBlock } from './entities';
 import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
 import { RatingModule } from './modules/rating/rating.module';
+import { RentalModule } from './modules/rental/rental.module';
+import { FindingModule } from './modules/finding/finding.module';
 
 @Module({
   imports: [
@@ -71,6 +73,8 @@ import { RatingModule } from './modules/rating/rating.module';
     AWSModule,
     UtilitiesModule,
     RatingModule,
+    RentalModule,
+    FindingModule,
   ],
 
   controllers: [AppController],

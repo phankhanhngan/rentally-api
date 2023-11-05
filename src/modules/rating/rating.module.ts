@@ -9,6 +9,8 @@ import { Room, RoomBlock, User } from 'src/entities';
 import { RoomsService } from '../admin/rooms/rooms.service';
 import { Utility } from 'src/entities/utility.entity';
 import { UsersService } from '../users/users.service';
+import { RentalService } from '../rental/rental.service';
+import { Rental } from 'src/entities/rental.entity';
 
 @Module({
   imports: [
@@ -19,8 +21,9 @@ import { UsersService } from '../users/users.service';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RoomBlock]),
     MikroOrmModule.forFeature([Utility]),
+    MikroOrmModule.forFeature([Rental]),
   ],
-  providers: [RatingService, RoomsService, UsersService],
-  controllers: [RatingController]
+  providers: [RatingService, RoomsService, UsersService, RentalService],
+  controllers: [RatingController],
 })
 export class RatingModule {}
