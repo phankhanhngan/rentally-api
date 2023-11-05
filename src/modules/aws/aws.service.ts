@@ -41,9 +41,13 @@ export class AWSService {
     try {
       const url = new URL(objectUrl);
       return url.pathname.replace('/', '');
-    } catch(err) {
-      this.logger.error('Calling extractObjectNameFromUrl()', err, AWSService.name);
-      return "https://www.facebook.com/";
+    } catch (err) {
+      this.logger.error(
+        'Calling extractObjectNameFromUrl()',
+        err,
+        AWSService.name,
+      );
+      return 'https://www.facebook.com/';
     }
   }
 
@@ -93,7 +97,8 @@ export class AWSService {
       }
       const commands = files.map((file) => {
         const date = new Date();
-        file.originalname = date.getTime() + file.originalname.replace(/ /g, '');
+        file.originalname =
+          date.getTime() + file.originalname.replace(/ /g, '');
         return new PutObjectCommand({
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: `${folderPath}/${file.originalname}`,

@@ -78,7 +78,7 @@ export class RoomsController {
       const rooms = await this.roomsService.findAllRoom(keyword);
       res.status(200).json({
         status: 'success',
-        message: 'Create rooms successfully',
+        message: 'Get rooms successfully',
         data: {
           rooms: rooms,
         },
@@ -100,7 +100,7 @@ export class RoomsController {
       const { room, roomBlockId } = await this.roomsService.findRoomById(id);
       return res.status(200).json({
         status: 'success',
-        message: 'Create rooms successfully',
+        message: 'Get room by id successfully',
         data: {
           roomBlockId: roomBlockId,
           room: room,

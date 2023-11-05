@@ -9,6 +9,7 @@ import { UpdateRoomBlockAdminDTO } from './dtos/update-room-block-admin.dto';
 import { Room, RoomBlock, User } from 'src/entities';
 import { RoomBlockAdminDTO } from './dtos/room-block.dto';
 import { ViewRoomDTO } from '../rooms/dtos/view-room.dto';
+import { RoomStatus } from 'src/common/enum/common.enum';
 
 @Injectable()
 export class RoomBlocksService {
@@ -18,6 +19,8 @@ export class RoomBlocksService {
     private readonly userRepository: EntityRepository<User>,
     @InjectRepository(RoomBlock)
     private readonly roomBlockRepository: EntityRepository<RoomBlock>,
+    @InjectRepository(Room)
+    private readonly roomRepository: EntityRepository<Room>,
     private readonly em: EntityManager,
   ) {}
 
@@ -114,6 +117,13 @@ export class RoomBlocksService {
         phoneNumber: landlord.phoneNumber,
         photo: landlord.photo,
       };
+      roomBlockDto['quantityRooms'] = await this.roomRepository.count({
+        roomblock: this.em.getReference(RoomBlock, roomBlockDto.id),
+      });
+      roomBlockDto['emptyRooms'] = await this.roomRepository.count({
+        roomblock: this.em.getReference(RoomBlock, roomBlockDto.id),
+        status: RoomStatus.EMPTY,
+      });
       return roomBlockDto;
     } catch (error) {
       this.logger.error(
@@ -155,6 +165,20 @@ export class RoomBlocksService {
         },
       );
 
+      const roomQuantity = new Map();
+      await Promise.all(
+        roomBlockEntityList.map(async (el) => {
+          const quantity = await this.roomRepository.count({
+            roomblock: this.em.getReference(RoomBlock, el.id),
+          });
+          const emptyQuantity = await this.roomRepository.count({
+            roomblock: this.em.getReference(RoomBlock, el.id),
+            status: RoomStatus.EMPTY,
+          });
+          roomQuantity.set(el.id, [quantity, emptyQuantity]);
+        }),
+      );
+
       const roomBlockDtoList = roomBlockEntityList.map((el) => {
         const dto = plainToInstance(RoomBlockAdminDTO, el);
         dto.landlord = {
@@ -163,6 +187,8 @@ export class RoomBlocksService {
           phoneNumber: el.landlord.phoneNumber,
           photo: el.landlord.photo,
         };
+        dto['quantityRooms'] = roomQuantity.get(el.id)[0];
+        dto['emptyRooms'] = roomQuantity.get(el.id)[1];
         return dto;
       });
       return roomBlockDtoList;

@@ -5,7 +5,6 @@ import { BaseUUID } from './baseUUID.enity';
 
 @Entity({ tableName: 'rooms' })
 export class Room extends BaseUUID {
-
   @ManyToOne({
     entity: () => RoomBlock,
     onDelete: 'cascade',
