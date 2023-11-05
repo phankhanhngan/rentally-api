@@ -805,7 +805,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "mappedType": "text"
         },
         "clean_rate": {
@@ -998,15 +998,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "string"
-        },
-        "attendance": {
-          "name": "attendance",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "integer"
         }
       },
       "name": "rental",

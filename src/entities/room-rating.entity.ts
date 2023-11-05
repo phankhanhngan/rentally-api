@@ -19,7 +19,7 @@ export class RoomRating extends Base {
   })
   renter!: User;
 
-  @Property({ nullable: false, type: 'text' })
+  @Property({ nullable: true, type: 'text' })
   comment: string;
 
   @Property({ nullable: false, type: 'int' })

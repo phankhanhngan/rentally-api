@@ -35,11 +35,11 @@ export class RatingController {
   ) {
     try {
       const idLogin = req.user.id;
-      await this.ratingService.createRating(idLogin, ratingDto);
+      const data = await this.ratingService.createRating(idLogin, ratingDto);
       res.status(200).json({
         message: 'Send rating successfully',
         status: 'success',
-        data: ratingDto,
+        data: data,
       });
     } catch (error) {
       this.logger.error('Calling createRating()', error, RatingController.name);
