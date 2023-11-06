@@ -101,6 +101,7 @@ export class RatingService {
          rt.location_rate as locationRate,
          rt.security_rate as securityRate,
          rt.support_rate as supportRate,
+         (rt.clean_rate + rt.location_rate + rt.security_rate + rt.support_rate) / 4 as avgRate,  
          concat(u.first_name, ' ', u.last_name) as renterName,
          u.photo as renterPhoto
          FROM rentally.room_ratings rt  
@@ -109,7 +110,34 @@ export class RatingService {
         { id: roomId },
       );
       const res = await this.em.execute(qb);
-      return res;
+      if (!res) {
+        return {
+          ratings: null,
+        };
+      }
+      const totalRating = res.length;
+      let avgRate = 0,
+        avgClean = 0,
+        avgLocation = 0,
+        avgSecurity = 0,
+        avgSupport = 0;
+      for (let index = 0; index < res.length; index++) {
+        avgRate += parseFloat(res[index].avgRate);
+        avgClean += res[index].cleanRate;
+        avgLocation += res[index].locationRate;
+        avgSecurity += res[index].securityRate;
+        avgSupport += res[index].supportRate;
+      }
+      const data = {
+        ratings: res,
+        avgRate: parseFloat((avgRate / totalRating).toFixed(1)),
+        avgClean: avgClean / totalRating,
+        avgLocation: avgLocation / totalRating,
+        avgSecurity: avgSecurity / totalRating,
+        avgSupport: avgSupport / totalRating,
+        totalRating: totalRating,
+      };
+      return data;
       // return listRating;
     } catch (error) {
       throw error;
