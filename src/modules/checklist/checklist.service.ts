@@ -20,9 +20,68 @@ export class ChecklistService {
         {
           renter: { id: idLogined },
         },
-        { populate: ['renter', 'room', 'room.roomblock'] },
+        {
+          populate: ['room', 'room.roomblock', 'room.roomblock.landlord'],
+          fields: [
+            'id',
+            'room.id',
+            'room.roomName',
+            'room.area',
+            'room.price',
+            'room.depositAmount',
+            'room.images',
+            'room.utilities',
+            'room.status',
+            'room.roomblock.id',
+            'room.roomblock.address',
+            'room.roomblock.city',
+            'room.roomblock.district',
+            'room.roomblock.country',
+            'room.roomblock.coordinate',
+            'room.roomblock.description',
+            'room.roomblock.landlord.id',
+            'room.roomblock.landlord.email',
+            'room.roomblock.landlord.firstName',
+            'room.roomblock.landlord.lastName',
+            'room.roomblock.landlord.phoneNumber',
+          ],
+        },
       );
       return checklist;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async removeOfChecklist(checkListDTO: CheckListDTO, idLogined: any) {
+    try {
+      const room = await this.em.findOne(Room, { id: checkListDTO.roomId });
+      if (!room)
+        throw new BadRequestException(
+          `Can not find room with id: [${checkListDTO.roomId}]`,
+        );
+      const queryObj = {
+        $and: [
+          {
+            renter: {
+              $and: [{ id: idLogined }],
+            },
+          },
+          {
+            room: {
+              $and: [{ id: checkListDTO.roomId }],
+            },
+          },
+        ],
+      };
+      const checklistDb = await this.em.findOne(Checklist, queryObj, {
+        populate: ['room', 'renter'],
+      });
+      if (!checklistDb)
+        throw new BadRequestException(
+          'You don not have this room in your checklist!',
+        );
+      await this.em.removeAndFlush(checklistDb);
     } catch (error) {
       throw error;
     }
@@ -30,6 +89,10 @@ export class ChecklistService {
   async addToChecklist(checkListDTO: CheckListDTO, idLogined: any) {
     try {
       const room = await this.em.findOne(Room, { id: checkListDTO.roomId });
+      if (!room)
+        throw new BadRequestException(
+          `Can not find room with id: [${checkListDTO.roomId}]`,
+        );
       const renter = await this.userService.getUserById(idLogined);
       const queryObj = {
         $and: [

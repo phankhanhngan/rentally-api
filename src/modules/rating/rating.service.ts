@@ -11,6 +11,7 @@ import { RoomRating } from 'src/entities/room-rating.entity';
 import { Rental } from '../../entities/rental.entity';
 import { RoomsService } from '../admin/rooms/rooms.service';
 import { Room } from 'src/entities';
+import { log } from 'console';
 
 @Injectable()
 export class RatingService {
@@ -21,39 +22,37 @@ export class RatingService {
   ) {}
   async createRating(idLogin: any, ratingDto: RatingDTO) {
     try {
-      const list = await this.findByRoom(ratingDto.comment);
-      return list;
-      // const rental = await this.rentalService.findByIdAndRenter(
-      //   ratingDto.rentalId,
-      //   idLogin,
-      //   RentalStatus.COMPLETED,
-      // );
-      // if (!rental) {
-      //   throw new BadRequestException('You are not rent this rental!');
-      // }
-      // const ratingDb = await this.findByRenterAndRoomAndRental(
-      //   rental.room.id,
-      //   rental.renter.id,
-      //   rental.id,
-      // );
-      // if (ratingDb) {
-      //   throw new BadRequestException('You are already rated this room');
-      // }
-      // const rating = new RoomRating();
-      // rating.comment = ratingDto.comment;
-      // rating.rental = rental;
-      // rating.room = rental.room;
-      // rating.renter = rental.renter;
-      // rating.cleanRate = ratingDto.cleanRate;
-      // rating.locationRate = ratingDto.locationRate;
-      // rating.securityRate = ratingDto.securityRate;
-      // rating.supportRate = ratingDto.supportRate;
-      // rating.created_id = idLogin;
-      // rating.updated_id = idLogin;
-      // rating.created_at = new Date();
-      // rating.updated_at = new Date();
-      // await this.em.persistAndFlush(rating);
-      // return rating;
+      const rental = await this.rentalService.findByIdAndRenter(
+        ratingDto.rentalId,
+        idLogin,
+        RentalStatus.COMPLETED,
+      );
+      if (!rental) {
+        throw new BadRequestException('You are not rent this rental!');
+      }
+      const ratingDb = await this.findByRenterAndRoomAndRental(
+        rental.room.id,
+        rental.renter.id,
+        rental.id,
+      );
+      if (ratingDb) {
+        throw new BadRequestException('You are already rated this room');
+      }
+      const rating = new RoomRating();
+      rating.comment = ratingDto.comment;
+      rating.rental = rental;
+      rating.room = rental.room;
+      rating.renter = rental.renter;
+      rating.cleanRate = ratingDto.cleanRate;
+      rating.locationRate = ratingDto.locationRate;
+      rating.securityRate = ratingDto.securityRate;
+      rating.supportRate = ratingDto.supportRate;
+      rating.created_id = idLogin;
+      rating.updated_id = idLogin;
+      rating.created_at = new Date();
+      rating.updated_at = new Date();
+      await this.em.persistAndFlush(rating);
+      return rating;
     } catch (error) {
       throw error;
     }
@@ -110,7 +109,7 @@ export class RatingService {
         { id: roomId },
       );
       const res = await this.em.execute(qb);
-      if (!res) {
+      if (res.length < 1) {
         return {
           ratings: null,
         };
