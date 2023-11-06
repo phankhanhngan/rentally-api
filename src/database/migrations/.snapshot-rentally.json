@@ -1438,6 +1438,132 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "room_id": {
+          "name": "room_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "renter_id": {
+          "name": "renter_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        }
+      },
+      "name": "checklist",
+      "indexes": [
+        {
+          "columnNames": [
+            "room_id"
+          ],
+          "composite": false,
+          "keyName": "checklist_room_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "renter_id"
+          ],
+          "composite": false,
+          "keyName": "checklist_renter_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "checklist_room_id_foreign": {
+          "constraintName": "checklist_room_id_foreign",
+          "columnNames": [
+            "room_id"
+          ],
+          "localTableName": "checklist",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "rooms",
+          "updateRule": "cascade"
+        },
+        "checklist_renter_id_foreign": {
+          "constraintName": "checklist_renter_id_foreign",
+          "columnNames": [
+            "renter_id"
+          ],
+          "localTableName": "checklist",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "users",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "created_id": {
+          "name": "created_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "updated_id": {
+          "name": "updated_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "name": {
           "name": "name",
           "type": "varchar(255)",

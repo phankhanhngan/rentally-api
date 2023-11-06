@@ -22,6 +22,7 @@ import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
 import { RatingModule } from './modules/rating/rating.module';
 import { RentalModule } from './modules/rental/rental.module';
 import { FindingModule } from './modules/finding/finding.module';
+import { ChecklistModule } from './modules/checklist/checklist.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { FindingModule } from './modules/finding/finding.module';
     RatingModule,
     RentalModule,
     FindingModule,
+    ChecklistModule,
   ],
 
   controllers: [AppController],

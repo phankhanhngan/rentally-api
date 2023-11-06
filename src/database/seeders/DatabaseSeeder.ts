@@ -3,6 +3,7 @@ import { Seeder } from '@mikro-orm/seeder';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import {
+  RatingStatus,
   RentalStatus,
   Role,
   RoomStatus,
@@ -17,6 +18,7 @@ import { Room } from '../..//entities/room.entity';
 import { RentalDetail } from '../../entities/rental_detail.entity';
 import { Rental } from '../../entities/rental.entity';
 import { RoomRating } from '../../entities/room-rating.entity';
+import { Checklist } from '../../entities/checklist.entity';
 export class DatabaseSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
@@ -113,6 +115,7 @@ export class DatabaseSeeder extends Seeder {
         room: room,
         rentalDetail: rentalDetail,
         tenants: 1,
+        ratingStatus: RatingStatus.NONE,
         status: RentalStatus.COMPLETED,
         created_at: new Date(),
         updated_at: new Date(),
@@ -148,6 +151,21 @@ export class DatabaseSeeder extends Seeder {
       });
     }
     await em.insertMany(RoomRating, rating);
+    // ----------------------------------------------------------
+    const checklist = [];
+    for (let i = 0; i < 50; i++) {
+      const room = await this.randomRoom(em);
+      const renter = await this.randomRenter(em);
+      checklist.push({
+        room: room,
+        renter: renter,
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_id: 1,
+        updated_id: 1,
+      });
+    }
+    await em.insertMany(Checklist, checklist);
   }
   randomEnumValue = (enumeration) => {
     const values = Object.keys(enumeration);
