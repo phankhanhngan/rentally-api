@@ -6,12 +6,13 @@ import { UserRentalService } from './user-rental.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { Response } from 'express';
+import { RentalService } from '../rental.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('my-rental')
 export class UserRentalController {
   constructor(
-    private readonly userRentalServide: UserRentalService,
+    private readonly rentalService: RentalService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
   @UseGuards(RoleAuthGuard([Role.USER]))
@@ -19,11 +20,11 @@ export class UserRentalController {
   async getMyRental(@Res() res: Response, @Req() req) {
     try {
       const idLogined = req.user.id;
-
+      const myRental = await this.rentalService.getMyRental(idLogined);
       res.status(200).json({
         message: 'Get my rental successfully',
         status: 'success',
-        data: idLogined,
+        data: myRental,
       });
     } catch (error) {
       this.logger.error(
