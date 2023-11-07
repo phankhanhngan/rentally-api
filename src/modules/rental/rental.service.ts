@@ -35,4 +35,23 @@ export class RentalService {
       throw error;
     }
   }
+  async getMyRental(idLogined: any) {
+    try {
+      return await this.em.find(
+        Rental,
+        { renter: { id: idLogined } },
+        {
+          populate: [
+            'landlord',
+            'renter',
+            'room',
+            'room.roomblock',
+            'rentalDetail',
+          ],
+        },
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
 }
