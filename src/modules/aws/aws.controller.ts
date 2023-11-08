@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Inject,
   ParseFilePipe,
@@ -42,7 +43,10 @@ export class AwsController {
   ) {
     try {
       if (id && id.length > 0) {
-        await this.roomsService.findRoomById(id, req.user.id);
+        const room = await this.roomsService.findRoomById(id, req.user.id);
+        if(!room) {
+          throw new BadRequestException(`Can not find room with id=[${id}]`);
+        }
       }
       const u_id: string = id && id.length > 0 ? id : uuidv4();
 

@@ -112,6 +112,7 @@ export class RatingService {
       if (res.length < 1) {
         return {
           ratings: null,
+          avgRate: 0
         };
       }
       const totalRating = res.length;

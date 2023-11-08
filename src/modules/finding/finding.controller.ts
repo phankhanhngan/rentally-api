@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -50,6 +51,11 @@ export class FindingController {
   ) {
     try {
       const room = await this.findingService.getRoomDetailById(id);
+
+      if(!room) {
+        throw new BadRequestException(`Can not find room with id=[${id}]`);
+      }
+
       return res.status(200).json({
         status: 'success',
         message: 'Get rooms successfully',

@@ -4,16 +4,17 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER, utilities } from 'nest-winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { FindRoomDTO } from './dtos/find-room.dto';
-import { ro, th } from '@faker-js/faker';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Room, RoomBlock } from 'src/entities';
+import { Room } from 'src/entities';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ViewFindRoomDTO } from './dtos/view-find-room';
 import { RoomStatus } from 'src/common/enum/common.enum';
 import { RoomDetailDTO } from './dtos/room-detail.dto';
+import { RatingService } from '../rating/rating.service';
+import { UtilitiesService } from '../utilities/utilities.service';
 
 @Injectable()
 export class FindingService {
@@ -22,14 +23,15 @@ export class FindingService {
     private readonly em: EntityManager,
     @InjectRepository(Room)
     private readonly roomRepository: EntityRepository<Room>,
-    @InjectRepository(RoomBlock)
-    private readonly roomBlockRepository: EntityRepository<RoomBlock>,
+    private readonly utilitiesService: UtilitiesService,
+    private readonly ratingService: RatingService,
   ) {}
 
   async findAllRoom(findRoomDto: FindRoomDTO) {
     try {
       let keyword = '';
-      if (findRoomDto.district) keyword = findRoomDto.keyword.replace(' ', '%');
+      if (findRoomDto.keyword)
+        keyword = findRoomDto.keyword.replaceAll(' ', '%');
       const likeQr = { $like: `%${keyword}%` };
       const queryObjBlockRoom = {};
       queryObjBlockRoom['$and'] = [
@@ -88,15 +90,24 @@ export class FindingService {
       );
       const roomsDto = plainToClass(ViewFindRoomDTO, rooms);
 
-      rooms.forEach((room, index) => {
-        roomsDto[index].address = room.roomblock.address;
-        roomsDto[index].district = room.roomblock.district;
-        roomsDto[index].rating = 4.1;
-      });
+      for (let i = 0; i < rooms.length; i++) {
+        roomsDto[i].address = rooms[i].roomblock.address;
+        roomsDto[i].district = rooms[i].roomblock.district;
+        roomsDto[i].coordinate = rooms[i].roomblock.coordinate;
 
-      // Get rating for ratingService
-      // Get link utilities
-      
+        const utilities = JSON.parse(rooms[i].utilities);
+        const utilitiesDetail = [];
+        for (let j = 0; j < utilities.length; j++) {
+          const utilityDto = await this.utilitiesService.getUtilityById(
+            utilities[j],
+          );
+          utilitiesDetail.push(utilityDto);
+        }
+        roomsDto[i].utilities = utilitiesDetail;
+
+        const rating = await this.ratingService.findByRoom(rooms[i].id);
+        if (rating.ratings) roomsDto[i].avgRate = rating.avgRate;
+      }
 
       return roomsDto;
     } catch (err) {
@@ -127,19 +138,26 @@ export class FindingService {
       );
 
       if (!room) {
-        throw new BadRequestException(`Can not find room with id=[${id}]`);
+        // throw new BadRequestException(`Can not find room with id=[${id}]`);
+        return null;
       }
 
       const roomDto = plainToInstance(RoomDetailDTO, room);
-      // roomDto.description = room.roomblock.description;
-      // roomDto.coordinate = room.roomblock.coordinate;
-      // roomDto.address = room.roomblock.address;
-      // roomDto.district = room.roomblock.district;
-      // roomDto.city = room.roomblock.city;
-      // roomDto.country = room.roomblock.country;
+      const rating = await this.ratingService.findByRoom(room.id);
+      if (rating.ratings) {
+        roomDto.avgRate = rating.avgRate;
+        roomDto.ratings = rating.ratings;
+      }
 
-      roomDto.rating = 4.5;
-      roomDto.ratingNumber = 3;
+      const utilities = JSON.parse(room.utilities);
+      const utilitiesDetail = [];
+      for (let j = 0; j < utilities.length; j++) {
+        const utilityDto = await this.utilitiesService.getUtilityById(
+          utilities[j],
+        );
+        utilitiesDetail.push(utilityDto);
+      }
+      roomDto.utilities = utilitiesDetail;
 
       return roomDto;
     } catch (err) {

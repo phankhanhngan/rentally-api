@@ -1,4 +1,5 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
+import { Point } from 'src/entities';
 
 @Exclude()
 export class ViewFindRoomDTO {
@@ -15,16 +16,20 @@ export class ViewFindRoomDTO {
   })
   images: string[];
 
-  @Expose()
-  @Transform(({ value }) => JSON.parse(value || '[]'), {
-    toClassOnly: true,
-    toPlainOnly: true,
-  })
-  utilities?: string[];
+
+
+  // @Expose()
+  // @Transform(({ value }) => JSON.parse(value || '[]'), {
+  //   toClassOnly: true,
+  //   toPlainOnly: true,
+  // })
+  utilities?: object[];
+
+  coordinate?: Point;
 
   address: string;
 
   district: string;
 
-  rating: number;
+  avgRate: number;
 }

@@ -170,7 +170,8 @@ export class ModRoomsService {
         roomblock: { landlord: { id: idUser } },
       });
       if (!roomEntity) {
-        throw new BadRequestException(`Can not find room with id=[${id}]`);
+        // throw new BadRequestException(`Can not find room with id=[${id}]`);
+        return null;
       }
       const roomDto = plainToInstance(ViewRoomDTO, roomEntity);
       return roomDto;

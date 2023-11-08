@@ -2,6 +2,7 @@ export const utilities = [
   {
     name: 'Electricity',
     note: 'Power supply for the property',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Electricity.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -10,6 +11,7 @@ export const utilities = [
   {
     name: 'Water',
     note: 'Hot and cold water supply',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Water.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -18,6 +20,7 @@ export const utilities = [
   {
     name: 'Internet',
     note: 'High-speed internet access',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Internet.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -26,6 +29,7 @@ export const utilities = [
   {
     name: 'Gas',
     note: 'Natural gas supply',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Gas.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -34,6 +38,7 @@ export const utilities = [
   {
     name: 'Trash Collection',
     note: 'Regular garbage pickup',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Trash_Collection.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -42,6 +47,7 @@ export const utilities = [
   {
     name: 'Heating',
     note: 'Central heating system',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Heating.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -50,6 +56,7 @@ export const utilities = [
   {
     name: 'Cable TV',
     note: 'Cable television service',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Cable_TV.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -58,6 +65,7 @@ export const utilities = [
   {
     name: 'Sewer',
     note: 'Sewage system and maintenance',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Sewer.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -66,6 +74,7 @@ export const utilities = [
   {
     name: 'Waste Disposal',
     note: 'Garbage and waste disposal service',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Waste_Disposal.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -74,6 +83,7 @@ export const utilities = [
   {
     name: 'Landscaping',
     note: 'Maintenance of outdoor spaces',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Landscaping.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -82,6 +92,7 @@ export const utilities = [
   {
     name: 'Snow Removal',
     note: 'Snow clearing in winter',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Snow_Removal.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -90,6 +101,7 @@ export const utilities = [
   {
     name: 'Security',
     note: 'Security services and systems',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Security.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -98,6 +110,7 @@ export const utilities = [
   {
     name: 'Fitness Center',
     note: 'On-site gym facilities',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Fitness_Center.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -106,6 +119,7 @@ export const utilities = [
   {
     name: 'Swimming Pool',
     note: 'Community swimming pool',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Swimming_Pool.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -114,6 +128,7 @@ export const utilities = [
   {
     name: 'Parking',
     note: 'Reserved parking spaces',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Parking.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -122,6 +137,7 @@ export const utilities = [
   {
     name: 'Laundry Facilities',
     note: 'On-site laundry facilities',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Laundry_Facilities.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -130,6 +146,7 @@ export const utilities = [
   {
     name: 'Dishwasher',
     note: 'In-unit dishwasher',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Dishwasher.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -138,6 +155,7 @@ export const utilities = [
   {
     name: 'Microwave',
     note: 'Kitchen microwave',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Microwave.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -146,6 +164,7 @@ export const utilities = [
   {
     name: 'Refrigerator',
     note: 'Apartment refrigerator',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Refrigerator.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -154,6 +173,7 @@ export const utilities = [
   {
     name: 'Oven',
     note: 'Oven for cooking',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Oven.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -162,6 +182,7 @@ export const utilities = [
   {
     name: 'Air Conditioning',
     note: 'Climate control system',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Air_Conditioning.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -170,6 +191,7 @@ export const utilities = [
   {
     name: 'Fireplace',
     note: 'Indoor fireplace',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Fireplace.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -178,6 +200,7 @@ export const utilities = [
   {
     name: 'Balcony',
     note: 'Private balcony space',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Balcony.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -186,6 +209,7 @@ export const utilities = [
   {
     name: 'Pet-Friendly',
     note: 'Pet-friendly policy',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Pet_Friendly.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -194,6 +218,7 @@ export const utilities = [
   {
     name: '24/7 Maintenance',
     note: 'Round-the-clock maintenance service',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/247_Maintenance.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -202,6 +227,7 @@ export const utilities = [
   {
     name: 'Garage',
     note: 'Covered parking garage',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Garage.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -210,6 +236,7 @@ export const utilities = [
   {
     name: 'Roof Deck',
     note: 'Rooftop deck with views',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Roof_Deck.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -218,6 +245,7 @@ export const utilities = [
   {
     name: 'Package Receiving',
     note: 'Package delivery services',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Package_Receiving.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -226,6 +254,7 @@ export const utilities = [
   {
     name: 'On-Site Management',
     note: 'On-site property management',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/On_Site_Management.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -234,6 +263,7 @@ export const utilities = [
   {
     name: 'Barbecue Area',
     note: 'Outdoor barbecue and picnic area',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Barbecue_Area.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -242,6 +272,7 @@ export const utilities = [
   {
     name: 'Wheelchair Accessible',
     note: 'Accessibility features',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Wheelchair_Accessible.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -250,6 +281,7 @@ export const utilities = [
   {
     name: 'Bike Storage',
     note: 'Bicycle storage facilities',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Bike_Storage.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -258,6 +290,7 @@ export const utilities = [
   {
     name: 'Lounge',
     note: 'Community lounge and common areas',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Lounge.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -266,6 +299,7 @@ export const utilities = [
   {
     name: 'Elevator',
     note: 'Elevator access to units',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Elevator.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -274,6 +308,7 @@ export const utilities = [
   {
     name: 'Conference Room',
     note: 'Meeting and conference room',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Conference_Room.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -282,6 +317,7 @@ export const utilities = [
   {
     name: 'Library',
     note: 'On-site library or reading area',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Library.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -290,6 +326,7 @@ export const utilities = [
   {
     name: 'Courtyard',
     note: 'Outdoor courtyard space',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Courtyard.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -298,6 +335,7 @@ export const utilities = [
   {
     name: 'Tennis Court',
     note: 'On-site tennis court',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Tennis_Court.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -306,6 +344,7 @@ export const utilities = [
   {
     name: 'Golf Course',
     note: 'Nearby golf course access',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Golf_Course.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -314,6 +353,7 @@ export const utilities = [
   {
     name: 'Pet Park',
     note: 'Outdoor pet exercise area',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Pet_Park.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -322,14 +362,7 @@ export const utilities = [
   {
     name: 'Playground',
     note: "Children's playground",
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Guest Parking',
-    note: 'Parking for guests',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Playground.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -338,6 +371,7 @@ export const utilities = [
   {
     name: 'Storage Space',
     note: 'Additional storage options',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Storage_Space.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -346,6 +380,7 @@ export const utilities = [
   {
     name: 'Concierge Service',
     note: 'Concierge and support services',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Concierge_Service.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -354,6 +389,7 @@ export const utilities = [
   {
     name: 'Dining Area',
     note: 'Dedicated dining spaces',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Dining_Area.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -362,22 +398,7 @@ export const utilities = [
   {
     name: 'Game Room',
     note: 'Recreational game room',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Library',
-    note: 'On-site library or reading area',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Gardening Area',
-    note: 'Community gardening area',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Game_Room.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -386,14 +407,7 @@ export const utilities = [
   {
     name: 'Garbage Collection',
     note: 'Regular waste collection services',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'HVAC System',
-    note: 'Heating, ventilation, and air conditioning',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Garbage_Collection.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -402,14 +416,7 @@ export const utilities = [
   {
     name: 'Pest Control',
     note: 'Professional pest control services',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Dedicated Storage',
-    note: 'Additional storage units available',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Pest_Control.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -418,22 +425,7 @@ export const utilities = [
   {
     name: 'Guest Suites',
     note: 'Guest accommodation options',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Rooftop Garden',
-    note: 'Garden on the rooftop',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Outdoor Pool',
-    note: 'Outdoor swimming pool',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Guest_Suites.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -442,22 +434,7 @@ export const utilities = [
   {
     name: 'Pet Grooming Station',
     note: 'On-site pet grooming area',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Media Room',
-    note: 'Dedicated media and movie room',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Dog Park',
-    note: 'Fenced dog exercise area',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Pet_Grooming_Station.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -466,6 +443,7 @@ export const utilities = [
   {
     name: 'Electric Car Charging',
     note: 'Charging stations for electric cars',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Electric_Car_Charging.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -474,6 +452,7 @@ export const utilities = [
   {
     name: 'Car Wash Station',
     note: 'Convenient car washing facilities',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Car_Wash_Station.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -482,6 +461,7 @@ export const utilities = [
   {
     name: 'Community Events',
     note: 'Organized community events',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Community_Events.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -490,6 +470,7 @@ export const utilities = [
   {
     name: 'Bike Repair Station',
     note: 'Station for bicycle repairs',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Bike_Repair_Station.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -498,6 +479,7 @@ export const utilities = [
   {
     name: 'Coffee Bar',
     note: 'On-site coffee and refreshment bar',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Coffee_Bar.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -506,6 +488,7 @@ export const utilities = [
   {
     name: 'Parcel Lockers',
     note: 'Secure parcel delivery lockers',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Parcel_Lockers.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -514,6 +497,7 @@ export const utilities = [
   {
     name: 'Yoga Studio',
     note: 'Dedicated yoga and fitness studio',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Yoga_Studio.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -522,6 +506,7 @@ export const utilities = [
   {
     name: 'Recycling Center',
     note: 'On-site recycling facilities',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Recycling_Center.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -530,6 +515,7 @@ export const utilities = [
   {
     name: 'Guest Parking',
     note: 'Parking for visitors and guests',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Guest_Parking.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -538,6 +524,7 @@ export const utilities = [
   {
     name: 'Gated Community',
     note: 'Security with gated access',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Gated_Community.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -546,6 +533,7 @@ export const utilities = [
   {
     name: 'Playroom',
     note: "Children's playroom",
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Playroom.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -554,6 +542,7 @@ export const utilities = [
   {
     name: 'Computer Lab',
     note: 'Computer and tech lab',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Computer_Lab.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -562,6 +551,7 @@ export const utilities = [
   {
     name: 'Billiards Room',
     note: 'Billiards and game room',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Billiards_Room.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -570,6 +560,7 @@ export const utilities = [
   {
     name: 'Tanning Beds',
     note: 'Indoor tanning facilities',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Tanning_Beds.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -578,6 +569,7 @@ export const utilities = [
   {
     name: 'Basketball Court',
     note: 'On-site basketball court',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Basketball_Court.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -586,22 +578,7 @@ export const utilities = [
   {
     name: 'Community Kitchen',
     note: 'Community kitchen space',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Tennis Court',
-    note: 'On-site tennis court',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Mailroom',
-    note: 'Mail and package receiving area',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Community_Kitchen.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -610,6 +587,7 @@ export const utilities = [
   {
     name: 'Dry Cleaning Service',
     note: 'Convenient dry cleaning services',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Dry_Cleaning_Service.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -618,6 +596,7 @@ export const utilities = [
   {
     name: 'Study Lounge',
     note: 'Quiet study and reading lounge',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Study_Lounge.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -626,6 +605,7 @@ export const utilities = [
   {
     name: 'Party Room',
     note: 'Party and event room',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Party_Room.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -634,30 +614,7 @@ export const utilities = [
   {
     name: 'Concierge Desk',
     note: 'Front desk concierge service',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Zen Garden',
-    note: 'Tranquil Zen garden',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Walking Trails',
-    note: 'Scenic walking and nature trails',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Racquetball Court',
-    note: 'Indoor racquetball court',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Concierge_Desk.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -666,14 +623,7 @@ export const utilities = [
   {
     name: 'Movie Theater',
     note: 'Private movie screening theater',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Ski Storage',
-    note: 'Storage for skiing equipment',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Movie_Theater.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -682,14 +632,7 @@ export const utilities = [
   {
     name: 'Art Studio',
     note: 'Creative art studio',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Car Charging Stations',
-    note: 'Electric vehicle charging',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Art_Studio.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -706,6 +649,7 @@ export const utilities = [
   {
     name: 'Wine Cellar',
     note: 'Private wine storage',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Aquarium.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -714,6 +658,7 @@ export const utilities = [
   {
     name: 'Music Room',
     note: 'Soundproof music practice rooms',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Music_Room.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -722,14 +667,7 @@ export const utilities = [
   {
     name: 'Bowling Alley',
     note: 'On-site bowling alley',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Fire Pit',
-    note: 'Outdoor fire pit and seating',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Bowling_Alley.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -738,6 +676,7 @@ export const utilities = [
   {
     name: 'Fountain',
     note: 'Decorative outdoor fountains',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Fountain.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -746,22 +685,7 @@ export const utilities = [
   {
     name: 'Dance Studio',
     note: 'Dedicated dance and exercise studio',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Community Garden',
-    note: 'Community gardening spaces',
-    created_id: 4,
-    updated_id: 4,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: 'Roof Terrace',
-    note: 'Terrace with city views',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Dance_Studio.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),
@@ -770,6 +694,7 @@ export const utilities = [
   {
     name: 'Juice Bar',
     note: 'On-site juice and smoothie bar',
+    icon: 'https://image-user-public.s3.ap-southeast-2.amazonaws.com/utilities/Juice_Bar.png',
     created_id: 4,
     updated_id: 4,
     created_at: new Date(),

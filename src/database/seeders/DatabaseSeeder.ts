@@ -117,7 +117,6 @@ export class DatabaseSeeder extends Seeder {
         tenants: 1,
         ratingStatus: RatingStatus.NONE,
         status: RentalStatus.COMPLETED,
-        ratingStatus: RatingStatus.NONE,
         created_at: new Date(),
         updated_at: new Date(),
         created_id: 1,

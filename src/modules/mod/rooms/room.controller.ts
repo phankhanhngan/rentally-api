@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -112,6 +113,11 @@ export class ModRoomsController {
   ) {
     try {
       const roomDto = await this.modRoomsService.findRoomById(id, req.user.id);
+
+      if(!roomDto) {
+        throw new BadRequestException(`Can not find room with id=[${id}]`);
+      }
+
       return res.status(200).json({
         status: 'success',
         message: 'Get room by id successfully',

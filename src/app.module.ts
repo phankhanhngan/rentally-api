@@ -17,7 +17,6 @@ import { ModRoomBlocksModule } from './modules/mod/roomblocks/roomblocks.module'
 import { ModRoomsModule } from './modules/mod/rooms/room.module';
 import { RoomsModule } from './modules/admin/rooms/rooms.module';
 import { UtilitiesModule } from './modules/utilities/utilities.module';
-import { RoomBlock } from './entities';
 import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
 import { RatingModule } from './modules/rating/rating.module';
 import { RentalModule } from './modules/rental/rental.module';
