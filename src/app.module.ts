@@ -23,6 +23,8 @@ import { RentalModule } from './modules/rental/rental.module';
 import { FindingModule } from './modules/finding/finding.module';
 import { ChecklistModule } from './modules/checklist/checklist.module';
 import { ProvinceModule } from './modules/province/province.module';
+import { UserRentalModule } from './modules/rental/user-rental/user-rental.module';
+import { ModRentalModule } from './modules/rental/mod-rental/mod-rental.module';
 
 @Module({
   imports: [
@@ -78,6 +80,8 @@ import { ProvinceModule } from './modules/province/province.module';
     FindingModule,
     ChecklistModule,
     ProvinceModule,
+    UserRentalModule,
+    ModRentalModule,
   ],
 
   controllers: [AppController],
