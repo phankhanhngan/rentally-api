@@ -17,7 +17,10 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
 import { Rental } from 'src/entities/rental.entity';
-
+import { ProvinceModule } from '../province/province.module';
+import { ProvinceService } from '../province/province.service';
+import { Province } from 'src/entities/province.entity';
+import { District } from 'src/entities/district.entity';
 
 @Module({
   imports: [
@@ -32,8 +35,18 @@ import { Rental } from 'src/entities/rental.entity';
     MikroOrmModule.forFeature([Utility]),
     MikroOrmModule.forFeature([User]),
     MikroOrmModule.forFeature([Rental]),
+    MikroOrmModule.forFeature([Province]),
+    MikroOrmModule.forFeature([District]),
   ],
-  providers: [FindingService, RatingService, RentalService, RoomsService, AWSService, UtilitiesService, UsersService],
+  providers: [
+    FindingService,
+    RatingService,
+    RentalService,
+    RoomsService,
+    AWSService,
+    UtilitiesService,
+    UsersService,
+  ],
   controllers: [FindingController],
 })
 export class FindingModule {}

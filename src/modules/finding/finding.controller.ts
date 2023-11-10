@@ -43,6 +43,21 @@ export class FindingController {
     }
   }
 
+  @Get('/price')
+  async getPrice(@Res() res: Response) {
+    try {
+      const data = await this.findingService.getPrice();
+      return res.status(200).json({
+        status: 'success',
+        message: 'Get price successfully',
+        data: data,
+      });
+    } catch (error) {
+      this.logger.error('Calling getPrice()', error, FindingController.name);
+      throw error;
+    }
+  }
+
   @Get('/:id')
   async getRoomDetailById(
     @Req() req,
@@ -52,13 +67,13 @@ export class FindingController {
     try {
       const room = await this.findingService.getRoomDetailById(id);
 
-      if(!room) {
+      if (!room) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
       }
 
       return res.status(200).json({
         status: 'success',
-        message: 'Get rooms successfully',
+        message: 'Get room detail successfully',
         data: room,
       });
     } catch (error) {

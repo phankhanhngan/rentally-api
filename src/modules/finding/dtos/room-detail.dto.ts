@@ -40,7 +40,5 @@ export class RoomDetailDTO {
   @Expose()
   roomblock: RoomBlock;
 
-  avgRate: number;
-
-  ratings: number;
+  ratingDetail: object;
 }

@@ -17,6 +17,9 @@ import { RatingService } from '../rating/rating.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { Rental } from 'src/entities/rental.entity';
 import { LandLordDTO } from './dtos/landlord.dto';
+import { ProvinceService } from '../province/province.service';
+import { Province } from 'src/entities/province.entity';
+import { District } from 'src/entities/district.entity';
 
 @Injectable()
 export class FindingService {
@@ -29,12 +32,18 @@ export class FindingService {
     private readonly userRepository: EntityRepository<User>,
     @InjectRepository(Rental)
     private readonly rentalRepository: EntityRepository<Rental>,
+    @InjectRepository(Province)
+    private readonly provinceRepository: EntityRepository<Province>,
+    @InjectRepository(District)
+    private readonly districtRepository: EntityRepository<District>,
     private readonly utilitiesService: UtilitiesService,
     private readonly ratingService: RatingService,
   ) {}
 
   async findAllRoom(findRoomDto: FindRoomDTO) {
     try {
+      if (findRoomDto.district && !findRoomDto.province) return null;
+
       let keyword = '';
       if (findRoomDto.keyword)
         keyword = findRoomDto.keyword.replaceAll(' ', '%');
@@ -43,34 +52,55 @@ export class FindingService {
       queryObjBlockRoom['$and'] = [
         { $or: [{ city: likeQr }, { district: likeQr }, { address: likeQr }] },
       ];
-      if (findRoomDto.city) {
+
+      if (findRoomDto.district) {
+        const province = await this.provinceRepository.findOne({
+          code: findRoomDto.province,
+        });
+        if(!province) {
+          throw new BadRequestException(`Can not find province with code=[${findRoomDto.province}]`);
+        }
+        const district = await this.districtRepository.findOne({
+          code: findRoomDto.district,
+        });
+        if(!district) {
+          throw new BadRequestException(`Can not find district with code=[${findRoomDto.district}]`);
+        }
+
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { city: findRoomDto.city },
+          { district: district.name },
+          { city: province.name },
         ];
       }
-      if (findRoomDto.district) {
+
+      if (findRoomDto.province && !findRoomDto.district) {
+        const province = await this.provinceRepository.findOne({
+          code: findRoomDto.province,
+        });
+        if(!province) {
+          throw new BadRequestException(`Can not find province with code=[${findRoomDto.province}]`);
+        }
+
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { district: findRoomDto.district },
+          { city: province.name },
         ];
       }
 
       const queryObjUitilities = {};
-      if (findRoomDto.utilities) {
-        findRoomDto.utilities.forEach((utilitty, index) => {
-          if (index == 0) {
-            queryObjUitilities['$and'] = [
-              { utilities: { $like: `%${utilitty}%` } },
-            ];
-          } else {
-            queryObjUitilities['$and'] = [
-              ...queryObjUitilities['$and'],
-              { utilities: { $like: `%${utilitty}%` } },
-            ];
-          }
-        });
-      }
+      findRoomDto.utilities.forEach((utilitty, index) => {
+        if (index == 0) {
+          queryObjUitilities['$and'] = [
+            { utilities: { $like: `%${utilitty}%` } },
+          ];
+        } else {
+          queryObjUitilities['$and'] = [
+            ...queryObjUitilities['$and'],
+            { utilities: { $like: `%${utilitty}%` } },
+          ];
+        }
+      });
 
       let priceRangeQr = {};
       if (findRoomDto.maxPrice) {
@@ -94,6 +124,8 @@ export class FindingService {
           populate: ['roomblock'],
         },
       );
+      console.log(queryObjBlockRoom);
+
       const roomsDto = plainToClass(ViewFindRoomDTO, rooms);
 
       for (let i = 0; i < rooms.length; i++) {
@@ -101,15 +133,15 @@ export class FindingService {
         roomsDto[i].district = rooms[i].roomblock.district;
         roomsDto[i].coordinate = rooms[i].roomblock.coordinate;
 
-        const rental = await this.rentalRepository.findOne(
-          {
-            room: { id: rooms[i].id },
-          },
-          {
-            populate: ['rentalDetail'],
-            orderBy: { rentalDetail: { moveOutDate: -1 } },
-          },
-        );
+        // const rental = await this.rentalRepository.findOne(
+        //   {
+        //     room: { id: rooms[i].id },
+        //   },
+        //   {
+        //     populate: ['rentalDetail'],
+        //     orderBy: { rentalDetail: { moveOutDate: -1 } },
+        //   },
+        // );
         // if (rooms[i].status === RoomStatus.OCCUPIED) {
         //   roomsDto[i].move_out_date = rental.rentalDetail.moveOutDate;
         // } else {
@@ -174,8 +206,7 @@ export class FindingService {
 
       const rating = await this.ratingService.findByRoom(room.id);
       if (rating.ratings) {
-        roomDto.avgRate = rating.avgRate;
-        roomDto.ratings = rating.ratings;
+        roomDto.ratingDetail = rating;
       }
 
       const utilities = JSON.parse(room.utilities);
@@ -196,6 +227,29 @@ export class FindingService {
         FindingService.name,
       );
       throw err;
+    }
+  }
+
+  async getPrice() {
+    try {
+      const maxPrice = await this.roomRepository.findAll({
+        orderBy: { price: -1 },
+        limit: 1,
+      });
+
+      
+      const minPrice = await this.roomRepository.findAll({
+        orderBy: { price: 1 },
+        limit: 1,
+      });
+
+      return {
+        maxPrice: maxPrice[0].price,
+        minPrice: minPrice[0].price,
+      };
+    } catch (error) {
+      this.logger.error('Calling getPrice()', error, FindingService.name);
+      throw error;
     }
   }
 }

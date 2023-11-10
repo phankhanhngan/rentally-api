@@ -12,7 +12,7 @@ export class FindRoomDTO {
 
     @ValidateIf((obj, value) => value)
     @IsString()
-    city?: string;
+    province?: string;
 
     @ValidateIf((obj, value) => value)
     @IsNumberString()

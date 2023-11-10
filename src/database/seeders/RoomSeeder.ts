@@ -20,7 +20,7 @@ export class RoomSeeder extends Seeder {
         area: faker.number.int({ min: 0, max: 100 }),
         price: faker.number.int({ min: 0, max: 100 }),
         depositAmount: faker.number.int({ min: 0, max: 100 }),
-        images: JSON.stringify([faker.lorem.sentence()]),
+        images: JSON.stringify([faker.image.urlPicsumPhotos(), faker.image.urlPicsumPhotos(), faker.image.urlPicsumPhotos()]),
         utilities: JSON.stringify([1]),
         status: RoomStatus.EMPTY,
         roomblock: roomBlocks[Math.floor(Math.random() * roomBlocks.length)],
