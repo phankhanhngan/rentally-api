@@ -22,6 +22,7 @@ import { RatingModule } from './modules/rating/rating.module';
 import { RentalModule } from './modules/rental/rental.module';
 import { FindingModule } from './modules/finding/finding.module';
 import { ChecklistModule } from './modules/checklist/checklist.module';
+import { ProvinceModule } from './modules/province/province.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { ChecklistModule } from './modules/checklist/checklist.module';
     RentalModule,
     FindingModule,
     ChecklistModule,
+    ProvinceModule,
   ],
 
   controllers: [AppController],
