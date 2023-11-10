@@ -1,8 +1,12 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Point, RoomBlock } from 'src/entities';
+import { LandLordDTO } from './landlord.dto';
 
 @Exclude()
 export class RoomDetailDTO {
+
+  landlord: LandLordDTO;
+
   @Expose()
   id: number;
 
@@ -22,8 +26,6 @@ export class RoomDetailDTO {
     toPlainOnly: true,
   })
   utilities?: string[];
-
-  //   description: string;
 
   //   coordinate: Point;
 

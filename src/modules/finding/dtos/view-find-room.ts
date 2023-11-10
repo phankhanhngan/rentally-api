@@ -32,4 +32,6 @@ export class ViewFindRoomDTO {
   district: string;
 
   avgRate: number;
+
+  // move_out_date: Date;
 }

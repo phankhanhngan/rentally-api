@@ -27,7 +27,7 @@ export class FindingController {
   async findAllRoom(
     @Req() req,
     @Res() res: Response,
-    @Body(new ValidationPipe({ transform: true }))
+    @Query(new ValidationPipe({ transform: true }))
     findRoomDto: FindRoomDTO,
   ) {
     try {

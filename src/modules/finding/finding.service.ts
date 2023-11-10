@@ -8,13 +8,15 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { FindRoomDTO } from './dtos/find-room.dto';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Room } from 'src/entities';
+import { Room, User } from 'src/entities';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ViewFindRoomDTO } from './dtos/view-find-room';
 import { RoomStatus } from 'src/common/enum/common.enum';
 import { RoomDetailDTO } from './dtos/room-detail.dto';
 import { RatingService } from '../rating/rating.service';
 import { UtilitiesService } from '../utilities/utilities.service';
+import { Rental } from 'src/entities/rental.entity';
+import { LandLordDTO } from './dtos/landlord.dto';
 
 @Injectable()
 export class FindingService {
@@ -23,6 +25,10 @@ export class FindingService {
     private readonly em: EntityManager,
     @InjectRepository(Room)
     private readonly roomRepository: EntityRepository<Room>,
+    @InjectRepository(User)
+    private readonly userRepository: EntityRepository<User>,
+    @InjectRepository(Rental)
+    private readonly rentalRepository: EntityRepository<Rental>,
     private readonly utilitiesService: UtilitiesService,
     private readonly ratingService: RatingService,
   ) {}
@@ -95,6 +101,21 @@ export class FindingService {
         roomsDto[i].district = rooms[i].roomblock.district;
         roomsDto[i].coordinate = rooms[i].roomblock.coordinate;
 
+        const rental = await this.rentalRepository.findOne(
+          {
+            room: { id: rooms[i].id },
+          },
+          {
+            populate: ['rentalDetail'],
+            orderBy: { rentalDetail: { moveOutDate: -1 } },
+          },
+        );
+        // if (rooms[i].status === RoomStatus.OCCUPIED) {
+        //   roomsDto[i].move_out_date = rental.rentalDetail.moveOutDate;
+        // } else {
+        //   roomsDto[i].move_out_date = null;
+        // }
+
         const utilities = JSON.parse(rooms[i].utilities);
         const utilitiesDetail = [];
         for (let j = 0; j < utilities.length; j++) {
@@ -141,8 +162,16 @@ export class FindingService {
         // throw new BadRequestException(`Can not find room with id=[${id}]`);
         return null;
       }
+      const landlord = await this.userRepository.findOne({
+        id: room.roomblock.id,
+      });
+      const landlordDto = plainToInstance(LandLordDTO, landlord);
+      landlordDto.name = landlord.firstName;
+      if (landlord.lastName) landlordDto.name += ' ' + landlord.lastName;
 
       const roomDto = plainToInstance(RoomDetailDTO, room);
+      roomDto.landlord = landlordDto;
+
       const rating = await this.ratingService.findByRoom(room.id);
       if (rating.ratings) {
         roomDto.avgRate = rating.avgRate;

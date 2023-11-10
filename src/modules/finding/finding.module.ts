@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { FindingService } from './finding.service';
 import { FindingController } from './finding.controller';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Room, RoomBlock } from 'src/entities';
+import { Room, RoomBlock, User } from 'src/entities';
 import { RatingModule } from '../rating/rating.module';
 import { RatingService } from '../rating/rating.service';
 import { RentalModule } from '../rental/rental.module';
@@ -14,6 +14,9 @@ import { AWSModule } from '../aws/aws.module';
 import { AWSService } from '../aws/aws.service';
 import { UtilitiesModule } from '../utilities/utilities.module';
 import { UtilitiesService } from '../utilities/utilities.service';
+import { UsersModule } from '../users/users.module';
+import { UsersService } from '../users/users.service';
+import { Rental } from 'src/entities/rental.entity';
 
 
 @Module({
@@ -22,12 +25,15 @@ import { UtilitiesService } from '../utilities/utilities.service';
     RentalModule,
     RoomsModule,
     AWSModule,
+    UsersModule,
     UtilitiesModule,
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RoomBlock]),
     MikroOrmModule.forFeature([Utility]),
+    MikroOrmModule.forFeature([User]),
+    MikroOrmModule.forFeature([Rental]),
   ],
-  providers: [FindingService, RatingService, RentalService, RoomsService, AWSService, UtilitiesService],
+  providers: [FindingService, RatingService, RentalService, RoomsService, AWSService, UtilitiesService, UsersService],
   controllers: [FindingController],
 })
 export class FindingModule {}

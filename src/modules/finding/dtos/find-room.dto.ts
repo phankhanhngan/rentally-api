@@ -1,4 +1,5 @@
-import { IsArray, IsInt, IsString, ValidateIf } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsArray, IsInt, IsNumberString, IsString, ValidateIf } from "class-validator";
 
 export class FindRoomDTO {
     @ValidateIf((obj, value) => value)
@@ -14,15 +15,16 @@ export class FindRoomDTO {
     city?: string;
 
     @ValidateIf((obj, value) => value)
-    @IsInt()
+    @IsNumberString()
     maxPrice?: number;
 
     @ValidateIf((obj, value) => value)
-    @IsInt()
+    @IsNumberString()
     minPrice?: number = 0;
 
     @ValidateIf((obj, value) => value)
     @IsArray()
-    @IsInt({each: true})
+    @IsNumberString({}, { each: true })
     utilities?: number[];
 }
+
