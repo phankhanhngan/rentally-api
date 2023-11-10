@@ -57,14 +57,18 @@ export class FindingService {
         const province = await this.provinceRepository.findOne({
           code: findRoomDto.province,
         });
-        if(!province) {
-          throw new BadRequestException(`Can not find province with code=[${findRoomDto.province}]`);
+        if (!province) {
+          throw new BadRequestException(
+            `Can not find province with code=[${findRoomDto.province}]`,
+          );
         }
         const district = await this.districtRepository.findOne({
           code: findRoomDto.district,
         });
-        if(!district) {
-          throw new BadRequestException(`Can not find district with code=[${findRoomDto.district}]`);
+        if (!district) {
+          throw new BadRequestException(
+            `Can not find district with code=[${findRoomDto.district}]`,
+          );
         }
 
         queryObjBlockRoom['$and'] = [
@@ -78,8 +82,10 @@ export class FindingService {
         const province = await this.provinceRepository.findOne({
           code: findRoomDto.province,
         });
-        if(!province) {
-          throw new BadRequestException(`Can not find province with code=[${findRoomDto.province}]`);
+        if (!province) {
+          throw new BadRequestException(
+            `Can not find province with code=[${findRoomDto.province}]`,
+          );
         }
 
         queryObjBlockRoom['$and'] = [
@@ -89,18 +95,20 @@ export class FindingService {
       }
 
       const queryObjUitilities = {};
-      findRoomDto.utilities.forEach((utilitty, index) => {
-        if (index == 0) {
-          queryObjUitilities['$and'] = [
-            { utilities: { $like: `%${utilitty}%` } },
-          ];
-        } else {
-          queryObjUitilities['$and'] = [
-            ...queryObjUitilities['$and'],
-            { utilities: { $like: `%${utilitty}%` } },
-          ];
-        }
-      });
+      if (findRoomDto.utilities) {
+        findRoomDto.utilities.forEach((utilitty, index) => {
+          if (index == 0) {
+            queryObjUitilities['$and'] = [
+              { utilities: { $like: `%${utilitty}%` } },
+            ];
+          } else {
+            queryObjUitilities['$and'] = [
+              ...queryObjUitilities['$and'],
+              { utilities: { $like: `%${utilitty}%` } },
+            ];
+          }
+        });
+      }
 
       let priceRangeQr = {};
       if (findRoomDto.maxPrice) {
@@ -237,7 +245,6 @@ export class FindingService {
         limit: 1,
       });
 
-      
       const minPrice = await this.roomRepository.findAll({
         orderBy: { price: 1 },
         limit: 1,
