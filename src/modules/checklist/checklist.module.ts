@@ -12,6 +12,7 @@ import { MikroORM } from '@mikro-orm/mysql';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Room, User } from 'src/entities';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
+import { Rental } from 'src/entities/rental.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
     RatingModule,
     MikroOrmModule.forFeature([User]),
     MikroOrmModule.forFeature([RentalDetail]),
+    MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([Room]),
   ],
   controllers: [ChecklistController],

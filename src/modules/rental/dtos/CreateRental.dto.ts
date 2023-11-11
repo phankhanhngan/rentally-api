@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import {
   IsDate,
+  IsDateString,
   IsDefined,
-  IsEnum,
   IsInt,
   IsNotEmptyObject,
   IsObject,
@@ -15,8 +15,8 @@ import {
 class CreateRentalDetailInfo {
   @IsInt()
   leaseTerm: number;
-  @IsDate()
-  moveInDate: Date;
+  @IsString()
+  moveInDate: string;
   @IsInt()
   @Min(1)
   @Max(4)
@@ -26,12 +26,12 @@ class CreateRentalDetailInfo {
 class CreateRentalTenantInfo {
   @IsString()
   identityNumber: string;
-  @IsDate()
-  identityDateOfIssue: Date;
+  @IsString()
+  identityDateOfIssue: string;
   @IsString()
   identityPlaceOfIsse: string;
-  @IsDate()
-  birthday: Date;
+  @IsString()
+  birthday: string;
   @IsString()
   phoneNumber: string;
 }

@@ -8,6 +8,7 @@ import { Room, User } from 'src/entities';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { UsersService } from '../users/users.service';
 import { AWSService } from '../aws/aws.service';
+import { Rental } from 'src/entities/rental.entity';
 @Module({
   providers: [RentalService, RatingService, UsersService, AWSService],
   controllers: [RentalController],
@@ -15,6 +16,7 @@ import { AWSService } from '../aws/aws.service';
     forwardRef(() => RatingModule),
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
+    MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([User]),
   ],
 })
