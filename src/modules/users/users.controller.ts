@@ -37,6 +37,30 @@ export class UsersController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
+  @Get('/me')
+  async getCurrentUser(@Req() req, @Res() res: Response) {
+    try {
+      const user = await this.usersService.getUserById(req.user.id);
+      const userDto = plainToInstance(UserDTO, user, {
+        excludePrefixes: ['password', 'verificationCode'],
+      });
+      res.status(200).json({
+        message: 'Get current user successfully',
+        status: 'success',
+        data: {
+          userDto,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getCurrentUser()',
+        error,
+        UsersController.name,
+      );
+      throw error;
+    }
+  }
+
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   @Get('/mods')
   async getMods(@Res() res: Response) {

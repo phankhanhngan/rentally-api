@@ -22,7 +22,6 @@ export class UserDTO {
   @IsEmail({}, { message: 'Invalid email' })
   email!: string | undefined;
 
-  @Expose()
   @MinLength(2, { message: 'Password at least 2 characters' })
   password?: string;
 

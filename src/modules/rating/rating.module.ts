@@ -8,6 +8,7 @@ import { UsersService } from '../users/users.service';
 import { Room, User } from 'src/entities';
 import { AWSService } from '../aws/aws.service';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
+import { Rental } from 'src/entities/rental.entity';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
     MikroOrmModule.forFeature([User]),
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
+    MikroOrmModule.forFeature([Rental]),
   ],
   providers: [RatingService, RentalService, UsersService, AWSService],
   controllers: [RatingController],

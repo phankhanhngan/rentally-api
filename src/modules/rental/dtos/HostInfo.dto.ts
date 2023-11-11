@@ -19,4 +19,8 @@ export class HostInfoDTO {
   identityPlaceOfIssue: string;
   @Expose()
   birthday: Date;
+  @Expose()
+  electricPrice?: number;
+  @Expose()
+  waterPrice?: number;
 }

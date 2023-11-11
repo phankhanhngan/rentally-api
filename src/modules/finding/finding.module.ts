@@ -17,10 +17,9 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
 import { Rental } from 'src/entities/rental.entity';
-import { ProvinceModule } from '../province/province.module';
-import { ProvinceService } from '../province/province.service';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
+import { RentalDetail } from 'src/entities/rental_detail.entity';
 
 @Module({
   imports: [
@@ -37,6 +36,7 @@ import { District } from 'src/entities/district.entity';
     MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([Province]),
     MikroOrmModule.forFeature([District]),
+    MikroOrmModule.forFeature([RentalDetail]),
   ],
   providers: [
     FindingService,

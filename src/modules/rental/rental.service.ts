@@ -12,13 +12,16 @@ import {
   RoomStatus,
 } from 'src/common/enum/common.enum';
 import { Rental } from 'src/entities/rental.entity';
-import { MyRentalDTO } from './user-rental/dtos/MyRental.dto';
+import { MyRentalDTO } from './dtos/MyRental.dto';
 import { RatingService } from '../rating/rating.service';
-import { CreateRentalDTO } from './user-rental/dtos/CreateRental.dto';
+import { CreateRentalDTO } from './dtos/CreateRental.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Room, User } from 'src/entities';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
+import { HostInfoDTO } from './dtos/HostInfo.dto';
+import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class RentalService {
@@ -31,6 +34,8 @@ export class RentalService {
     private readonly roomRepository: EntityRepository<Room>,
     @InjectRepository(RentalDetail)
     private readonly rentalDetailRepository: EntityRepository<RentalDetail>,
+    @InjectRepository(Rental)
+    private readonly rentalRepository: EntityRepository<Rental>,
   ) {}
 
   async findByIdAndRenter(
@@ -104,6 +109,7 @@ export class RentalService {
       const room = await this.roomRepository.findOne(
         {
           id: createRentalDTO.roomId,
+          deleted_at: null,
         },
         { populate: ['roomblock', 'roomblock.landlord'] },
       );
@@ -122,8 +128,10 @@ export class RentalService {
 
       const landlord = this.em.getReference(User, room.roomblock.landlord.id);
       const renter = this.em.getReference(User, user.id);
-      const moveInDate = new Date(createRentalDTO.rentalInfo.moveInDate);
-
+      const moveInDate = moment(
+        createRentalDTO.rentalInfo.moveInDate,
+        'DD/MM/YYYY',
+      ).toDate();
       const rentalDetail = {
         moveInDate: moveInDate,
         moveOutDate: new Date(
@@ -133,28 +141,112 @@ export class RentalService {
         ),
         leaseTerm: createRentalDTO.rentalInfo.leaseTerm,
         renterIdentifyNo: createRentalDTO.tenantInfo.identityNumber,
-        renterIdentifyDate: createRentalDTO.tenantInfo.identityDateOfIssue,
+        renterIdentifyDate: moment(
+          createRentalDTO.tenantInfo.identityDateOfIssue,
+          'DD/MM/YYYY',
+        ).toDate(),
         renterIdentifyAddress: createRentalDTO.tenantInfo.identityPlaceOfIsse,
-        renterBirthday: createRentalDTO.tenantInfo.birthday,
+        renterBirthday: moment(
+          createRentalDTO.tenantInfo.birthday,
+          'DD/MM/YYYY',
+        ).toDate(),
         monthlyRent: parseInt(room.price.toString()),
+        created_id: user.id,
+        updated_id: user.id,
       };
 
       const rentalDetailEntity =
         this.rentalDetailRepository.create(rentalDetail);
       this.em.persist(rentalDetailEntity);
 
-      const rental = {
+      const rentalEntity: Rental = this.rentalRepository.create({
         landlord,
         renter,
         room,
         ratingStatus: RatingStatus.NONE,
+        status: RentalStatus.CREATED,
         tenants: createRentalDTO.rentalInfo.numberOfTenants,
         rentalDetail: rentalDetailEntity,
-      };
-      this.em.persist(rental);
+        created_id: user.id,
+        updated_id: user.id,
+      });
+      this.em.persist(rentalEntity);
+
+      room.status = RoomStatus.OCCUPIED;
+      this.em.persist(room);
       this.em.flush();
     } catch (err) {
       this.logger.error('Calling create()', err, RentalService.name);
+      throw err;
+    }
+  }
+
+  async modGetRentalById(id: number, user: any): Promise<MyRentalDTO> {
+    try {
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          landlord: user,
+        },
+        {
+          populate: [
+            'landlord',
+            'renter',
+            'room',
+            'room.roomblock',
+            'rentalDetail',
+          ],
+        },
+      );
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      const dto = this.setRentalDTO(rental);
+      return dto;
+    } catch (err) {
+      this.logger.error('Calling getRentalById()', err, RentalService.name);
+      throw err;
+    }
+  }
+
+  async getLatestModInfo(user: any): Promise<HostInfoDTO> {
+    try {
+      const rental = await this.rentalRepository.findOne(
+        { landlord: user },
+        {
+          orderBy: {
+            ['created_at']: 'DESC',
+          },
+          populate: ['rentalDetail'],
+        },
+      );
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastname: user.lastName,
+        email: user.email,
+        phone: user.phoneNumber,
+        identityNumber: rental.rentalDetail.landlordIdentifyNo,
+        identityDateOfIssue: rental.rentalDetail.landlordIdentifyDate,
+        identityPlaceOfIssue: rental.rentalDetail.landlordIdentifyAddress,
+        birthday: rental.rentalDetail.landlordBirthday,
+        electricPrice: rental.rentalDetail.electricPrice,
+        waterPrice: rental.rentalDetail.waterPrice,
+      };
+    } catch (err) {
+      this.logger.error('Calling getLatestModInfo()', err, RentalService.name);
+      throw err;
+    }
+  }
+
+  async modUpdateRentalInfo(updateRentalDto: UpdateRentalDTO) {
+    try {
+    } catch (err) {
+      this.logger.error(
+        'Calling modUpdateRentalInfo()',
+        err,
+        RentalService.name,
+      );
       throw err;
     }
   }
