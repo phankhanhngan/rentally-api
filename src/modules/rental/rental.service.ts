@@ -136,11 +136,9 @@ export class RentalService {
       ).toDate();
       const rentalDetail = {
         moveInDate: moveInDate,
-        moveOutDate: new Date(
-          moveInDate.setMonth(
-            moveInDate.getMonth() + createRentalDTO.rentalInfo.leaseTerm,
-          ),
-        ),
+        moveOutDate: moment(moveInDate)
+          .add(createRentalDTO.rentalInfo.leaseTerm, 'M')
+          .toDate(),
         leaseTerm: createRentalDTO.rentalInfo.leaseTerm,
         renterIdentifyNo: createRentalDTO.tenantInfo.identityNumber,
         renterIdentifyDate: moment(
@@ -183,23 +181,23 @@ export class RentalService {
     }
   }
 
-  async modGetRentalById(id: number, user: any): Promise<MyRentalDTO> {
+  async getRentalById(id: number, user: any): Promise<MyRentalDTO> {
     try {
-      const rental = await this.rentalRepository.findOne(
-        {
-          id,
-          landlord: user,
-        },
-        {
-          populate: [
-            'landlord',
-            'renter',
-            'room',
-            'room.roomblock',
-            'rentalDetail',
-          ],
-        },
-      );
+      const query = {
+        id: id,
+      };
+      if (user.role === Role.MOD) {
+        query['landlord'] = user;
+      }
+      const rental = await this.rentalRepository.findOne(query, {
+        populate: [
+          'landlord',
+          'renter',
+          'room',
+          'room.roomblock',
+          'rentalDetail',
+        ],
+      });
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
@@ -241,8 +239,40 @@ export class RentalService {
     }
   }
 
-  async modUpdateRentalInfo(updateRentalDto: UpdateRentalDTO) {
+  async modUpdateRentalInfo(
+    id: number,
+    user: any,
+    updateRentalDto: UpdateRentalDTO,
+  ) {
     try {
+      const rental = await this.rentalRepository.findOne(
+        { id, landlord: user },
+        { populate: ['rentalDetail'] },
+      );
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      rental.rentalDetail.electricPrice =
+        updateRentalDto.rentalInfo.electricPrice;
+      rental.rentalDetail.waterPrice = updateRentalDto.rentalInfo.waterPrice;
+      rental.rentalDetail.addtionalPrice =
+        updateRentalDto.rentalInfo.additionalPrice;
+      rental.rentalDetail.leaseTerminationCost =
+        updateRentalDto.rentalInfo.leaseTerminationCost;
+      rental.rentalDetail.landlordBirthday = moment(
+        updateRentalDto.hostInfo.birthday,
+        'DD/MM/YYYY',
+      ).toDate();
+      rental.rentalDetail.landlordIdentifyNo =
+        updateRentalDto.hostInfo.identityNumber;
+      rental.rentalDetail.landlordIdentifyDate = moment(
+        updateRentalDto.hostInfo.identityDateOfIssue,
+        'DD/MM/YYYY',
+      ).toDate();
+      rental.rentalDetail.landlordIdentifyAddress =
+        updateRentalDto.hostInfo.identityPlaceOfIssue;
+
+      this.em.persistAndFlush(rental.rentalDetail);
     } catch (err) {
       this.logger.error(
         'Calling modUpdateRentalInfo()',
@@ -327,114 +357,64 @@ export class RentalService {
       let rentals = null;
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
-      if (userLogined.role === Role.ADMIN) {
-        const queryObj = {
-          $or: [
-            {
-              landlord: {
-                $or: [
-                  { firstName: likeQr },
-                  { lastName: likeQr },
-                  { phoneNumber: likeQr },
-                ],
-              },
+      const queryObj = {
+        $or: [
+          {
+            landlord: {
+              $or: [
+                { firstName: likeQr },
+                { lastName: likeQr },
+                { phoneNumber: likeQr },
+              ],
             },
-            {
-              renter: {
-                $or: [
-                  { firstName: likeQr },
-                  { lastName: likeQr },
-                  { phoneNumber: likeQr },
-                ],
-              },
+          },
+          {
+            renter: {
+              $or: [
+                { firstName: likeQr },
+                { lastName: likeQr },
+                { phoneNumber: likeQr },
+              ],
             },
-            {
-              room: {
-                $or: [
-                  {
-                    roomblock: {
-                      $or: [
-                        { description: likeQr },
-                        { address: likeQr },
-                        { city: likeQr },
-                        { country: likeQr },
-                        { district: likeQr },
-                      ],
-                    },
+          },
+          {
+            room: {
+              $or: [
+                {
+                  roomblock: {
+                    $or: [
+                      { description: likeQr },
+                      { address: likeQr },
+                      { city: likeQr },
+                      { country: likeQr },
+                      { district: likeQr },
+                    ],
                   },
-                  { roomName: likeQr },
-                ],
-              },
+                },
+                { roomName: likeQr },
+              ],
             },
-            { status: likeQr },
-            { tenants: likeQr },
-          ],
+          },
+          { status: likeQr },
+          { tenants: likeQr },
+        ],
+      };
+      if (userLogined.role === Role.MOD) {
+        queryObj['landlord'] = {
+          id: userLogined.id,
         };
-        rentals = await this.em.find(Rental, queryObj, {
-          populate: [
-            'landlord',
-            'renter',
-            'room',
-            'room.roomblock',
-            'rentalDetail',
-          ],
-        });
-      } else if (userLogined.role === Role.MOD) {
-        const queryObj = {
-          $or: [
-            {
-              landlord: {
-                $or: [
-                  { firstName: likeQr },
-                  { lastName: likeQr },
-                  { phoneNumber: likeQr },
-                ],
-              },
-            },
-            {
-              renter: {
-                $or: [
-                  { id: userLogined.id },
-                  { firstName: likeQr },
-                  { lastName: likeQr },
-                  { phoneNumber: likeQr },
-                ],
-              },
-            },
-            {
-              room: {
-                $or: [
-                  {
-                    roomblock: {
-                      $or: [
-                        { description: likeQr },
-                        { address: likeQr },
-                        { city: likeQr },
-                        { country: likeQr },
-                        { district: likeQr },
-                      ],
-                    },
-                  },
-                  { roomName: likeQr },
-                ],
-              },
-            },
-            { status: likeQr },
-            { tenants: likeQr },
-          ],
-        };
-        rentals = await this.em.find(Rental, queryObj, {
-          populate: [
-            'landlord',
-            'renter',
-            'room',
-            'room.roomblock',
-            'rentalDetail',
-          ],
-        });
-      } else {
-        throw new UnauthorizedException('You are not access to this route');
       }
+
+      rentals = await this.em.find(Rental, queryObj, {
+        populate: [
+          'landlord',
+          'renter',
+          'room',
+          'room.roomblock',
+          'rentalDetail',
+        ],
+      });
+
       const rentalsDTO: MyRentalDTO[] = [];
       if (rentals.length < 1) {
         return rentalsDTO;
@@ -445,7 +425,181 @@ export class RentalService {
       }
       return rentalsDTO;
     } catch (error) {
+      this.logger.error('Calling getListRental()', error, RentalService.name);
       throw error;
+    }
+  }
+
+  async approveRentalRequest(id: number, user: any) {
+    try {
+      const rental = await this.rentalRepository.findOne({
+        id,
+        landlord: user,
+      });
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      if (rental.status != RentalStatus.CREATED) {
+        throw new BadRequestException(
+          `Only rental request with status ${RentalStatus.CREATED} could be approved`,
+        );
+      }
+
+      rental.status = RentalStatus.APPROVED;
+      await this.em.persistAndFlush(rental);
+    } catch (err) {
+      this.logger.error(
+        'Calling approveRentalRequest()',
+        err,
+        RentalService.name,
+      );
+      throw err;
+    }
+  }
+
+  async cancelRentalRequest(id: number, user: any) {
+    try {
+      const rental = await this.rentalRepository.findOne({
+        id,
+        landlord: user,
+      });
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      if (rental.status != RentalStatus.CREATED) {
+        throw new BadRequestException(
+          `Only rental request with status ${RentalStatus.CREATED} could be canceled`,
+        );
+      }
+
+      rental.status = RentalStatus.CANCELED;
+      rental.room.status = RoomStatus.EMPTY;
+      await this.em.persistAndFlush(rental);
+    } catch (err) {
+      this.logger.error(
+        'Calling cancelRentalRequest()',
+        err,
+        RentalService.name,
+      );
+      throw err;
+    }
+  }
+
+  async acceptBreakRentalRequest(id: number, user: any) {
+    try {
+      const rental = await this.rentalRepository.findOne({
+        id,
+        landlord: user,
+      });
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      if (rental.status != RentalStatus.REQUEST_BREAK) {
+        throw new BadRequestException(
+          `Only rental request with status ${RentalStatus.REQUEST_BREAK} could be accepted break`,
+        );
+      }
+
+      rental.status = RentalStatus.BROKEN;
+      rental.room.status = RoomStatus.EMPTY;
+      await this.em.persistAndFlush(rental);
+    } catch (err) {
+      this.logger.error(
+        'Calling acceptBreakRentalRequest()',
+        err,
+        RentalService.name,
+      );
+      throw err;
+    }
+  }
+
+  async confirmRentalRequest(id: number, user: any) {
+    try {
+      const rental = await this.rentalRepository.findOne({
+        id,
+        renter: user,
+      });
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      if (rental.status != RentalStatus.APPROVED) {
+        throw new BadRequestException(
+          `Only rental request with status ${RentalStatus.APPROVED} could be confirmed`,
+        );
+      }
+
+      rental.status = RentalStatus.COMPLETED;
+      await this.em.persistAndFlush(rental);
+    } catch (err) {
+      this.logger.error(
+        'Calling confirmRentalRequest()',
+        err,
+        RentalService.name,
+      );
+      throw err;
+    }
+  }
+
+  async requestBreakRentalRequest(id: number, user: any) {
+    try {
+      const rental = await this.rentalRepository.findOne({
+        id,
+        renter: user,
+      });
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      if (rental.status != RentalStatus.COMPLETED) {
+        throw new BadRequestException(
+          `Only rental request with status ${RentalStatus.COMPLETED} could be requested break`,
+        );
+      }
+
+      rental.status = RentalStatus.REQUEST_BREAK;
+      await this.em.persistAndFlush(rental);
+    } catch (err) {
+      this.logger.error(
+        'Calling requestBreakRentalRequest()',
+        err,
+        RentalService.name,
+      );
+      throw err;
+    }
+  }
+
+  async endRentalContract(id: number, user: any) {
+    try {
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          landlord: user,
+        },
+        { populate: ['rentalDetail'] },
+      );
+      if (!rental) {
+        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+      }
+      if (rental.status != RentalStatus.COMPLETED) {
+        throw new BadRequestException(
+          `Only rental request with status ${RentalStatus.COMPLETED} could be ended`,
+        );
+      }
+      if (!moment(rental.rentalDetail.moveOutDate).isBefore(moment(), 'day')) {
+        throw new BadRequestException(
+          `Unable to end the rental contract as the move-out deadline has not been reached.`,
+        );
+      }
+
+      rental.status = RentalStatus.ENDED;
+      rental.room.status = RoomStatus.EMPTY;
+      await this.em.persistAndFlush(rental);
+    } catch (err) {
+      this.logger.error(
+        'Calling requestBreakRentalRequest()',
+        err,
+        RentalService.name,
+      );
+      throw err;
     }
   }
 }
