@@ -1,5 +1,4 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 import { RoomBlockInfoDTO } from './RoomBlockInfo.dto';
 import { HostInfoDTO } from './HostInfo.dto';
 import { RoomInfoDTO } from './RoomInfo.dto';

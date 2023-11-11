@@ -3,9 +3,19 @@ import { RentalController } from './rental.controller';
 import { RatingService } from '../rating/rating.service';
 import { RatingModule } from '../rating/rating.module';
 import { RentalService } from './rental.service';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { Room, User } from 'src/entities';
+import { RentalDetail } from 'src/entities/rental_detail.entity';
+import { UsersService } from '../users/users.service';
+import { AWSService } from '../aws/aws.service';
 @Module({
-  providers: [RentalService, RatingService],
+  providers: [RentalService, RatingService, UsersService, AWSService],
   controllers: [RentalController],
-  imports: [forwardRef(() => RatingModule)],
+  imports: [
+    forwardRef(() => RatingModule),
+    MikroOrmModule.forFeature([Room]),
+    MikroOrmModule.forFeature([RentalDetail]),
+    MikroOrmModule.forFeature([User]),
+  ],
 })
 export class RentalModule {}

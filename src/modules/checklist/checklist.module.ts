@@ -10,7 +10,8 @@ import { RentalModule } from '../rental/rental.module';
 import { RentalService } from '../rental/rental.service';
 import { MikroORM } from '@mikro-orm/mysql';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { User } from 'src/entities';
+import { Room, User } from 'src/entities';
+import { RentalDetail } from 'src/entities/rental_detail.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,8 @@ import { User } from 'src/entities';
     AWSModule,
     RatingModule,
     MikroOrmModule.forFeature([User]),
+    MikroOrmModule.forFeature([RentalDetail]),
+    MikroOrmModule.forFeature([Room]),
   ],
   controllers: [ChecklistController],
   providers: [ChecklistService, RatingService, RentalService, UsersService],
