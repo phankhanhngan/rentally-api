@@ -230,6 +230,16 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
         "move_in_date": {
           "name": "move_in_date",
           "type": "datetime",
@@ -455,6 +465,16 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
         "google_id": {
           "name": "google_id",
           "type": "varchar(255)",
@@ -648,6 +668,16 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
         "address": {
           "name": "address",
           "type": "text",
@@ -798,6 +828,16 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
         },
         "roomblock_id": {
           "name": "roomblock_id",
@@ -960,6 +1000,16 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
         },
         "landlord_id": {
           "name": "landlord_id",
@@ -1178,6 +1228,16 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
         "room_id": {
           "name": "room_id",
           "type": "varchar(255)",
@@ -1382,6 +1442,16 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
         "room_id": {
           "name": "room_id",
           "type": "varchar(255)",
@@ -1507,6 +1577,16 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
         },
         "name": {
           "name": "name",
