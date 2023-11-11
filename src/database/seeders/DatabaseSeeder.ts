@@ -91,7 +91,11 @@ export class DatabaseSeeder extends Seeder {
         area: faker.number.int({ min: 0, max: 100 }),
         price: faker.number.int({ min: 0, max: 100 }),
         depositAmount: faker.number.int({ min: 0, max: 100 }),
-        images: JSON.stringify([faker.image.avatar(), faker.image.avatar(), faker.image.avatar()]),
+        images: JSON.stringify([
+          faker.image.avatar(),
+          faker.image.avatar(),
+          faker.image.avatar(),
+        ]),
         utilities: JSON.stringify([1]),
         status: RoomStatus.EMPTY,
         roomblock: roomBlocks1[Math.floor(Math.random() * roomBlocks1.length)],
