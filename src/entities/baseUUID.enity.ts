@@ -16,4 +16,7 @@ export abstract class BaseUUID {
 
   @Property({ nullable: false })
   updated_id: number;
+
+  @Property({ nullable: true })
+  deleted_at: Date;
 }

@@ -89,17 +89,17 @@ export class ModRoomBlocksService {
 
   async deleteRoomBlock(id: number, idUser: number) {
     try {
-      if (
-        (await this.roomBlockRepository.count({
-          id,
-          landlord: { id: idUser },
-        })) < 1
-      ) {
+      const roomBlock = await this.roomBlockRepository.findOne({
+        id,
+        landlord: { id: idUser },
+      });
+      if (!roomBlock) {
         throw new BadRequestException(
           `Can not find room block with id=[${id}]`,
         );
       }
-      await this.em.removeAndFlush(this.em.getReference(RoomBlock, id));
+      roomBlock.deleted_at = new Date();
+      await this.em.persistAndFlush(roomBlock);
     } catch (error) {
       this.logger.error(
         'Calling deleteRoomBlock()',
@@ -207,9 +207,11 @@ export class ModRoomBlocksService {
         id: idBlockRoom,
         landlord: { id: idUser },
       });
-      
-      if(!roomBlock) {
-        throw new BadRequestException(`Not found RoomBlock ID = [${idBlockRoom}]`);
+
+      if (!roomBlock) {
+        throw new BadRequestException(
+          `Not found RoomBlock ID = [${idBlockRoom}]`,
+        );
       }
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };

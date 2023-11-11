@@ -186,9 +186,9 @@ export class RoomsService {
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
       }
-      const urls = JSON.parse(roomEntity.images);
-      await this.awsService.bulkDeleteObjects(urls);
-      await this.em.removeAndFlush(this.roomRepository.getReference(id));
+      roomEntity.deleted_at = new Date();
+
+      await this.em.persistAndFlush(roomEntity);
     } catch (error) {
       this.logger.error('Calling deleteRoomById()', error, RoomsService.name);
       throw error;

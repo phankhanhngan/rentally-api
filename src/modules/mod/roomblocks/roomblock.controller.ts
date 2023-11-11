@@ -180,7 +180,7 @@ export class ModRoomBlocksController {
       const rooms = await this.modRoomBlocksService.getRoomsByIdBlockRoom(
         id,
         keyword,
-        req.user.id
+        req.user.id,
       );
       res.status(200).json({
         status: 'success',
