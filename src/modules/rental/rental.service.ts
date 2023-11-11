@@ -4,11 +4,13 @@ import {
   Inject,
   Injectable,
   Logger,
+  UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import {
   RatingStatus,
   RentalStatus,
+  Role,
   RoomStatus,
 } from 'src/common/enum/common.enum';
 import { Rental } from 'src/entities/rental.entity';
@@ -22,6 +24,7 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { HostInfoDTO } from './dtos/HostInfo.dto';
 import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
 import * as moment from 'moment';
+import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 
 @Injectable()
 export class RentalService {
@@ -88,7 +91,6 @@ export class RentalService {
           ],
         },
       );
-      console.log(rentals);
       const rentalsDTO: MyRentalDTO[] = [];
       if (rentals.length < 1) {
         return rentalsDTO;
@@ -318,5 +320,132 @@ export class RentalService {
       },
     };
     return dto;
+  }
+
+  async getListRental(userLogined: UserRtnDto, keyword: string) {
+    try {
+      let rentals = null;
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      if (userLogined.role === Role.ADMIN) {
+        const queryObj = {
+          $or: [
+            {
+              landlord: {
+                $or: [
+                  { firstName: likeQr },
+                  { lastName: likeQr },
+                  { phoneNumber: likeQr },
+                ],
+              },
+            },
+            {
+              renter: {
+                $or: [
+                  { firstName: likeQr },
+                  { lastName: likeQr },
+                  { phoneNumber: likeQr },
+                ],
+              },
+            },
+            {
+              room: {
+                $or: [
+                  {
+                    roomblock: {
+                      $or: [
+                        { description: likeQr },
+                        { address: likeQr },
+                        { city: likeQr },
+                        { country: likeQr },
+                        { district: likeQr },
+                      ],
+                    },
+                  },
+                  { roomName: likeQr },
+                ],
+              },
+            },
+            { status: likeQr },
+            { tenants: likeQr },
+          ],
+        };
+        rentals = await this.em.find(Rental, queryObj, {
+          populate: [
+            'landlord',
+            'renter',
+            'room',
+            'room.roomblock',
+            'rentalDetail',
+          ],
+        });
+      } else if (userLogined.role === Role.MOD) {
+        const queryObj = {
+          $or: [
+            {
+              landlord: {
+                $or: [
+                  { firstName: likeQr },
+                  { lastName: likeQr },
+                  { phoneNumber: likeQr },
+                ],
+              },
+            },
+            {
+              renter: {
+                $or: [
+                  { id: userLogined.id },
+                  { firstName: likeQr },
+                  { lastName: likeQr },
+                  { phoneNumber: likeQr },
+                ],
+              },
+            },
+            {
+              room: {
+                $or: [
+                  {
+                    roomblock: {
+                      $or: [
+                        { description: likeQr },
+                        { address: likeQr },
+                        { city: likeQr },
+                        { country: likeQr },
+                        { district: likeQr },
+                      ],
+                    },
+                  },
+                  { roomName: likeQr },
+                ],
+              },
+            },
+            { status: likeQr },
+            { tenants: likeQr },
+          ],
+        };
+        rentals = await this.em.find(Rental, queryObj, {
+          populate: [
+            'landlord',
+            'renter',
+            'room',
+            'room.roomblock',
+            'rentalDetail',
+          ],
+        });
+      } else {
+        throw new UnauthorizedException('You are not access to this route');
+      }
+      const rentalsDTO: MyRentalDTO[] = [];
+      if (rentals.length < 1) {
+        return rentalsDTO;
+      }
+      for (const rental of rentals) {
+        const dto = await this.setRentalDTO(rental);
+        rentalsDTO.push(dto);
+      }
+      return rentalsDTO;
+    } catch (error) {
+      throw error;
+    }
   }
 }
