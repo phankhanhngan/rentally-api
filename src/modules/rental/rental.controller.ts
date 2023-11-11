@@ -31,6 +31,31 @@ export class RentalController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  @Get()
+  async getListRental(
+    @Res() res: Response,
+    @Req() req,
+    @Query('keyword') keyword: string,
+  ) {
+    try {
+      const userLogined = req.user;
+      const data = await this.rentalService.getListRental(userLogined, keyword);
+      res.status(200).json({
+        message: 'Get all rental successfully',
+        status: 'success',
+        data: data,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getListRental()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
   @Get('/my-rental')
   async getMyRental(@Res() res: Response, @Req() req) {
     try {
