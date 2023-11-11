@@ -1,9 +1,10 @@
 import type { EntityManager } from '@mikro-orm/core';
-import { Seeder, faker } from '@mikro-orm/seeder';
+import { Seeder } from '@mikro-orm/seeder';
 import { Rental } from '../../entities/rental.entity';
 import { RentalDetail } from '../../entities/rental_detail.entity';
 import { RentalStatus, Role, RoomStatus } from '../../common/enum/common.enum';
 import { Room, User } from '../../entities';
+import { faker } from '@faker-js/faker';
 
 export class RentalSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
@@ -40,7 +41,7 @@ export class RentalSeeder extends Seeder {
       moveInDate: new Date(),
       moveOutDate: new Date('2023-12-30'),
       leaseTerm: this.randomArr(this.leaseTerm),
-      monthlyRent: 2000000,
+      monthlyRent: faker.number.int({ min: 0, max: 100 }),
       leaseTerminationCost: 500000,
       renterIdentifyNo: `192${Math.floor(
         100 + Math.random() * 900,

@@ -1,21 +1,11 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  forwardRef,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { RatingDTO } from './dto/rating.dto';
 import { EntityManager } from '@mikro-orm/mysql';
 import { RentalService } from '../rental/rental.service';
 import { RentalStatus } from 'src/common/enum/common.enum';
 import { RoomRating } from 'src/entities/room-rating.entity';
-import { Rental } from '../../entities/rental.entity';
-import { RoomsService } from '../admin/rooms/rooms.service';
-import { Room } from 'src/entities';
-import { log } from 'console';
 import { RatingRtnDTO } from './dto/rating-rtn.dto';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { UserRatingDTO } from './dto/user-rating.dto';
 
 @Injectable()

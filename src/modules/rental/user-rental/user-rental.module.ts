@@ -3,13 +3,18 @@ import { UserRentalService } from './user-rental.service';
 import { UserRentalController } from './user-rental.controller';
 import { UsersService } from 'src/modules/users/users.service';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { User } from 'src/entities';
+import { Room, User } from 'src/entities';
 import { AWSService } from 'src/modules/aws/aws.service';
 import { RentalService } from '../rental.service';
 import { RatingService } from 'src/modules/rating/rating.service';
+import { RentalDetail } from 'src/entities/rental_detail.entity';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([User])],
+  imports: [
+    MikroOrmModule.forFeature([User]),
+    MikroOrmModule.forFeature([Room]),
+    MikroOrmModule.forFeature([RentalDetail]),
+  ],
   providers: [
     UserRentalService,
     UsersService,
