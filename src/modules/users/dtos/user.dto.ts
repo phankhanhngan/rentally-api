@@ -48,6 +48,9 @@ export class UserDTO {
   @Expose()
   role!: Role;
 
+  @Expose({ name: 'deleted_at' })
+  deletedAt: Date;
+
   @Expose()
   verificationCode?: string;
 }

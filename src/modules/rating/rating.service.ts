@@ -122,6 +122,7 @@ export class RatingService {
         avgSecurity = 0,
         avgSupport = 0;
       for (let index = 0; index < res.length; index++) {
+        res[index].avgRate = Number(res[index].avgRate);
         avgRate += parseFloat(res[index].avgRate);
         avgClean += res[index].cleanRate;
         avgLocation += res[index].locationRate;
