@@ -1,8 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsDate,
+  IsDateString,
   IsDefined,
-  IsEnum,
   IsInt,
   IsNotEmptyObject,
   IsObject,
@@ -13,10 +14,13 @@ import {
 } from 'class-validator';
 
 class CreateRentalDetailInfo {
+  @ApiProperty()
   @IsInt()
   leaseTerm: number;
-  @IsDate()
-  moveInDate: Date;
+  @ApiProperty()
+  @IsString()
+  moveInDate: string;
+  @ApiProperty()
   @IsInt()
   @Min(1)
   @Max(4)
@@ -24,27 +28,35 @@ class CreateRentalDetailInfo {
 }
 
 class CreateRentalTenantInfo {
+  @ApiProperty()
   @IsString()
   identityNumber: string;
-  @IsDate()
-  identityDateOfIssue: Date;
+  @ApiProperty()
+  @IsString()
+  identityDateOfIssue: string;
+  @ApiProperty()
   @IsString()
   identityPlaceOfIsse: string;
-  @IsDate()
-  birthday: Date;
+  @ApiProperty()
+  @IsString()
+  birthday: string;
+  @ApiProperty()
   @IsString()
   phoneNumber: string;
 }
 
 export class CreateRentalDTO {
+  @ApiProperty()
   @IsString()
   roomId: string;
+  @ApiProperty()
   @IsDefined()
   @IsNotEmptyObject()
   @IsObject()
   @ValidateNested()
   @Type(() => CreateRentalTenantInfo)
   tenantInfo: CreateRentalTenantInfo;
+  @ApiProperty()
   @IsDefined()
   @IsNotEmptyObject()
   @IsObject()

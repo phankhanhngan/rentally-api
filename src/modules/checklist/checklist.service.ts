@@ -5,13 +5,15 @@ import { Checklist } from 'src/entities/checklist.entity';
 import { RoomsService } from '../admin/rooms/rooms.service';
 import { UsersService } from '../users/users.service';
 import { Room } from 'src/entities';
+import { RatingService } from '../rating/rating.service';
+import { classToPlain, plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ChecklistService {
   constructor(
-    private readonly em: EntityManager,
-    private readonly roomService: RoomsService,
+    private readonly ratingService: RatingService,
     private readonly userService: UsersService,
+    private readonly em: EntityManager,
   ) {}
   async findAllMyChecklist(idLogined: any) {
     try {
@@ -47,7 +49,12 @@ export class ChecklistService {
           ],
         },
       );
-      return checklist;
+      const x = classToPlain(checklist);
+      for (let i = 0; i < x.length; i++) {
+        const rating = await this.ratingService.findByRoom(x[i].room.id);
+        x[i].rating = rating;
+      }
+      return x;
     } catch (error) {
       throw error;
     }
@@ -111,10 +118,10 @@ export class ChecklistService {
       const checklistDb = await this.em.findOne(Checklist, queryObj, {
         populate: ['room', 'renter'],
       });
-      if (checklistDb)
-        throw new BadRequestException(
-          'You are already add this room to checklist!',
-        );
+      if (checklistDb) {
+        await this.em.removeAndFlush(checklistDb);
+        return false;
+      }
       const checklist = new Checklist();
       checklist.renter = renter;
       checklist.room = room;
@@ -123,6 +130,7 @@ export class ChecklistService {
       checklist.created_at = new Date();
       checklist.updated_at = new Date();
       await this.em.persistAndFlush(checklist);
+      return true;
     } catch (error) {
       throw error;
     }

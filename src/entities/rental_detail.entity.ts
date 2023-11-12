@@ -16,38 +16,38 @@ export class RentalDetail extends Base {
   monthlyRent: number;
 
   @Property({ nullable: true, type: 'decimal' })
-  leaseTerminationCost: number;
+  leaseTerminationCost?: number;
 
   @Property({ nullable: true })
   renterIdentifyNo: string;
 
   @Property({ nullable: true })
-  landlordIdentifyNo: string;
+  landlordIdentifyNo?: string;
 
   @Property({ nullable: true })
   renterIdentifyDate: Date;
 
   @Property({ nullable: true })
-  landlordIdentifyDate: Date;
+  landlordIdentifyDate?: Date;
 
   @Property({ nullable: true })
   renterIdentifyAddress: string;
 
   @Property({ nullable: true })
-  landlordIdentifyAddress: string;
+  landlordIdentifyAddress?: string;
 
   @Property({ nullable: true })
   renterBirthday: Date;
 
   @Property({ nullable: true })
-  landlordBirthday: Date;
+  landlordBirthday?: Date;
 
   @Property({ nullable: true, type: 'decimal' })
-  electricPrice: number;
+  electricPrice?: number;
 
   @Property({ nullable: true, type: 'decimal' })
-  waterPrice: number;
+  waterPrice?: number;
 
   @Property({ nullable: true, type: 'decimal' })
-  addtionalPrice: number;
+  addtionalPrice?: number;
 }

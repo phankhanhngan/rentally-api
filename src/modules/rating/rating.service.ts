@@ -1,24 +1,18 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { RatingDTO } from './dto/rating.dto';
 import { EntityManager } from '@mikro-orm/mysql';
 import { RentalService } from '../rental/rental.service';
 import { RentalStatus } from 'src/common/enum/common.enum';
 import { RoomRating } from 'src/entities/room-rating.entity';
-import { Rental } from '../../entities/rental.entity';
-import { RoomsService } from '../admin/rooms/rooms.service';
-import { Room } from 'src/entities';
-import { log } from 'console';
+import { RatingRtnDTO } from './dto/rating-rtn.dto';
+import { plainToClass } from 'class-transformer';
+import { UserRatingDTO } from './dto/user-rating.dto';
 
 @Injectable()
 export class RatingService {
   constructor(
     private readonly em: EntityManager,
     private readonly rentalService: RentalService,
-    private readonly roomsService: RoomsService,
   ) {}
   async createRating(idLogin: any, ratingDto: RatingDTO) {
     try {
@@ -87,11 +81,6 @@ export class RatingService {
     return rating;
   }
   async findByRoom(roomId: string) {
-    const queryObj = {
-      room: {
-        id: roomId,
-      },
-    };
     try {
       // const room = await this.roomsService.findRoomById(roomId);
       const qb = this.em.getKnex().raw(
@@ -109,13 +98,15 @@ export class RatingService {
         { id: roomId },
       );
       const res = await this.em.execute(qb);
+      const result = new RatingRtnDTO();
       if (res.length < 1) {
         return {
-          ratings: null,
-          avgRate: 0
+          ratings: [],
+          avgRate: 0,
         };
       }
       const totalRating = res.length;
+      const userRatings: UserRatingDTO[] = [];
       let avgRate = 0,
         avgClean = 0,
         avgLocation = 0,
@@ -128,18 +119,16 @@ export class RatingService {
         avgLocation += res[index].locationRate;
         avgSecurity += res[index].securityRate;
         avgSupport += res[index].supportRate;
+        userRatings.push(plainToClass(UserRatingDTO, res[index]));
       }
-      const data = {
-        ratings: res,
-        avgRate: parseFloat((avgRate / totalRating).toFixed(1)),
-        avgClean: avgClean / totalRating,
-        avgLocation: avgLocation / totalRating,
-        avgSecurity: avgSecurity / totalRating,
-        avgSupport: avgSupport / totalRating,
-        totalRating: totalRating,
-      };
-      return data;
-      // return listRating;
+      result.ratings = userRatings;
+      (result.avgRate = parseFloat((avgRate / totalRating).toFixed(1))),
+        (result.avgClean = avgClean / totalRating);
+      result.avgLocation = avgLocation / totalRating;
+      result.avgSecurity = avgSecurity / totalRating;
+      result.avgSupport = avgSupport / totalRating;
+      result.totalRating = totalRating;
+      return result;
     } catch (error) {
       throw error;
     }

@@ -41,7 +41,6 @@ export class UsersController {
   ) {}
 
   @Get('/me')
-  @UseInterceptors(FileInterceptor('photo', fileFilter))
   async getCurrentUserInfo(@Res() res: Response, @Req() req) {
     try {
       const user = await this.usersService.getUserById(req.user.id);

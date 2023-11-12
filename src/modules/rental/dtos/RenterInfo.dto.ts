@@ -1,41 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { Role } from 'src/common/enum/common.enum';
 @Exclude()
-export class UserRtnDto {
-  @ApiProperty()
-  @Expose()
-  googleId?: string;
-
-  @ApiProperty()
-  @Expose()
-  email!: string | undefined;
-
-  @ApiProperty()
-  @Expose()
-  firstName!: string;
-
-  @ApiProperty()
-  @Expose()
-  lastName?: string;
-
-  @ApiProperty()
-  @Expose()
-  photo?: string;
-
-  @ApiProperty()
-  @Expose()
-  role!: Role;
-
+export class RenterInfoDTO {
   @ApiProperty()
   @Expose()
   id: number;
-
   @ApiProperty()
   @Expose()
-  created_at: Date;
-
+  firstName: string;
   @ApiProperty()
   @Expose()
-  updated_at: Date;
+  lastname: string;
+  @ApiProperty()
+  @Expose()
+  email: string;
+  @ApiProperty()
+  @Expose()
+  phone: string;
+  @ApiProperty()
+  @Expose()
+  identityNumber: string;
+  @ApiProperty()
+  @Expose()
+  identityDateOfIssue: Date;
+  @ApiProperty()
+  @Expose()
+  identityPlaceOfIssue: string;
+  @ApiProperty()
+  @Expose()
+  birthday: Date;
 }
