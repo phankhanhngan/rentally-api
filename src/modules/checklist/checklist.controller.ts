@@ -36,9 +36,15 @@ export class ChecklistController {
   ) {
     try {
       const idLogined = req.user.id;
-      await this.checklistService.addToChecklist(checkListDTO, idLogined);
+      const isCreated = await this.checklistService.addToChecklist(
+        checkListDTO,
+        idLogined,
+      );
+      const message = isCreated
+        ? 'Add to checklist successfully'
+        : 'Remove of checklist successfully';
       res.status(200).json({
-        message: 'Add to checklist successfully',
+        message: message,
         status: 'success',
       });
     } catch (error) {
@@ -51,29 +57,29 @@ export class ChecklistController {
     }
   }
 
-  @UseGuards(RoleAuthGuard([Role.USER]))
-  @Delete()
-  async removeOfChecklist(
-    @Res() res: Response,
-    @Req() req,
-    @Body(new ValidationPipe({ transform: true })) checkListDTO: CheckListDTO,
-  ) {
-    try {
-      const idLogined = req.user.id;
-      await this.checklistService.removeOfChecklist(checkListDTO, idLogined);
-      res.status(200).json({
-        message: 'Remove of checklist successfully',
-        status: 'success',
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling removeOfChecklist()',
-        error,
-        ChecklistController.name,
-      );
-      throw error;
-    }
-  }
+  // @UseGuards(RoleAuthGuard([Role.USER]))
+  // @Delete()
+  // async removeOfChecklist(
+  //   @Res() res: Response,
+  //   @Req() req,
+  //   @Body(new ValidationPipe({ transform: true })) checkListDTO: CheckListDTO,
+  // ) {
+  //   try {
+  //     const idLogined = req.user.id;
+  //     await this.checklistService.removeOfChecklist(checkListDTO, idLogined);
+  //     res.status(200).json({
+  //       message: 'Remove of checklist successfully',
+  //       status: 'success',
+  //     });
+  //   } catch (error) {
+  //     this.logger.error(
+  //       'Calling removeOfChecklist()',
+  //       error,
+  //       ChecklistController.name,
+  //     );
+  //     throw error;
+  //   }
+  // }
 
   @UseGuards(RoleAuthGuard([Role.USER]))
   @Get()

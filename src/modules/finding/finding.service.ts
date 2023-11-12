@@ -93,7 +93,7 @@ export class FindingService {
         ];
       }
 
-      const queryObjUitilities = {};      
+      const queryObjUitilities = {};
       if (findRoomDto.utilities) {
         findRoomDto.utilities.forEach((utilitty, index) => {
           if (index == 0) {
@@ -212,8 +212,13 @@ export class FindingService {
       roomDto.landlord = landlordDto;
 
       const rating = await this.ratingService.findByRoom(room.id);
-      if (rating.ratings) {        
+      if (rating.ratings) {
         roomDto.ratingDetail = rating;
+      } else {
+        roomDto.ratingDetail = {
+          ratings: [],
+          totalRating: 0,
+        };
       }
 
       const utilities = JSON.parse(room.utilities);
