@@ -113,16 +113,16 @@ export class RentalController {
     }
   }
 
-  @UseGuards(RoleAuthGuard([Role.MOD]))
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
   @Get('/:id')
-  async modGetRentalbyId(
+  async getRentalById(
     @Req() req,
     @Res() res: Response,
     @Param('id', ParseIntPipe)
     id: number,
   ) {
     try {
-      const rental = await this.rentalService.modGetRentalById(id, req.user);
+      const rental = await this.rentalService.getRentalById(id, req.user);
       res.status(200).json({
         success: true,
         message: `Get rental successfully`,
@@ -141,27 +141,162 @@ export class RentalController {
   }
 
   @UseGuards(RoleAuthGuard([Role.MOD]))
+  @Put('/:id/approve')
+  async approveRentalRequest(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.rentalService.approveRentalRequest(id, req.user);
+      res.status(200).json({
+        success: true,
+        message: `Approve rental request successfully`,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling approveRentalRequest()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
+  @UseGuards(RoleAuthGuard([Role.MOD]))
+  @Put('/:id/cancel')
+  async cancelRentalRequest(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.rentalService.cancelRentalRequest(id, req.user);
+      res.status(200).json({
+        success: true,
+        message: `Cancel rental request successfully`,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling cancelRentalRequest()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
+  @UseGuards(RoleAuthGuard([Role.MOD]))
+  @Put('/:id/accept-break')
+  async acceptBreakRentalRequest(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.rentalService.acceptBreakRentalRequest(id, req.user);
+      res.status(200).json({
+        success: true,
+        message: `Accept break rental contract successfully`,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling acceptBreakRentalRequest()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Put('/:id/end')
+  async endRentalContract(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.rentalService.endRentalContract(id, req.user);
+      res.status(200).json({
+        success: true,
+        message: `End rental contract successfully`,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling endRentalContract()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Put('/my-rental/:id/confirm')
+  async confirmRentalRequest(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.rentalService.confirmRentalRequest(id, req.user);
+      res.status(200).json({
+        success: true,
+        message: `Confirm rental contract successfully`,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling confirmRentalRequest()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Put('/my-rental/:id/request-break')
+  async requestBreakRentalRequest(
+    @Req() req,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    try {
+      await this.rentalService.requestBreakRentalRequest(id, req.user);
+      res.status(200).json({
+        success: true,
+        message: `Request break rental contract successfully`,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling requestBreakRentalRequest()',
+        error,
+        RentalController.name,
+      );
+      throw error;
+    }
+  }
+
+  @UseGuards(RoleAuthGuard([Role.MOD]))
   @Put('/:id')
   async modUpdateRentalInfo(
     @Req() req,
     @Res() res: Response,
-    @Body()
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ValidationPipe())
     updateRentalDto: UpdateRentalDTO,
   ) {
     try {
-      const rental = await this.rentalService.modUpdateRentalInfo(
+      await this.rentalService.modUpdateRentalInfo(
+        id,
+        req.user,
         updateRentalDto,
       );
       res.status(200).json({
         success: true,
-        message: `Get rental successfully`,
-        data: {
-          rental,
-        },
+        message: `Update rental successfully`,
       });
     } catch (error) {
       this.logger.error(
-        'Calling getRentalbyId()',
+        'Calling modUpdateRentalInfo()',
         error,
         RentalController.name,
       );

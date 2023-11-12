@@ -134,7 +134,7 @@ export class ModRoomBlocksService {
       return roomBlockDto;
     } catch (error) {
       this.logger.error(
-        'Calling deleteRoomBlock()',
+        'Calling getRoomBlock()',
         error,
         ModRoomBlocksService.name,
       );
@@ -174,6 +174,8 @@ export class ModRoomBlocksService {
         },
       );
 
+      console.log(roomBlockEntityList);
+      
       const dtos = plainToClass(RoomBlockModDTO, roomBlockEntityList);
 
       for (let i = 0; i < dtos.length; i++) {

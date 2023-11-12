@@ -17,6 +17,9 @@ export class RoomBlockModDTO {
   coordinate!: Point;
   @Expose()
   description!: string;
+  @Expose({ name: 'deleted_at' })
+  deletedAt: Date;
+
   quantityRooms!: number;
   emptyRooms!: number;
 }

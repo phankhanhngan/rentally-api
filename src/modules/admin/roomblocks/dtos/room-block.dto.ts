@@ -18,6 +18,8 @@ export class RoomBlockAdminDTO {
   coordinate!: Point;
   @Expose()
   description!: string;
+  @Expose({ name: 'deleted_at' })
+  deletedAt: Date;
   @Expose()
   landlord!: GetUserDTO;
 }
