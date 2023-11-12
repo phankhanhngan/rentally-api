@@ -37,3 +37,13 @@ export enum RatingStatus {
   RATED = 'RATED',
   NONE = 'NONE',
 }
+
+export enum PaymentStatus {
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+}
+
+export enum TransactionStatus {
+  SUCCESSED = 'SUCCESSED',
+  FAILED = 'FAILED',
+}
