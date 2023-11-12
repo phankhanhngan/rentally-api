@@ -1569,9 +1569,9 @@
             "rental_id"
           ],
           "composite": false,
-          "keyName": "payments_rental_id_unique",
+          "keyName": "payments_rental_id_index",
           "primary": false,
-          "unique": true
+          "unique": false
         },
         {
           "keyName": "PRIMARY",
