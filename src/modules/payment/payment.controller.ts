@@ -24,8 +24,8 @@ import { Role } from 'src/common/enum/common.enum';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { Response } from 'express';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
-import { plainToInstance } from 'class-transformer';
-import { PaymentDTO } from './dtos/payment.dto';
+import { User } from '../../entities/user.entity';
+
 @UseGuards(JwtAuthGuard)
 @Controller('payments')
 export class PaymentController {
@@ -33,6 +33,25 @@ export class PaymentController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly paymentService: PaymentService,
   ) {}
+  // @UseGuards(RoleAuthGuard([Role.USER]))
+  // @Get('check-out')
+  // async checkOutPayment(
+  //   @Req() req,
+  //   @Res() res: Response,
+  //   // @Body(new ValidationPipe())
+  //   // paymentDTO: UpdatePaymentDTO,
+  // ) {
+  //   try {
+  //     res.redirect('youtube.com');
+  //   } catch (error) {
+  //     this.logger.error(
+  //       'Calling checkOutPayment()',
+  //       error,
+  //       PaymentController.name,
+  //     );
+  //     throw error;
+  //   }
+  // }
 
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Post()
@@ -58,6 +77,7 @@ export class PaymentController {
       throw error;
     }
   }
+
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Put(':id')
   async updatePayment(

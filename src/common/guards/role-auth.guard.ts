@@ -18,6 +18,8 @@ export const RoleAuthGuard = (acceptedRoles: Array<string>) => {
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const req = context.switchToHttp().getRequest();
       const user = req.user;
+      console.log(user);
+      console.log(acceptedRoles);
       if (!acceptedRoles.includes(user.role)) {
         throw new HttpException(
           'You are not allow to access to this route',
