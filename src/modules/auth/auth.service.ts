@@ -66,7 +66,7 @@ export class AuthService {
         UserRtnDto,
         await this.userService.getUserByEmail(user.email),
       );
-      var accessToken = await this.jwtService.signAsync({
+      const accessToken = await this.jwtService.signAsync({
         ...userRtn,
       });
       return {
@@ -92,13 +92,13 @@ export class AuthService {
         );
       if (userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.BAD_REQUEST);
-      var isValidPass = await bcrypt.compare(
+      const isValidPass = await bcrypt.compare(
         loginDto.password,
         userDb.password,
       );
       const user: UserRtnDto = plainToInstance(UserRtnDto, userDb);
       if (isValidPass) {
-        var accessToken = await this.jwtService.signAsync({
+        const accessToken = await this.jwtService.signAsync({
           ...user,
         });
         return {
@@ -122,7 +122,7 @@ export class AuthService {
   async performRegister(dto: RegisterDto) {
     try {
       const userDb = await this.getUserByEmail(dto.email);
-      var { verificationCode, verificationToken } =
+      const { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
           dto.email,
@@ -168,7 +168,7 @@ export class AuthService {
           'Email has been verified',
           HttpStatus.BAD_REQUEST,
         );
-      var { verificationCode, verificationToken } =
+      const { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
           email,
@@ -203,7 +203,7 @@ export class AuthService {
         userDb.status = UserStatus.ACTIVE;
         await this.em.persistAndFlush(userDb);
         const userRtn: UserRtnDto = plainToInstance(UserRtnDto, userDb);
-        var accessToken = await this.jwtService.signAsync({
+        const accessToken = await this.jwtService.signAsync({
           ...userRtn,
         });
         return {
@@ -229,7 +229,7 @@ export class AuthService {
         );
       if (userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.BAD_REQUEST);
-      var { verificationCode, verificationToken } =
+      const { verificationCode, verificationToken } =
         await this.generateVerificationCode(
           6,
           emailDTO.email,
@@ -291,13 +291,13 @@ export class AuthService {
     }
   }
   async generateVerificationCode(length: number, email: string, exp: number) {
-    var verificationCode =
+    const verificationCode =
       'R-' +
       Math.floor(
         Math.pow(10, length - 1) +
           Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1),
       );
-    var verificationToken = await this.jwtService.signAsync({
+    const verificationToken = await this.jwtService.signAsync({
       email: email,
       code: verificationCode,
       expiry: new Date(new Date().getTime() + exp),
