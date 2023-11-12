@@ -1,6 +1,8 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'provinces' })
+@Index({ properties: ['code'] })
+
 export class Province {
   @PrimaryKey()
   @Property({ nullable: false })
