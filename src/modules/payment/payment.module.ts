@@ -10,6 +10,7 @@ import { RentalService } from '../rental/rental.service';
 import { RatingService } from '../rating/rating.service';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
+import { StripeController } from './stripe/stripe.controller';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { Rental } from 'src/entities/rental.entity';
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
   ],
-  controllers: [PaymentController],
+  controllers: [PaymentController, StripeController],
   providers: [
     PaymentService,
     UsersService,

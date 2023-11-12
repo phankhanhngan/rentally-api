@@ -33,7 +33,7 @@ export class PaymentController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly paymentService: PaymentService,
   ) {}
-  // @UseGuards(RoleAuthGuard([Role.USER]))
+  //@UseGuards(RoleAuthGuard([Role.ADMIN, Role.USER]))
   // @Get('check-out')
   // async checkOutPayment(
   //   @Req() req,
