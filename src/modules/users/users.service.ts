@@ -278,8 +278,8 @@ export class UsersService {
       if (userToDelete.photo !== null) {
         await this.awsService.bulkDeleteObject(userToDelete.photo);
       }
-
-      await this.em.removeAndFlush(this.userRepository.getReference(id));
+      userToDelete.deleted_at = new Date();
+      await this.em.persistAndFlush(userToDelete);
     } catch (error) {
       throw error;
     }

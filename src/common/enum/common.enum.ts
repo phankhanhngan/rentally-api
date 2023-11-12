@@ -22,3 +22,18 @@ export enum UserStatus {
   DISABLED = 'DISABLED',
   REGISTING = 'REGISTING',
 }
+
+export enum RentalStatus {
+  CREATED = 'CREATED',
+  APPROVED = 'APPROVED',
+  COMPLETED = 'COMPLETED',
+  CANCELED = 'CANCELED',
+  REQUEST_BREAK = 'REQUEST_BREAK',
+  BROKEN = 'BROKEN',
+  ENDED = 'ENDED',
+}
+
+export enum RatingStatus {
+  RATED = 'RATED',
+  NONE = 'NONE',
+}

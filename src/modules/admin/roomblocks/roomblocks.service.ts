@@ -81,12 +81,14 @@ export class RoomBlocksService {
 
   async deleteRoomBlock(id: number) {
     try {
-      if ((await this.roomBlockRepository.count({ id })) < 1) {
+      const roomBlock = await this.roomBlockRepository.findOne({ id });
+      if (!roomBlock) {
         throw new BadRequestException(
           `Can not find room block with id=[${id}]`,
         );
       }
-      await this.em.removeAndFlush(this.em.getReference(RoomBlock, id));
+      roomBlock.deleted_at = new Date();
+      await this.em.persistAndFlush(roomBlock);
     } catch (error) {
       this.logger.error(
         'Calling deleteRoomBlock()',

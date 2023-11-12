@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UserDTO } from './dtos/user.dto';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { plainToInstance } from 'class-transformer';
 import { UpdateUserDTO } from './dtos/update-user.dto';

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -61,7 +62,11 @@ export class ModRoomsController {
     updateRoomModDto: UpdateRoomModDTO,
   ) {
     try {
-      await this.modRoomsService.updateRoom(id, req.user.id, updateRoomModDto);
+      await this.modRoomsService.updateRoom(
+        id,
+        req.user.id,
+        updateRoomModDto
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Update room successfully',
@@ -102,12 +107,17 @@ export class ModRoomsController {
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Get('/:id')
   async findRoomById(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
     @Param('id') id: string,
   ) {
     try {
-      const roomDto = await this.modRoomsService.findRoomById(id);
+      const roomDto = await this.modRoomsService.findRoomById(id, req.user.id);
+
+      if(!roomDto) {
+        throw new BadRequestException(`Can not find room with id=[${id}]`);
+      }
+
       return res.status(200).json({
         status: 'success',
         message: 'Get room by id successfully',
@@ -126,12 +136,12 @@ export class ModRoomsController {
   @UseGuards(RoleAuthGuard([Role.MOD]))
   @Delete('/:id')
   async deleteRoomById(
-    @Req() req: Request,
+    @Req() req,
     @Res() res: Response,
     @Param('id') id: string,
   ) {
     try {
-      await this.modRoomsService.deleteRoomById(id);
+      await this.modRoomsService.deleteRoomById(id, req.user.id);
       return res.status(200).json({
         status: 'success',
         message: 'Delete room successfully',

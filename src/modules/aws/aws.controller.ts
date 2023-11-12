@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   Controller,
   Inject,
   ParseFilePipe,
   Post,
   Query,
+  Req,
   Res,
   UploadedFiles,
   UseGuards,
@@ -34,13 +36,17 @@ export class AwsController {
   @UseInterceptors(FilesInterceptor('files', 10, fileFilter))
   async addImageRoom(
     @Query('id') id: string,
+    @Req() req,
     @Res() res: Response,
     @UploadedFiles(new ParseFilePipe({}))
     files: Array<Express.Multer.File> | Express.Multer.File,
   ) {
     try {
       if (id && id.length > 0) {
-        await this.roomsService.findRoomById(id);
+        const room = await this.roomsService.findRoomById(id, req.user.id);
+        if(!room) {
+          throw new BadRequestException(`Can not find room with id=[${id}]`);
+        }
       }
       const u_id: string = id && id.length > 0 ? id : uuidv4();
 

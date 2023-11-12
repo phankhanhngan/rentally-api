@@ -37,6 +37,7 @@ export class ModRoomsService {
       const roomBlockEntity: Loaded<RoomBlock> =
         await this.roomBlockRepository.findOne({
           id: addRoomDTO.roomBlockId,
+          landlord: { id: idUser },
         });
       if (!roomBlockEntity) {
         throw new BadRequestException(
@@ -108,6 +109,7 @@ export class ModRoomsService {
     try {
       const roomEntity: Loaded<Room> = await this.roomRepository.findOne({
         id: idRoom,
+        roomblock: { landlord: idlogin },
       });
 
       if (!roomEntity) {
@@ -161,11 +163,15 @@ export class ModRoomsService {
     }
   }
 
-  async findRoomById(id: string) {
+  async findRoomById(id: string, idUser: number) {
     try {
-      const roomEntity = await this.roomRepository.findOne({ id });
+      const roomEntity = await this.roomRepository.findOne({
+        id,
+        roomblock: { landlord: { id: idUser } },
+      });
       if (!roomEntity) {
-        throw new BadRequestException(`Can not find room with id=[${id}]`);
+        // throw new BadRequestException(`Can not find room with id=[${id}]`);
+        return null;
       }
       const roomDto = plainToInstance(ViewRoomDTO, roomEntity);
       return roomDto;
@@ -199,16 +205,19 @@ export class ModRoomsService {
     }
   }
 
-  async deleteRoomById(id: string) {
+  async deleteRoomById(id: string, idUser: number) {
     try {
-      const roomEntity = await this.roomRepository.findOne({ id });
+      const roomEntity = await this.roomRepository.findOne({
+        id,
+        roomblock: { landlord: { id: idUser } },
+      });
 
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
       }
-      const urls = JSON.parse(roomEntity.images);
-      await this.awsService.bulkDeleteObjects(urls);
-      await this.em.removeAndFlush(this.roomRepository.getReference(id));
+      roomEntity.deleted_at = new Date();
+
+      await this.em.persistAndFlush(roomEntity);
     } catch (error) {
       this.logger.error(
         'Calling deleteRoomById()',

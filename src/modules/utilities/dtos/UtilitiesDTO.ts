@@ -14,4 +14,7 @@ export class UtilitiesDTO {
   @Expose()
   @IsNotEmpty()
   note: string;
+
+  @Expose()
+  icon: string;
 }

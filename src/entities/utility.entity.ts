@@ -8,4 +8,7 @@ export class Utility extends Base {
 
   @Property({ nullable: true })
   note?: string;
+
+  @Property({ nullable: true })
+  icon?: string;
 }

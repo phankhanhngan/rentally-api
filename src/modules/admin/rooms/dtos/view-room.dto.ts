@@ -33,4 +33,7 @@ export class ViewRoomDTO {
 
   @Expose()
   status: string;
+
+  @Expose({ name: 'deleted_at' })
+  deletedAt: Date;
 }

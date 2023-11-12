@@ -17,6 +17,9 @@ export class GetUserDTO {
   @Expose()
   phoneNumber: string;
 
+  @Expose({ name: 'deleted_at' })
+  deletedAt: Date;
+
   firstName?: string;
   lastName?: string;
 }

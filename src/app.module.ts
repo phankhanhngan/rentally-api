@@ -17,8 +17,12 @@ import { ModRoomBlocksModule } from './modules/mod/roomblocks/roomblocks.module'
 import { ModRoomsModule } from './modules/mod/rooms/room.module';
 import { RoomsModule } from './modules/admin/rooms/rooms.module';
 import { UtilitiesModule } from './modules/utilities/utilities.module';
-import { RoomBlock } from './entities';
 import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
+import { RatingModule } from './modules/rating/rating.module';
+import { RentalModule } from './modules/rental/rental.module';
+import { FindingModule } from './modules/finding/finding.module';
+import { ChecklistModule } from './modules/checklist/checklist.module';
+import { ProvinceModule } from './modules/province/province.module';
 
 @Module({
   imports: [
@@ -69,6 +73,11 @@ import { RoomBlocksModule } from './modules/admin/roomblocks/roomblocks.module';
     RoomBlocksModule,
     AWSModule,
     UtilitiesModule,
+    RatingModule,
+    RentalModule,
+    FindingModule,
+    ChecklistModule,
+    ProvinceModule,
   ],
 
   controllers: [AppController],

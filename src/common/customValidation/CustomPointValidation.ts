@@ -12,7 +12,6 @@ export class CustomPointValidation implements ValidatorConstraintInterface {
   }
 
   defaultMessage(args: ValidationArguments) {
-    // here you can provide default error message if validation failed
     return 'latitude and longitude must be decimal';
   }
 

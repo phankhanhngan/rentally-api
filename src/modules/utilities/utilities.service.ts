@@ -62,4 +62,22 @@ export class UtilitiesService {
       throw error;
     }
   }
+
+  async getUtilityById(id: number) {
+    try {
+      const utility = await this.utilitiesRepository.findOne({ id });
+      if (!utility) {
+        throw new BadRequestException(`Can't find utility with id=${id}`);
+      }
+
+      return plainToInstance(UtilitiesDTO, utility);
+    } catch (error) {
+      this.logger.error(
+        'Calling getUtilityById()',
+        error,
+        UtilitiesService.name,
+      );
+      throw error;
+    }
+  }
 }

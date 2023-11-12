@@ -21,14 +21,12 @@ import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
 import { Request, Response } from 'express';
 import { UtilitiesDTO } from './dtos/UtilitiesDTO';
-@UseGuards(JwtAuthGuard)
 @Controller('utilities')
 export class UtilitiesController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly utilitiesService: UtilitiesService,
   ) {}
-  @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Get()
   async findAllUtility(@Req() req: Request, @Res() res: Response) {
     try {
@@ -49,7 +47,7 @@ export class UtilitiesController {
       throw error;
     }
   }
-
+  @UseGuards(JwtAuthGuard)
   @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Post()
   async addUtility(
@@ -77,6 +75,7 @@ export class UtilitiesController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Put('/:id')
   async updateUtility(
@@ -97,7 +96,6 @@ export class UtilitiesController {
     }
   }
 
-  @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Get('/:id')
   async findUtilityById(
     @Req() req: Request,
@@ -115,6 +113,7 @@ export class UtilitiesController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Delete('/:id')
   async deleteutilityById(
