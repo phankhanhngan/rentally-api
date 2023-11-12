@@ -209,7 +209,7 @@ export class DatabaseSeeder extends Seeder {
             Number(waterPrice) +
             Number(addPrice),
           additionalPrice: addPrice,
-          month: nextMonthDt.month(),
+          month: nextMonthDt.month() + 1,
           year: nextMonthDt.year(),
           paidAt: nextMonthDt.endOf('month').toDate(),
           status: PaymentStatus.PAID,

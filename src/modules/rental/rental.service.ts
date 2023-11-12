@@ -76,6 +76,47 @@ export class RentalService {
     }
   }
 
+  async findByIdAndLandLord(
+    rentalId: number,
+    landlordId: number,
+    status: RentalStatus,
+  ) {
+    try {
+      const queryObj = {
+        $and: [
+          {
+            landlord: {
+              $and: [{ id: landlordId }],
+            },
+          },
+          {
+            id: rentalId,
+          },
+          {
+            status: status,
+          },
+        ],
+      };
+      const rental = await this.em.findOne(Rental, queryObj, {
+        populate: [
+          'renter',
+          'room',
+          'landlord',
+          'room.roomblock',
+          'rentalDetail',
+        ],
+      });
+      return rental;
+    } catch (error) {
+      this.logger.error(
+        'Calling findByIdAndLandLord()',
+        error,
+        RentalService.name,
+      );
+      throw error;
+    }
+  }
+
   async getMyRental(idLogined: any): Promise<MyRentalDTO[]> {
     try {
       const rentals = await this.em.find(
