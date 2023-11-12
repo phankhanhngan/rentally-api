@@ -1,29 +1,24 @@
-import { Module } from '@nestjs/common';
-import { RatingService } from './rating.service';
+import { Module, forwardRef } from '@nestjs/common';
 import { RatingController } from './rating.controller';
-import { UsersModule } from '../users/users.module';
-import { AuthModule } from '../auth/auth.module';
-import { AWSModule } from '../aws/aws.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Room, RoomBlock, User } from 'src/entities';
-import { RoomsService } from '../admin/rooms/rooms.service';
-import { Utility } from 'src/entities/utility.entity';
-import { UsersService } from '../users/users.service';
 import { RentalService } from '../rental/rental.service';
+import { RentalModule } from '../rental/rental.module';
+import { RatingService } from './rating.service';
+import { UsersService } from '../users/users.service';
+import { Room, User } from 'src/entities';
+import { AWSService } from '../aws/aws.service';
+import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
 
 @Module({
   imports: [
-    UsersModule,
-    AuthModule,
-    AWSModule,
+    forwardRef(() => RentalModule),
     MikroOrmModule.forFeature([User]),
     MikroOrmModule.forFeature([Room]),
-    MikroOrmModule.forFeature([RoomBlock]),
-    MikroOrmModule.forFeature([Utility]),
+    MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
   ],
-  providers: [RatingService, RoomsService, UsersService, RentalService],
+  providers: [RatingService, RentalService, UsersService, AWSService],
   controllers: [RatingController],
 })
 export class RatingModule {}

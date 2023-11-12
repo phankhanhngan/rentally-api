@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -22,17 +23,20 @@ export class UpdateUserDTO {
   // @IsInt({ message: 'Id update must be an integer' })
   // id!: number;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @IsEmail({}, { message: 'Invalid email' })
   email?: string;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @MinLength(2, { message: 'Password at least 2 characters' })
   @IsString({ message: 'password must be a string' })
   password?: string;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @IsNotEmpty({ message: 'First name cannot be null' })
@@ -40,22 +44,26 @@ export class UpdateUserDTO {
   @IsString({ message: 'First name must be a string' })
   firstName?: string;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @IsString({ message: 'Last name must be a string' })
   lastName?: string;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @IsString({ message: 'Photo must be a string' })
   photo?: string;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @IsPhoneNumber('VN', { message: 'Invalid Phone number' })
   @IsString({ message: 'Photo must be a string' })
   phoneNumber?: string;
 
+  @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @IsIn(['ACTIVE', 'DISABLED', 'REGISTING'], {
@@ -63,6 +71,7 @@ export class UpdateUserDTO {
   })
   status?: UserStatus;
 
+  @ApiProperty()
   @Expose()
   @IsOptional()
   @ValidateIf((obj, value) => value)

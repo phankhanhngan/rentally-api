@@ -5,13 +5,15 @@ import { Checklist } from 'src/entities/checklist.entity';
 import { RoomsService } from '../admin/rooms/rooms.service';
 import { UsersService } from '../users/users.service';
 import { Room } from 'src/entities';
+import { RatingService } from '../rating/rating.service';
+import { classToPlain, plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ChecklistService {
   constructor(
-    private readonly em: EntityManager,
-    private readonly roomService: RoomsService,
+    private readonly ratingService: RatingService,
     private readonly userService: UsersService,
+    private readonly em: EntityManager,
   ) {}
   async findAllMyChecklist(idLogined: any) {
     try {
@@ -47,7 +49,12 @@ export class ChecklistService {
           ],
         },
       );
-      return checklist;
+      const x = classToPlain(checklist);
+      for (let i = 0; i < x.length; i++) {
+        const rating = await this.ratingService.findByRoom(x[i].room.id);
+        x[i].rating = rating;
+      }
+      return x;
     } catch (error) {
       throw error;
     }

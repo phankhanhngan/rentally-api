@@ -1,25 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { IsNotEmpty } from 'class-validator';
-
 @Exclude()
-export class UtilitiesDTO {
+export class RoomBlockInfoDTO {
   @ApiProperty()
   @Expose()
-  @IsNotEmpty()
   id: number;
-
   @ApiProperty()
   @Expose()
-  @IsNotEmpty()
-  name: string;
-
+  description: string;
   @ApiProperty()
   @Expose()
-  @IsNotEmpty()
-  note: string;
-
+  address: string;
   @ApiProperty()
   @Expose()
-  icon: string;
+  city: string;
+  @ApiProperty()
+  @Expose()
+  district: string;
+  @ApiProperty()
+  @Expose()
+  longitude: number;
+  @ApiProperty()
+  @Expose()
+  lattitude: number;
 }
