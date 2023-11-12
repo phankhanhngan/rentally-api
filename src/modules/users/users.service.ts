@@ -334,10 +334,11 @@ export class UsersService {
         throw new BadRequestException(`Can not find user with id: ${user.id}`);
       }
 
-      const currentPass = await this.hashPassword(
+      const isValidPass = await bcrypt.compare(
         updateCurrentUserPasswordDTO.currentPassword,
+        userEntity.password,
       );
-      if (userEntity.password != currentPass) {
+      if (!isValidPass) {
         throw new BadRequestException(`Incorrect current password`);
       }
 
