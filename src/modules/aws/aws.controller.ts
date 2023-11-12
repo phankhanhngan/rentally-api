@@ -22,6 +22,7 @@ import { Response } from 'express';
 import { AWSService } from './aws.service';
 import { ModRoomsService } from '../mod/rooms/room.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ApiProperty } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
 @Controller('aws')
@@ -44,7 +45,7 @@ export class AwsController {
     try {
       if (id && id.length > 0) {
         const room = await this.roomsService.findRoomById(id, req.user.id);
-        if(!room) {
+        if (!room) {
           throw new BadRequestException(`Can not find room with id=[${id}]`);
         }
       }
