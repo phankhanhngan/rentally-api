@@ -20,8 +20,9 @@ import { RentalDetail } from '../../entities/rental_detail.entity';
 import { Rental } from '../../entities/rental.entity';
 import { RoomRating } from '../../entities/room-rating.entity';
 import { Checklist } from '../../entities/checklist.entity';
-import moment from 'moment';
-import { Payment } from 'src/entities/payment.entity';
+import * as moment from 'moment';
+import { Payment } from '../../entities/payment.entity';
+import { add } from 'winston';
 export class DatabaseSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
@@ -189,25 +190,33 @@ export class DatabaseSeeder extends Seeder {
       },
     );
     rentals1.forEach((rental) => {
-      const month = rental.rentalDetail.moveInDate.getMonth();
       for (let i = 1; i < 5; i++) {
-        const nextMonthDt = moment(rental.rentalDetail.moveInDate).add(
-          i,
-          'months',
-        );
+        const nextMonthDt = moment(rental.rentalDetail.moveInDate).add(i, 'M');
         const eleNum = Math.floor(Math.random() * (150 - 80 + 1)) + 80;
         const waterNum = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
+        const elePrice = eleNum * rental.rentalDetail.electricPrice;
+        const waterPrice = waterNum * rental.rentalDetail.waterPrice;
+        const addPrice = 0;
         payments.push({
           rental: rental,
           electricNumber: eleNum,
           waterNumber: waterNum,
-          totalElectricPrice: eleNum * rental.rentalDetail.electricPrice,
-          totalWaterPrice: waterNum * rental.rentalDetail.waterPrice,
-          additionalPrice: 0,
-          month: nextMonthDt.month,
-          year: nextMonthDt.year,
-          paidAt: nextMonthDt.endOf('month'),
+          totalElectricPrice: elePrice,
+          totalWaterPrice: waterPrice,
+          totalPrice:
+            Number(rental.rentalDetail.monthlyRent) +
+            Number(elePrice) +
+            Number(waterPrice) +
+            Number(addPrice),
+          additionalPrice: addPrice,
+          month: nextMonthDt.month(),
+          year: nextMonthDt.year(),
+          paidAt: nextMonthDt.endOf('month').toDate(),
           status: PaymentStatus.PAID,
+          created_at: new Date(),
+          updated_at: new Date(),
+          created_id: 1,
+          updated_id: 1,
         });
       }
     });

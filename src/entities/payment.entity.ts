@@ -1,11 +1,11 @@
-import { Entity, OneToOne, PrimaryKey, Property, Enum } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Enum } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { Rental } from './rental.entity';
 import { PaymentStatus } from '../../src/common/enum/common.enum';
 
 @Entity({ tableName: 'payments' })
 export class Payment extends Base {
-  @OneToOne({
+  @ManyToOne({
     entity: () => Rental,
     onDelete: 'cascade',
     onUpdateIntegrity: 'cascade',
