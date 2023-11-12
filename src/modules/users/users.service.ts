@@ -15,6 +15,8 @@ import { FilterMessageDTO } from '../../common/dtos/EntityFillter.dto';
 import { AWSService } from '../aws/aws.service';
 import { Role, UserStatus } from 'src/common/enum/common.enum';
 import { GetUserDTO } from './dtos/get-user.dto';
+import { UpdateCurrentUserDTO } from './dtos/update-current-user.dto';
+import { UpdateCurrentUserPasswordDTO } from './dtos/udpdate-current-user-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -271,6 +273,84 @@ export class UsersService {
     }
   }
 
+  async updateCurrentUser(
+    updateCurrentUserDto: UpdateCurrentUserDTO,
+    file: Express.Multer.File,
+    user: any,
+  ) {
+    try {
+      const userEntity: Loaded<User> = await this.userRepository.findOne({
+        id: user.id,
+      });
+      if (!userEntity) {
+        throw new BadRequestException(`Can not find user with id: ${user.id}`);
+      }
+
+      if (
+        updateCurrentUserDto.phoneNumber &&
+        userEntity.phoneNumber !== updateCurrentUserDto.phoneNumber &&
+        (await this.duplicatedPhoneNumber(updateCurrentUserDto.phoneNumber))
+      ) {
+        throw new BadRequestException('Phone number is already in use');
+      }
+
+      if (file) {
+        const currentDate = new Date();
+        const timestamp = currentDate.getTime();
+        const photo: string = await this.awsService.bulkPutObject(
+          file,
+          `photo_user/${timestamp}`,
+        );
+        updateCurrentUserDto.photo = photo;
+      }
+      if (userEntity.photo) {
+        await this.awsService.bulkDeleteObject(userEntity.photo);
+      }
+
+      wrap(userEntity).assign(
+        {
+          ...updateCurrentUserDto,
+          updated_at: new Date(),
+          updated_id: user.id,
+        },
+        { updateByPrimaryKey: false },
+      );
+
+      await this.em.persistAndFlush(userEntity);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateCurrentUserPassword(
+    updateCurrentUserPasswordDTO: UpdateCurrentUserPasswordDTO,
+    user: any,
+  ) {
+    try {
+      const userEntity: Loaded<User> = await this.userRepository.findOne({
+        id: user.id,
+      });
+      if (!userEntity) {
+        throw new BadRequestException(`Can not find user with id: ${user.id}`);
+      }
+
+      const isValidPass = await bcrypt.compare(
+        updateCurrentUserPasswordDTO.currentPassword,
+        userEntity.password,
+      );
+      if (!isValidPass) {
+        throw new BadRequestException(`Incorrect current password`);
+      }
+
+      userEntity.password = await this.hashPassword(
+        updateCurrentUserPasswordDTO.newPassword,
+      );
+
+      await this.em.persistAndFlush(userEntity);
+    } catch (err) {
+      throw err;
+    }
+  }
   async deleteUser(id: number) {
     try {
       const userToDelete = await this.getUserById(id);
