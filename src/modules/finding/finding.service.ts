@@ -17,7 +17,6 @@ import { RatingService } from '../rating/rating.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { Rental } from 'src/entities/rental.entity';
 import { LandLordDTO } from './dtos/landlord.dto';
-import { ProvinceService } from '../province/province.service';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
 
