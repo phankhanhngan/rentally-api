@@ -118,10 +118,10 @@ export class ChecklistService {
       const checklistDb = await this.em.findOne(Checklist, queryObj, {
         populate: ['room', 'renter'],
       });
-      if (checklistDb)
-        throw new BadRequestException(
-          'You are already add this room to checklist!',
-        );
+      if (checklistDb) {
+        await this.em.removeAndFlush(checklistDb);
+        return false;
+      }
       const checklist = new Checklist();
       checklist.renter = renter;
       checklist.room = room;
@@ -130,6 +130,7 @@ export class ChecklistService {
       checklist.created_at = new Date();
       checklist.updated_at = new Date();
       await this.em.persistAndFlush(checklist);
+      return true;
     } catch (error) {
       throw error;
     }
