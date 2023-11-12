@@ -3,6 +3,7 @@ import { Seeder } from '@mikro-orm/seeder';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import {
+  PaymentStatus,
   RatingStatus,
   RentalStatus,
   Role,
@@ -19,6 +20,8 @@ import { RentalDetail } from '../../entities/rental_detail.entity';
 import { Rental } from '../../entities/rental.entity';
 import { RoomRating } from '../../entities/room-rating.entity';
 import { Checklist } from '../../entities/checklist.entity';
+import moment from 'moment';
+import { Payment } from 'src/entities/payment.entity';
 export class DatabaseSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
@@ -170,6 +173,46 @@ export class DatabaseSeeder extends Seeder {
       });
     }
     await em.insertMany(Checklist, checklist);
+    // payment ------------------------------------------------------
+    const payments = [];
+    const rentals1 = await em.find(
+      Rental,
+      {},
+      {
+        populate: [
+          'renter',
+          'landlord',
+          'room',
+          'rentalDetail',
+          'room.roomblock',
+        ],
+      },
+    );
+    rentals1.forEach((rental) => {
+      const month = rental.rentalDetail.moveInDate.getMonth();
+      for (let i = 1; i < 5; i++) {
+        const nextMonthDt = moment(rental.rentalDetail.moveInDate).add(
+          i,
+          'months',
+        );
+        const eleNum = Math.floor(Math.random() * (150 - 80 + 1)) + 80;
+        const waterNum = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
+        payments.push({
+          rental: rental,
+          electricNumber: eleNum,
+          waterNumber: waterNum,
+          totalElectricPrice: eleNum * rental.rentalDetail.electricPrice,
+          totalWaterPrice: waterNum * rental.rentalDetail.waterPrice,
+          additionalPrice: 0,
+          month: nextMonthDt.month,
+          year: nextMonthDt.year,
+          paidAt: nextMonthDt.endOf('month'),
+          status: PaymentStatus.PAID,
+        });
+      }
+    });
+    await em.insertMany(Payment, payments);
+    // ---------------------------------------------------------------
   }
   randomEnumValue = (enumeration) => {
     const values = Object.keys(enumeration);
