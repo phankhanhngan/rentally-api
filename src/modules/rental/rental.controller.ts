@@ -22,6 +22,7 @@ import { Role } from 'src/common/enum/common.enum';
 import { CreateRentalDTO } from './dtos/CreateRental.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('rental')
 @UseGuards(JwtAuthGuard)
