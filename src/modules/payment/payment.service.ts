@@ -1,16 +1,31 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Req,
+} from '@nestjs/common';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { Payment } from 'src/entities/payment.entity';
 import { Rental } from 'src/entities/rental.entity';
-import { PaymentStatus, RentalStatus, Role } from 'src/common/enum/common.enum';
+import {
+  PaymentStatus,
+  RentalStatus,
+  Role,
+  TransactionStatus,
+} from 'src/common/enum/common.enum';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { RentalService } from '../rental/rental.service';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
 import { PaymentDTO } from './dtos/payment.dto';
 import { plainToInstance } from 'class-transformer';
+import { CheckOutDTO } from './dtos/check-out.dto';
+import Stripe from 'stripe';
+import { TransactionService } from '../transaction/transaction.service';
+import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
 
 @Injectable()
 export class PaymentService {
@@ -18,9 +33,122 @@ export class PaymentService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
     private readonly rentalService: RentalService,
+    private readonly transacService: TransactionService,
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
   ) {}
+  async callBackWebHook(req: any) {
+    try {
+      // const sig = req.headers['stripe-signature'];
+      // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      // const endpointSecret =
+      //   'whsec_649f2a2216d6db4fc1848dc5fd0968aad7a9a234c56be6cea15ff5f098322378';
+      // let event;
+      // try {
+      //   event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+      // } catch (err) {
+      //   throw new InternalServerErrorException('Stripe Webhook Error');
+      // }
+      const event = req.body;
+      switch (event.type) {
+        case 'checkout.session.completed':
+          const metadata = event.data.object.metadata;
+          const payment = await this.updateStatus(metadata.paymentId);
+          const dto: TransactionDTO = {
+            description: metadata.description,
+            status: TransactionStatus.CREATED,
+          };
+          await this.transacService.createTransaction(
+            dto,
+            payment,
+            metadata.renterId,
+          );
+          console.log('calling pay out');
+          break;
+        default:
+      }
+    } catch (error) {
+      this.logger.error(
+        'Calling checkOcallBackWebHookutPayment()',
+        error,
+        PaymentService.name,
+      );
+      throw error;
+    }
+  }
+  async updateStatus(paymentId: number) {
+    try {
+      const payment = await this.findById(paymentId);
+      if (!payment) {
+        throw new BadRequestException('Can not find payment!');
+      }
+      if (payment.status != PaymentStatus.UNPAID) {
+        throw new BadRequestException(
+          'Only payment with status UNPAID are accepted!',
+        );
+      }
+      payment.status = PaymentStatus.PAID;
+      await this.em.persistAndFlush(payment);
+      return payment;
+    } catch (error) {
+      this.logger.error('Calling updateStatus()', error, PaymentService.name);
+      throw error;
+    }
+  }
+  async checkOutPayment(dto: CheckOutDTO, user: any, req: any) {
+    try {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const payment = await this.findByIdAndRenterPopulate(
+        dto.paymentId,
+        user.id,
+      );
+      if (!payment)
+        throw new BadRequestException(
+          'Can not find payment or you do not own this payment!',
+        );
+      if (payment.status != PaymentStatus.UNPAID) {
+        throw new BadRequestException(
+          'Only payment with status UNPAID can check out',
+        );
+      }
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        success_url: process.env.STRIPE_SUCCESS_URL,
+        cancel_url: process.env.STRIPE_CANCEL_URL,
+        mode: 'payment',
+        customer_email: req.user.email,
+        client_reference_id: payment.id.toString(),
+        metadata: {
+          paymentId: payment.id,
+          createdAt: new Date().toDateString(),
+          description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} chuyển tiền nhà tháng ${payment.month}/${payment.year}`,
+          renterId: user.id,
+        },
+        line_items: [
+          {
+            price_data: {
+              unit_amount: payment.totalPrice,
+              currency: process.env.STRIPE_CURRENCY,
+              product_data: {
+                name: `Room ${payment.rental.room.roomName}`,
+                description: `${payment.rental.room.roomblock.description}. ${payment.rental.room.roomblock.address}`,
+                images: JSON.parse(payment.rental.room.images),
+              },
+            },
+            quantity: 1,
+          },
+        ],
+      });
+      return session;
+    } catch (error) {
+      this.logger.error(
+        'Calling checkOutPayment()',
+        error,
+        PaymentService.name,
+      );
+      throw error;
+    }
+  }
   async findAll(userLogined: any, keyword: string) {
     try {
       let payments = [];
@@ -190,6 +318,27 @@ export class PaymentService {
       throw error;
     }
   }
+
+  async findByIdAndRenterPopulate(id: number, renterId: number) {
+    try {
+      const payment = await this.em.findOne(
+        Payment,
+        {
+          id: id,
+          deleted_at: null,
+          rental: { renter: { id: renterId } },
+        },
+        {
+          populate: ['rental', 'rental.room', 'rental.room.roomblock'],
+        },
+      );
+      return payment;
+    } catch (error) {
+      this.logger.error('Calling findById()', error, PaymentService.name);
+      throw error;
+    }
+  }
+
   async createPayment(paymentDTO: CreatePaymentDTO, idLogined: any) {
     try {
       const rental = await this.rentalService.findByIdAndLandLord(

@@ -24,6 +24,7 @@ import { FindingModule } from './modules/finding/finding.module';
 import { ChecklistModule } from './modules/checklist/checklist.module';
 import { ProvinceModule } from './modules/province/province.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { TransactionModule } from './modules/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     ChecklistModule,
     ProvinceModule,
     PaymentModule,
+    TransactionModule,
   ],
 
   controllers: [AppController],

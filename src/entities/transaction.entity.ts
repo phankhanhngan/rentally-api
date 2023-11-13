@@ -14,4 +14,7 @@ export class Transaction extends Base {
   @Property({ nullable: false })
   @Enum({ items: () => TransactionStatus })
   status: TransactionStatus;
+
+  @Property({ nullable: true })
+  description: string;
 }

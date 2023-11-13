@@ -11,6 +11,7 @@ import { RatingService } from '../rating/rating.service';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
 import { StripeController } from './stripe/stripe.controller';
+import { TransactionService } from '../transaction/transaction.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { StripeController } from './stripe/stripe.controller';
     AWSService,
     RentalService,
     RatingService,
+    TransactionService,
   ],
 })
 export class PaymentModule {}
