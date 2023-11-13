@@ -109,7 +109,7 @@ export class RoomsService {
       const roomEntity: Loaded<Room> = await this.roomRepository.findOne({
         id: id,
       });
-
+      console.log(`============== ${id}`);
       if (!roomEntity) {
         throw new BadRequestException(`Can not find room with id: ${id}`);
       }

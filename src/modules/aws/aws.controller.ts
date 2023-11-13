@@ -44,7 +44,7 @@ export class AwsController {
   ) {
     try {
       if (id && id.length > 0) {
-        const room = await this.roomsService.findRoomById(id, req.user.id);
+        const room = await this.roomsService.findRoomById(id, req);
         if (!room) {
           throw new BadRequestException(`Can not find room with id=[${id}]`);
         }
