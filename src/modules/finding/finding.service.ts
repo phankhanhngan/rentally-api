@@ -72,8 +72,8 @@ export class FindingService {
 
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { district: district.name },
-          { city: province.name },
+          { district: district.full_name },
+          { city: province.full_name },
         ];
       }
 
