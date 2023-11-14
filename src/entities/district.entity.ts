@@ -2,6 +2,7 @@ import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'districts' })
 @Index({ properties: ['code'] })
+
 export class District {
   @PrimaryKey()
   @Property({ nullable: false })
