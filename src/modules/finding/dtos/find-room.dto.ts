@@ -23,8 +23,7 @@ export class FindRoomDTO {
   minPrice?: number = 0;
 
   @ValidateIf((obj, value) => value)
-  @Transform((value) => (Array.isArray(value.value) ? value.value : [value.value]))
+  @Transform(({ value }) => (value ? value.split(',').map(Number) : []))
   @IsArray()
-  @IsNumberString({}, { each: true })
   utilities?: number[];
 }
