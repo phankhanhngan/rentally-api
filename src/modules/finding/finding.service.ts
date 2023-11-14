@@ -95,7 +95,13 @@ export class FindingService {
 
       const queryObjUitilities = {};
       if (findRoomDto.utilities) {
-        findRoomDto.utilities.forEach((utilitty, index) => {
+        const decodedUtilities = decodeURIComponent(
+          `%5B${findRoomDto.utilities}%5D`
+        );
+        console.log(decodedUtilities);
+        const utilities = JSON.parse(decodedUtilities);
+        console.log(utilities);
+        utilities.forEach((utilitty, index) => {
           if (index == 0) {
             queryObjUitilities['$and'] = [
               { utilities: { $like: `%${utilitty}%` } },
