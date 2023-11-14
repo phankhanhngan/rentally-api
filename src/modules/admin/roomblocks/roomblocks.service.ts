@@ -187,6 +187,7 @@ export class RoomBlocksService {
           phoneNumber: el.landlord.phoneNumber,
           deletedAt: el.landlord.deleted_at,
           name: el.landlord.firstName + el.landlord.lastName,
+          photo: el.landlord.photo,
         };
         dto['quantityRooms'] = roomQuantity.get(el.id)[0];
         dto['emptyRooms'] = roomQuantity.get(el.id)[1];
