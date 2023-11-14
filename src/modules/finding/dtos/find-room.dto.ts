@@ -30,10 +30,6 @@ export class FindRoomDTO {
 
   @ApiProperty()
   @ValidateIf((obj, value) => value)
-  @Transform((value) =>
-    Array.isArray(value.value) ? value.value : [value.value],
-  )
-  @IsArray()
-  @IsNumberString({}, { each: true })
+  @Transform(({ value }) => (value ? value.split(',').map(Number) : []))
   utilities?: number[];
 }
