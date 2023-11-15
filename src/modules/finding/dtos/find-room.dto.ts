@@ -43,10 +43,10 @@ export class FindRoomDTO {
   @ApiProperty()
   @ValidateIf((obj, value) => value)
   @IsNumberString()
-  perPage?: number = 20;
+  perPage?: number;
 
   @ApiProperty()
   @ValidateIf((obj, value) => value)
   @IsNumberString()
-  page?: number = 1;
+  page?: number;
 }

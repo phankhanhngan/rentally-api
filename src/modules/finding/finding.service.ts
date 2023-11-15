@@ -149,8 +149,7 @@ export class FindingService {
           { status: RoomStatus.EMPTY },
         ],
       });
-      const numberOfPage = new Decimal(total).div(findRoomDto.perPage).ceil()
-        .d[0];
+      const numberOfPage = new Decimal(total).div(limit).ceil().d[0];
       const roomsDto = plainToClass(ViewFindRoomDTO, rooms);
 
       for (let i = 0; i < rooms.length; i++) {
