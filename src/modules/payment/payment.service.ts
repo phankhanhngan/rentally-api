@@ -28,6 +28,7 @@ import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
 import { log } from 'console';
+import { RenterInfoDTO } from '../rental/dtos/RenterInfo.dto';
 
 @Injectable()
 export class PaymentService {
@@ -258,12 +259,16 @@ export class PaymentService {
   }
   async findByRentalIdMonthYear(paymentDTO: CreatePaymentDTO) {
     try {
-      const payment = await this.em.findOne(Payment, {
-        rental: { id: paymentDTO.rental_id },
-        month: paymentDTO.month,
-        year: paymentDTO.year,
-        deleted_at: null,
-      });
+      const payment = await this.em.findOne(
+        Payment,
+        {
+          rental: { id: paymentDTO.rental_id },
+          month: paymentDTO.month,
+          year: paymentDTO.year,
+          deleted_at: null,
+        },
+        { populate: ['rental', 'rental.rentalDetail', 'rental.room'] },
+      );
       return payment;
     } catch (error) {
       this.logger.error('Calling findByRentalId()', error, PaymentService.name);
@@ -367,13 +372,22 @@ export class PaymentService {
       if (paymentDb) {
         throw new BadRequestException('You are already create this payment');
       }
+      const totalElectricPrice =
+        paymentDTO.electricNumber * rental.rentalDetail.electricPrice;
+      const totalWaterPrice =
+        paymentDTO.waterNumber * rental.rentalDetail.waterPrice;
+      const totalPrice =
+        totalElectricPrice +
+        totalWaterPrice +
+        Number(rental.room.price) +
+        paymentDTO.additionalPrice;
       const payment = {
         rental: rental,
-        totalPrice: paymentDTO.totalPrice,
+        totalPrice: totalPrice,
         electricNumber: paymentDTO.electricNumber,
-        totalElectricPrice: paymentDTO.totalElectricPrice,
+        totalElectricPrice: totalElectricPrice,
         waterNumber: paymentDTO.waterNumber,
-        totalWaterPrice: paymentDTO.totalWaterPrice,
+        totalWaterPrice: totalWaterPrice,
         additionalPrice: paymentDTO.additionalPrice,
         month: paymentDTO.month,
         year: paymentDTO.year,
@@ -412,18 +426,37 @@ export class PaymentService {
         idLogined,
         RentalStatus.COMPLETED,
       );
+      const paymentDb1 = await this.findByRentalIdMonthYear({
+        rental_id: rental.id,
+        additionalPrice: 0,
+        electricNumber: 0,
+        waterNumber: 0,
+        month: paymentDTO.month,
+        year: paymentDTO.year,
+      });
+      if (paymentDb1 && paymentDb1.id != paymentDb.id) {
+        throw new BadRequestException('You are already create this payment');
+      }
       if (!rental)
         throw new BadRequestException(
           'Can not found rental or you are not own this rental!',
         );
-
+      const totalElectricPrice =
+        paymentDTO.electricNumber * rental.rentalDetail.electricPrice;
+      const totalWaterPrice =
+        paymentDTO.waterNumber * rental.rentalDetail.waterPrice;
+      const totalPrice =
+        totalElectricPrice +
+        totalWaterPrice +
+        Number(rental.room.price) +
+        paymentDTO.additionalPrice;
       paymentDb.additionalPrice = paymentDTO.additionalPrice;
       paymentDb.electricNumber = paymentDTO.electricNumber;
       paymentDb.month = paymentDTO.month;
       paymentDb.rental = rental;
-      paymentDb.totalElectricPrice = paymentDTO.totalElectricPrice;
-      paymentDb.totalPrice = paymentDTO.totalPrice;
-      paymentDb.totalWaterPrice = paymentDTO.totalWaterPrice;
+      paymentDb.totalElectricPrice = totalElectricPrice;
+      paymentDb.totalPrice = totalPrice;
+      paymentDb.totalWaterPrice = totalWaterPrice;
       paymentDb.updated_at = new Date();
       paymentDb.updated_id = idLogined;
       paymentDb.waterNumber = paymentDTO.waterNumber;

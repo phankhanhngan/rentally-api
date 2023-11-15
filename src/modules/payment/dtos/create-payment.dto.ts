@@ -9,11 +9,11 @@ export class CreatePaymentDTO {
   @IsInt()
   rental_id: number;
 
-  @ApiProperty()
-  @Expose()
-  @IsNotEmpty()
-  @IsInt()
-  totalPrice: number;
+  // @ApiProperty()
+  // @Expose()
+  // @IsNotEmpty()
+  // @IsInt()
+  // totalPrice: number;
 
   @ApiProperty()
   @Expose()
@@ -21,11 +21,11 @@ export class CreatePaymentDTO {
   @IsInt()
   electricNumber: number;
 
-  @ApiProperty()
-  @Expose()
-  @IsNotEmpty()
-  @IsInt()
-  totalElectricPrice: number;
+  // @ApiProperty()
+  // @Expose()
+  // @IsNotEmpty()
+  // @IsInt()
+  // totalElectricPrice: number;
 
   @ApiProperty()
   @Expose()
@@ -33,11 +33,11 @@ export class CreatePaymentDTO {
   @IsInt()
   waterNumber: number;
 
-  @ApiProperty()
-  @Expose()
-  @IsNotEmpty()
-  @IsInt()
-  totalWaterPrice: number;
+  // @ApiProperty()
+  // @Expose()
+  // @IsNotEmpty()
+  // @IsInt()
+  // totalWaterPrice: number;
 
   @ApiProperty()
   @Expose()

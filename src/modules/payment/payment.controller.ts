@@ -65,7 +65,7 @@ export class PaymentController {
       const idLogined = req.user.id;
       await this.paymentService.createPayment(paymentDTO, idLogined);
       res.status(200).json({
-        message: 'Created rental successfully',
+        message: 'Created payment successfully',
         status: 'success',
       });
     } catch (error) {

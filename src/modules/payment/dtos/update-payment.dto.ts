@@ -7,31 +7,13 @@ export class UpdatePaymentDTO {
   @Expose()
   @IsNotEmpty()
   @IsInt()
-  totalPrice: number;
-
-  @ApiProperty()
-  @Expose()
-  @IsNotEmpty()
-  @IsInt()
   electricNumber: number;
 
   @ApiProperty()
   @Expose()
   @IsNotEmpty()
   @IsInt()
-  totalElectricPrice: number;
-
-  @ApiProperty()
-  @Expose()
-  @IsNotEmpty()
-  @IsInt()
   waterNumber: number;
-
-  @ApiProperty()
-  @Expose()
-  @IsNotEmpty()
-  @IsInt()
-  totalWaterPrice: number;
 
   @ApiProperty()
   @Expose()
