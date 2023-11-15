@@ -19,6 +19,7 @@ import { Rental } from 'src/entities/rental.entity';
 import { LandLordDTO } from './dtos/landlord.dto';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class FindingService {
@@ -123,7 +124,6 @@ export class FindingService {
           ? findRoomDto.perPage
           : 20;
       const offset = findRoomDto.page >= 1 ? limit * (findRoomDto.page - 1) : 0;
-      console.log(limit, offset);
       const rooms = await this.roomRepository.find(
         {
           $and: [
@@ -141,6 +141,16 @@ export class FindingService {
       );
       console.log(queryObjBlockRoom);
 
+      const total = await this.roomRepository.count({
+        $and: [
+          { roomblock: queryObjBlockRoom },
+          queryObjUitilities,
+          priceRangeQr,
+          { status: RoomStatus.EMPTY },
+        ],
+      });
+      const numberOfPage = new Decimal(total).div(findRoomDto.perPage).ceil()
+        .d[0];
       const roomsDto = plainToClass(ViewFindRoomDTO, rooms);
 
       for (let i = 0; i < rooms.length; i++) {
@@ -176,8 +186,7 @@ export class FindingService {
         const rating = await this.ratingService.findByRoom(rooms[i].id);
         if (rating.ratings) roomsDto[i].avgRate = rating.avgRate;
       }
-
-      return roomsDto;
+      return { roomsDto, numberOfPage };
     } catch (err) {
       this.logger.error('Calling findAllRoom()', err, FindingService.name);
       throw err;

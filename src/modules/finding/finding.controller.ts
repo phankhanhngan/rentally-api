@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Body,
   Controller,
   Get,
   Inject,
@@ -31,11 +30,16 @@ export class FindingController {
     findRoomDto: FindRoomDTO,
   ) {
     try {
-      const rooms = await this.findingService.findAllRoom(findRoomDto);
+      const { roomsDto, numberOfPage } = await this.findingService.findAllRoom(
+        findRoomDto,
+      );
       return res.status(200).json({
         status: 'success',
         message: 'Get rooms successfully',
-        data: rooms,
+        data: {
+          numberOfPage,
+          rooms: roomsDto,
+        },
       });
     } catch (error) {
       this.logger.error('Calling findAllRoom()', error, FindingController.name);
