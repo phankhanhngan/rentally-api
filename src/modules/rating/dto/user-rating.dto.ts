@@ -27,4 +27,8 @@ export class UserRatingDTO {
   @ApiProperty()
   @Expose()
   renterPhoto: string;
+
+  @ApiProperty()
+  @Expose()
+  comment: string;
 }

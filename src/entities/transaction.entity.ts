@@ -17,4 +17,7 @@ export class Transaction extends Base {
 
   @Property({ nullable: true })
   description: string;
+
+  @Property({ nullable: true, length: 255 })
+  stripeId: string;
 }

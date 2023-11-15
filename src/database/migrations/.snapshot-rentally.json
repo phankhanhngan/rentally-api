@@ -1685,6 +1685,16 @@
           "primary": false,
           "nullable": true,
           "mappedType": "string"
+        },
+        "stripe_id": {
+          "name": "stripe_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 255,
+          "mappedType": "string"
         }
       },
       "name": "transactions",

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -26,6 +27,7 @@ import { CheckOutDTO } from './dtos/check-out.dto';
 import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
+import { log } from 'console';
 
 @Injectable()
 export class PaymentService {
@@ -52,18 +54,29 @@ export class PaymentService {
       const event = req.body;
       switch (event.type) {
         case 'checkout.session.completed':
+          console.log(event);
           const metadata = event.data.object.metadata;
           const payment = await this.updateStatus(metadata.paymentId);
           const dto: TransactionDTO = {
             description: metadata.description,
-            status: TransactionStatus.CREATED,
+            status: TransactionStatus.PAID,
+            stripeId: event.data.object.id,
           };
           await this.transacService.createTransaction(
             dto,
             payment,
             metadata.renterId,
           );
-          console.log('calling pay out');
+          // await this.callPayout()
+          break;
+        case 'invoice.payment_failed' ||
+          'charge.failed' ||
+          'payment_intent.payment_failed':
+          this.logger.error(
+            'Calling callBackWebHook()',
+            new InternalServerErrorException('Payment failed'),
+            PaymentService.name,
+          );
           break;
         default:
       }
