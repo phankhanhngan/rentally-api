@@ -89,7 +89,7 @@ export class FindingService {
 
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { city: province.name },
+          { city: province.full_name },
         ];
       }
 
