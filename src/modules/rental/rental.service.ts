@@ -217,6 +217,7 @@ export class RentalService {
       );
       return {
         id: user.id,
+        photo: user.photo,
         firstName: user.firstName,
         lastname: user.lastName,
         email: user.email,
@@ -282,7 +283,6 @@ export class RentalService {
     const rating = await this.ratingService.findByRoom(rental.room.id);
 
     const dto: MyRentalDTO = {
-      id: rental.id,
       status: rental.status,
       // set rentalInfo
       rentalInfo: {
@@ -301,6 +301,7 @@ export class RentalService {
       // set hostInfo
       hostInfo: {
         birthday: rental.rentalDetail.landlordBirthday,
+        photo: rental.landlord.photo,
         email: rental.landlord.email,
         firstName: rental.landlord.firstName,
         id: rental.landlord.id,

@@ -10,9 +10,6 @@ import { RentalStatus } from 'src/common/enum/common.enum';
 export class MyRentalDTO {
   @ApiProperty()
   @Expose()
-  id: number;
-  @ApiProperty()
-  @Expose()
   roomBlockInfo: RoomBlockInfoDTO;
   @ApiProperty()
   @Expose()
