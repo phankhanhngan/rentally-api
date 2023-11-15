@@ -4,7 +4,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import {
@@ -117,14 +116,12 @@ export class RentalService {
       );
 
       if (!room) {
-        throw new BadRequestException(
-          `Cannot find room with id=[${createRentalDTO.roomId}]`,
-        );
+        throw new BadRequestException(`Cannot find room`);
       }
 
       if (room.status != RoomStatus.EMPTY) {
         throw new BadRequestException(
-          `Room with id=[${createRentalDTO.roomId}] was already rented by someone`,
+          `This room was already rented by someone`,
         );
       }
 
@@ -172,8 +169,6 @@ export class RentalService {
       });
       this.em.persist(rentalEntity);
 
-      room.status = RoomStatus.OCCUPIED;
-      this.em.persist(room);
       this.em.flush();
     } catch (err) {
       this.logger.error('Calling create()', err, RentalService.name);
@@ -287,6 +282,8 @@ export class RentalService {
     const rating = await this.ratingService.findByRoom(rental.room.id);
 
     const dto: MyRentalDTO = {
+      id: rental.id,
+      status: rental.status,
       // set rentalInfo
       rentalInfo: {
         id: rental.id,
@@ -520,16 +517,22 @@ export class RentalService {
         renter: user,
       });
       if (!rental) {
-        throw new BadRequestException(`Cannot find rental with id=[${id}]`);
+        throw new BadRequestException(`Cannot find rental`);
       }
       if (rental.status != RentalStatus.APPROVED) {
         throw new BadRequestException(
           `Only rental request with status ${RentalStatus.APPROVED} could be confirmed`,
         );
       }
+      const room = await this.roomRepository.findOne({ id: rental.room.id });
 
       rental.status = RentalStatus.COMPLETED;
-      await this.em.persistAndFlush(rental);
+      this.em.persist(rental);
+
+      room.status = RoomStatus.OCCUPIED;
+      this.em.persist(room);
+
+      await this.em.flush();
     } catch (err) {
       this.logger.error(
         'Calling confirmRentalRequest()',

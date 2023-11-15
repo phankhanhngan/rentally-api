@@ -22,7 +22,6 @@ import { Role } from 'src/common/enum/common.enum';
 import { CreateRentalDTO } from './dtos/CreateRental.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
-import { ApiBody } from '@nestjs/swagger';
 
 @Controller('rental')
 @UseGuards(JwtAuthGuard)
@@ -84,7 +83,7 @@ export class RentalController {
       await this.rentalService.create(createRentalDTO, req.user);
       res.status(200).json({
         success: true,
-        message: `Request rent room with id=[${createRentalDTO.roomId}] successfully`,
+        message: `Request rent room successfully`,
       });
     } catch (error) {
       this.logger.error('Calling createRental()', error, RentalController.name);

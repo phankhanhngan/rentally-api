@@ -118,6 +118,12 @@ export class FindingService {
         priceRangeQr['price'] = { $gte: findRoomDto.minPrice };
       }
 
+      const limit =
+        findRoomDto.perPage && findRoomDto.perPage >= 1
+          ? findRoomDto.perPage
+          : 20;
+      const offset = findRoomDto.page >= 1 ? limit * (findRoomDto.page - 1) : 0;
+      console.log(limit, offset);
       const rooms = await this.roomRepository.find(
         {
           $and: [
@@ -129,6 +135,8 @@ export class FindingService {
         },
         {
           populate: ['roomblock'],
+          limit,
+          offset,
         },
       );
       console.log(queryObjBlockRoom);
