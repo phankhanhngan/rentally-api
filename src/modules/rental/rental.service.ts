@@ -287,6 +287,7 @@ export class RentalService {
       // set rentalInfo
       rentalInfo: {
         id: rental.id,
+        photo: rental.renter.photo,
         rentalDetailId: rental.rentalDetail.id,
         electricPrice: rental.rentalDetail.electricPrice,
         waterPrice: rental.rentalDetail.waterPrice,
