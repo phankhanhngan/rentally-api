@@ -30,7 +30,7 @@ export class FindingController {
     findRoomDto: FindRoomDTO,
   ) {
     try {
-      const { roomsDto, numberOfPage } = await this.findingService.findAllRoom(
+      const { roomsDto, numberOfPage, currentPage, totalRoom } = await this.findingService.findAllRoom(
         findRoomDto,
       );
       return res.status(200).json({
@@ -38,6 +38,8 @@ export class FindingController {
         message: 'Get rooms successfully',
         data: {
           numberOfPage,
+          currentPage,
+          totalRoom,
           rooms: roomsDto,
         },
       });

@@ -185,7 +185,8 @@ export class FindingService {
         const rating = await this.ratingService.findByRoom(rooms[i].id);
         if (rating.ratings) roomsDto[i].avgRate = rating.avgRate;
       }
-      return { roomsDto, numberOfPage };
+      const currentPage = Number(findRoomDto.page >= 1 ? findRoomDto.page : 1);
+      return { roomsDto, numberOfPage, currentPage, totalRoom: total };
     } catch (err) {
       this.logger.error('Calling findAllRoom()', err, FindingService.name);
       throw err;
