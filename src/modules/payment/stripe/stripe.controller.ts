@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Inject,
+  Param,
+  ParseIntPipe,
   Post,
   Req,
   Res,
@@ -40,16 +42,15 @@ export class StripeController {
 
   @UseGuards(JwtAuthGuard)
   // @UseGuards(RoleAuthGuard([Role.USER]))
-  @Post('check-out')
+  @Post('check-out/:id')
   async checkOutPaymnent(
     @Req() req,
     @Res() res: Response,
-    @Body(new ValidationPipe())
-    dto: CheckOutDTO,
+    @Param('id', ParseIntPipe) id: number,
   ) {
     try {
       const session = await this.paymentService.checkOutPayment(
-        dto,
+        id,
         req.user,
         req,
       );

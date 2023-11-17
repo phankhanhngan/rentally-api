@@ -16,12 +16,14 @@ export class TransactionService {
   ) {}
   async createTransaction(
     dto: TransactionDTO,
-    payment: Payment,
+    paymentId: number,
+    rentalId: number,
     renterId: number,
   ) {
     try {
       const transaction = plainToInstance(Transaction, dto);
-      transaction.payment = payment;
+      transaction.paymentId = paymentId;
+      transaction.rentalId = rentalId;
       transaction.created_at = new Date();
       transaction.created_id = renterId;
       transaction.deleted_at = null;

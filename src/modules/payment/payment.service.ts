@@ -55,20 +55,23 @@ export class PaymentService {
       const event = req.body;
       switch (event.type) {
         case 'checkout.session.completed':
-          console.log(event);
           const metadata = event.data.object.metadata;
-          const payment = await this.updateStatus(metadata.paymentId);
-          const dto: TransactionDTO = {
-            description: metadata.description,
-            status: TransactionStatus.PAID,
-            stripeId: event.data.object.id,
-          };
-          await this.transacService.createTransaction(
-            dto,
-            payment,
-            metadata.renterId,
-          );
-          // await this.callPayout()
+          if (metadata.type === 'CHECKOUT') {
+            const payment = await this.updateStatus(metadata.paymentId);
+            const dto: TransactionDTO = {
+              description: metadata.description,
+              status: TransactionStatus.PAID,
+              stripeId: event.data.object.id,
+            };
+            await this.transacService.createTransaction(
+              dto,
+              payment.id,
+              null,
+              metadata.renterId,
+            );
+          }
+          if (metadata.type === 'DEPOSITED') {
+          }
           break;
         case 'invoice.payment_failed' ||
           'charge.failed' ||
@@ -109,13 +112,10 @@ export class PaymentService {
       throw error;
     }
   }
-  async checkOutPayment(dto: CheckOutDTO, user: any, req: any) {
+  async checkOutPayment(paymentId: number, user: any, req: any) {
     try {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-      const payment = await this.findByIdAndRenterPopulate(
-        dto.paymentId,
-        user.id,
-      );
+      const payment = await this.findByIdAndRenterPopulate(paymentId, user.id);
       if (!payment)
         throw new BadRequestException(
           'Can not find payment or you do not own this payment!',
@@ -137,6 +137,7 @@ export class PaymentService {
           createdAt: new Date().toDateString(),
           description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} chuyển tiền nhà tháng ${payment.month}/${payment.year}`,
           renterId: user.id,
+          type: 'CHECKOUT',
         },
         line_items: [
           {
