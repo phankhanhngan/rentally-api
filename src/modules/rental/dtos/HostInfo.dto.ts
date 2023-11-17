@@ -13,7 +13,7 @@ export class HostInfoDTO {
   firstName: string;
   @ApiProperty()
   @Expose()
-  lastname: string;
+  lastName: string;
   @ApiProperty()
   @Expose()
   email: string;

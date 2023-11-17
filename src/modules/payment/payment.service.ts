@@ -29,6 +29,7 @@ import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
 import { Room } from 'src/entities';
 import { EventGateway } from '../notification/event.gateway';
+import { MailerService } from '@nest-modules/mailer';
 
 @Injectable()
 export class PaymentService {
@@ -40,6 +41,7 @@ export class PaymentService {
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
     private readonly eventGateway: EventGateway,
+    private readonly mailerService: MailerService,
   ) {}
   async findMyPayment(user: any) {
     try {
@@ -99,7 +101,7 @@ export class PaymentService {
             const rental = await this.em.findOne(
               Rental,
               { id: rentalId },
-              { populate: ['room'] },
+              { populate: ['room', 'landlord', 'room.roomblock'] },
             );
             const room = await this.em.findOne(Room, { id: rental.room.id });
 
@@ -127,8 +129,19 @@ export class PaymentService {
               rental.id,
               metadata.renterId,
             );
-            await this.em.persistAndFlush(rental);
-            await this.em.persistAndFlush(room);
+            this.em.persist(rental);
+            this.em.persist(room);
+            await this.em.flush();
+
+            this.mailerService.sendMail({
+              to: rental.landlord.email,
+              subject: `Request rent of room ${rental.room.roomName} - roomblock ${rental.room.roomblock.address} was deposited`,
+              template: './deposite_rental',
+              context: {
+                rental: rental,
+                transaction_link: 'https://rentally.netlify.app/',
+              },
+            });
           }
           break;
         case 'invoice.payment_failed' ||

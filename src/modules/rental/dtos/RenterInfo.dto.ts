@@ -10,7 +10,7 @@ export class RenterInfoDTO {
   firstName: string;
   @ApiProperty()
   @Expose()
-  lastname: string;
+  lastName: string;
   @ApiProperty()
   @Expose()
   email: string;
