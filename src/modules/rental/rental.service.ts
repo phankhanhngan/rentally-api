@@ -583,7 +583,7 @@ export class RentalService {
         metadata: {
           rentalId: rental.id,
           createdAt: new Date().toDateString(),
-          description: `${rental.renter.firstName} ${rental.renter.lastName} chuyển tiền cọc rental id [${rental.id}]`,
+          description: `${rental.renter.firstName} ${rental.renter.lastName} transfers deposit to rent (Room name: ${rental.room.roomName}).`,
           renterId: user.id,
           type: 'DEPOSITED',
         },
@@ -593,8 +593,8 @@ export class RentalService {
               unit_amount: Number(rental.room.depositAmount),
               currency: process.env.STRIPE_CURRENCY,
               product_data: {
-                name: `Room ${rental.room.roomName}`,
-                description: `Chuyển tiền cọc. ${rental.room.roomblock.description}. ${rental.room.roomblock.address}`,
+                name: `${rental.room.roomName}`,
+                description: `${rental.renter.firstName} ${rental.renter.lastName} transfers deposit to rent (Room name: ${rental.room.roomName}).`,
                 images: JSON.parse(rental.room.images),
               },
             },
