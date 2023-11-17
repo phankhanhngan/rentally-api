@@ -215,10 +215,12 @@ export class RentalService {
 
       await this.em.flush();
       const dto = await this.setRentalDTO(rentalEntity);
+      const rentalLink = '';
       this.sendMail(
-        dto.hostInfo.email,
-        dto.hostInfo.firstName.concat(dto.hostInfo.lastName),
+        rentalEntity.landlord.email,
+        rentalLink,
         dto,
+        'Rental request was created',
         './rental_created',
       );
     } catch (err) {
@@ -485,9 +487,9 @@ export class RentalService {
       const rental = await this.rentalRepository.findOne(
         {
           id,
-          renter: user,
+          landlord: user,
         },
-        { populate: ['room', 'renter'] },
+        { populate: ['room', 'renter', 'room.roomblock'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -503,9 +505,12 @@ export class RentalService {
       const dto = await this.setRentalDTO(rental);
       this.sendMail(
         rental.renter.email,
-        rental.renter.firstName.concat(rental.renter.lastName),
+        '',
         dto,
+        'Rental was approved',
         './rental_udpate_status',
+        RentalStatus.CREATED,
+        RentalStatus.APPROVED,
       );
     } catch (err) {
       this.logger.error(
@@ -522,9 +527,9 @@ export class RentalService {
       const rental = await this.rentalRepository.findOne(
         {
           id,
-          renter: user,
+          landlord: user,
         },
-        { populate: ['room', 'renter'] },
+        { populate: ['room', 'renter', 'room.roomblock'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -542,9 +547,12 @@ export class RentalService {
       const dto = await this.setRentalDTO(rental);
       this.sendMail(
         rental.renter.email,
-        rental.renter.firstName.concat(rental.renter.lastName),
+        '',
         dto,
+        'Rental request was canceled',
         './rental_udpate_status',
+        RentalStatus.CREATED,
+        RentalStatus.CANCELED,
       );
     } catch (err) {
       this.logger.error(
@@ -561,9 +569,9 @@ export class RentalService {
       const rental = await this.rentalRepository.findOne(
         {
           id,
-          renter: user,
+          landlord: user,
         },
-        { populate: ['room', 'renter'] },
+        { populate: ['room', 'renter', 'room.roomblock'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -580,9 +588,12 @@ export class RentalService {
       const dto = await this.setRentalDTO(rental);
       this.sendMail(
         rental.renter.email,
-        rental.renter.firstName.concat(rental.renter.lastName),
+        '',
         dto,
+        'Rental was accepted to break',
         './rental_udpate_status',
+        RentalStatus.REQUEST_BREAK,
+        RentalStatus.BROKEN,
       );
     } catch (err) {
       this.logger.error(
@@ -659,7 +670,7 @@ export class RentalService {
           id,
           renter: user,
         },
-        { populate: ['room', 'renter'] },
+        { populate: ['room', 'landlord', 'renter', 'room.roomblock'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -675,9 +686,12 @@ export class RentalService {
       const dto = await this.setRentalDTO(rental);
       this.sendMail(
         dto.hostInfo.email,
-        dto.hostInfo.firstName.concat(dto.hostInfo.lastName),
+        '',
         dto,
+        'Rental was requested to break',
         './rental_udpate_status',
+        RentalStatus.COMPLETED,
+        RentalStatus.REQUEST_BREAK,
       );
     } catch (err) {
       this.logger.error(
@@ -696,31 +710,32 @@ export class RentalService {
           id,
           renter: user,
         },
-        { populate: ['room', 'renter', 'rentalDetail'] },
+        { populate: ['room', 'renter', 'rentalDetail', 'room.roomblock'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
+
       if (rental.status != RentalStatus.COMPLETED) {
         throw new BadRequestException(
-          `Only rental request with status ${RentalStatus.COMPLETED} could be ended`,
-        );
-      }
-      if (!moment(rental.rentalDetail.moveOutDate).isBefore(moment(), 'day')) {
-        throw new BadRequestException(
-          `Unable to end the rental contract as the move-out deadline has not been reached.`,
+          `Only rental request with status ${RentalStatus.COMPLETED} could be requested break`,
         );
       }
 
+      const prevStatus = rental.status;
+      console.log(prevStatus);
       rental.status = RentalStatus.ENDED;
       rental.room.status = RoomStatus.EMPTY;
       await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
       this.sendMail(
         rental.renter.email,
-        rental.renter.firstName.concat(rental.renter.lastName),
+        '',
         dto,
+        'Rental was ended',
         './rental_udpate_status',
+        prevStatus,
+        RentalStatus.ENDED,
       );
     } catch (err) {
       this.logger.error(
@@ -734,18 +749,23 @@ export class RentalService {
 
   async sendMail(
     to: string,
-    name: string,
+    link: string,
     rental: MyRentalDTO,
+    subject: string,
     template: string,
+    status_from: RentalStatus = null,
+    status_to: RentalStatus = null,
   ) {
     try {
       await this.mailerService.sendMail({
         to: to,
-        subject: 'Your rental has some changes',
+        subject: subject,
         template: template,
         context: {
+          link: link,
+          status_from: status_from.toString(),
+          status_to: status_to.toString(),
           rental: rental,
-          name: name,
         },
       });
     } catch (error) {

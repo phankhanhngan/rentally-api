@@ -24,7 +24,6 @@ import { MailerService } from '@nest-modules/mailer';
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
     NotificationModule,
-    MailerService,
   ],
   controllers: [PaymentController, StripeController],
   providers: [

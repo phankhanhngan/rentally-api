@@ -9,15 +9,8 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { UsersService } from '../users/users.service';
 import { AWSService } from '../aws/aws.service';
 import { Rental } from 'src/entities/rental.entity';
-import { MailerService } from '@nest-modules/mailer';
 @Module({
-  providers: [
-    RentalService,
-    RatingService,
-    UsersService,
-    AWSService,
-    MailerService,
-  ],
+  providers: [RentalService, RatingService, UsersService, AWSService],
   controllers: [RentalController],
   imports: [
     forwardRef(() => RatingModule),

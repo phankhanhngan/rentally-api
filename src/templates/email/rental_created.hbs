@@ -582,7 +582,7 @@
                                         color: #1d5868;
                                       "
                                     >
-                                      Hi, {{ concat notification.renter.firstName " " notification.renter.lastName }}
+                                      Hi, {{ concat rental.hostInfo.firstName " " rental.hostInfo.lastName }}
                                     </h3>
                                     <p
                                       style="
@@ -639,10 +639,25 @@
                                         font-size: 18px;
                                       "
                                     >
-                                      We would like to inform you about the payment of the room fee for the month {{ notification.payment.month }}/{{ notification.payment.year }}.
+                                      We would like to inform you about new rental request.
                                     </p>
                                     <p
-                                      style="
+                                    style="
+                                    margin: 0;
+                                    -webkit-text-size-adjust: none;
+                                    -ms-text-size-adjust: none;
+                                    mso-line-height-rule: exactly;
+                                    font-family: Imprima, Arial, sans-serif;
+                                    line-height: 27px;
+                                    color: #b94400;
+                                    font-size: 20px;
+                                    font-weight: 600;
+                                  "
+                                    >
+                                      Rental request information:
+                                    </p>
+                                    <ul>
+                                        <li style="
                                         margin: 0;
                                         -webkit-text-size-adjust: none;
                                         -ms-text-size-adjust: none;
@@ -651,13 +666,10 @@
                                         line-height: 27px;
                                         color: #1d5868;
                                         font-size: 18px;
-                                        font-style: italic;
-                                      "
-                                    >
-                                      Detail information:
-                                    </p>
-                                    <p
-                                      style="
+                                      ">
+                                      Renter name: {{ concat rental.renterInfo.firstName " " rental.renterInfo.lastName}}
+                                        </li>
+                                        <li style="
                                         margin: 0;
                                         -webkit-text-size-adjust: none;
                                         -ms-text-size-adjust: none;
@@ -666,12 +678,10 @@
                                         line-height: 27px;
                                         color: #1d5868;
                                         font-size: 18px;
-                                      "
-                                    >
-                                      Landlord name: {{ notification.landlordName }}
-                                    </p>
-                                    <p
-                                      style="
+                                      ">
+                                      Renter email: {{ rental.renterInfo.email}}
+                                        </li>
+                                        <li style="
                                         margin: 0;
                                         -webkit-text-size-adjust: none;
                                         -ms-text-size-adjust: none;
@@ -680,108 +690,25 @@
                                         line-height: 27px;
                                         color: #1d5868;
                                         font-size: 18px;
-                                      "
-                                    >
-                                      Room price: {{ notification.payment.roomPrice }} VND
-                                    </p>
+                                      ">
+                                      Room name: {{ rental.roomInfo.roomName}}
+                                        </li>
+                                    </ul>
                                     <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      Amount of electricity consumed: {{ notification.payment.electricNumber }}
-                                    </p>
-                                    <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      Total electricity money: {{ notification.payment.totalElectricPrice }} VND
-                                    </p>
-                                    <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      Amount of water consumed: {{ notification.payment.waterNumber }}
-                                    </p>
-                                    <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      Total electricity water: {{ notification.payment.totalWaterPrice }} VND
-                                    </p>
-                                    <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      Other fees: {{ notification.payment.additionalPrice }} VND
-                                    </p>
-                                    <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      <strong>Total bill: {{ notification.payment.totalPrice }} VND</strong>
-                                    </p>
-                                    <p
-                                      style="
-                                        margin: 0;
-                                        -webkit-text-size-adjust: none;
-                                        -ms-text-size-adjust: none;
-                                        mso-line-height-rule: exactly;
-                                        font-family: Imprima, Arial, sans-serif;
-                                        line-height: 27px;
-                                        color: #1d5868;
-                                        font-size: 18px;
-                                      "
-                                    >
-                                      <br />
-                                    </p>
+                                    style="
+                                      margin: 0;
+                                      -webkit-text-size-adjust: none;
+                                      -ms-text-size-adjust: none;
+                                      mso-line-height-rule: exactly;
+                                      font-family: Imprima, Arial, sans-serif;
+                                      line-height: 27px;
+                                      color: #1d5868;
+                                      font-size: 18px;
+                                    "
+                                  >
+                                    Rental request link: <a>{{link}}</a>
+                                  </p>
+                                  <br>
                                     <p
                                       style="
                                         margin: 0;

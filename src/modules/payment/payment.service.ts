@@ -97,6 +97,7 @@ export class PaymentService {
             this.em.persist(rental);
             this.em.persist(room);
             await this.em.flush();
+
             this.mailerService.sendMail({
               to: rental.landlord.email,
               subject: `Request rent of room ${rental.room.roomName} - roomblock ${rental.room.roomblock.address} was deposited`,
