@@ -43,6 +43,17 @@ export class PaymentService {
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
   ) {}
+  async findMyPayment(user: any) {
+    try {
+      const payments = await this.em.find(Payment, {
+        rental: { renter: { id: user.id } },
+        deleted_at: null,
+      });
+      return plainToInstance(PaymentDTO, payments);
+    } catch (error) {
+      throw error;
+    }
+  }
   async callBackWebHook(req: any) {
     try {
       // const sig = req.headers['stripe-signature'];
@@ -96,6 +107,17 @@ export class PaymentService {
               throw new BadRequestException('This room are already OCCIPIED!');
             rental.status = RentalStatus.COMPLETED;
             room.status = RoomStatus.OCCUPIED;
+            const dto: TransactionDTO = {
+              description: metadata.description,
+              status: TransactionStatus.DEPOSITED,
+              stripeId: event.data.object.id,
+            };
+            await this.transacService.createTransaction(
+              dto,
+              null,
+              rental.id,
+              metadata.renterId,
+            );
             await this.em.persistAndFlush(rental);
             await this.em.persistAndFlush(room);
           }
@@ -272,6 +294,9 @@ export class PaymentService {
       if (user.role === Role.ADMIN) {
         payment = await this.findById(paymentId);
       }
+      if (user.role === Role.USER) {
+        payment = await this.findByIdAndRenterPopulate(paymentId, user.id);
+      }
       if (!payment) {
         throw new BadRequestException(
           'Can not find this payment or you are not own this payment',
@@ -429,6 +454,8 @@ export class PaymentService {
       };
       const rentalDetailEntity = this.paymentRepository.create(payment);
       await this.em.persistAndFlush(rentalDetailEntity);
+      console.log(rentalDetailEntity.id);
+      //code tiep
     } catch (error) {
       this.logger.error('Calling createPayment()', error, PaymentService.name);
       throw error;

@@ -562,7 +562,7 @@ export class RentalService {
           id,
           renter: user,
         },
-        { populate: ['room', 'renter'] },
+        { populate: ['room', 'renter', 'room.roomblock'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental`);
@@ -594,7 +594,7 @@ export class RentalService {
               currency: process.env.STRIPE_CURRENCY,
               product_data: {
                 name: `Room ${rental.room.roomName}`,
-                description: `${rental.room.roomblock.description}. ${rental.room.roomblock.address}`,
+                description: `Chuyển tiền cọc. ${rental.room.roomblock.description}. ${rental.room.roomblock.address}`,
                 images: JSON.parse(rental.room.images),
               },
             },
