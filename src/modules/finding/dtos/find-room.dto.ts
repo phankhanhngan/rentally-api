@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsNumberString, IsString, ValidateIf } from 'class-validator';
+import {
+  IsInt,
+  IsNumberString,
+  IsPositive,
+  IsString,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class FindRoomDTO {
   @ApiProperty()
@@ -30,10 +37,16 @@ export class FindRoomDTO {
 
   @ApiProperty()
   @ValidateIf((obj, value) => value)
-  @Transform((value) =>
-    Array.isArray(value.value) ? value.value : [value.value],
-  )
-  @IsArray()
-  @IsNumberString({}, { each: true })
+  @Transform(({ value }) => (value ? value.split(',').map(Number) : []))
   utilities?: number[];
+
+  @ApiProperty()
+  @ValidateIf((obj, value) => value)
+  @IsNumberString()
+  perPage?: number;
+
+  @ApiProperty()
+  @ValidateIf((obj, value) => value)
+  @IsNumberString()
+  page?: number;
 }

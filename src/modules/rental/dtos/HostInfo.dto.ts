@@ -7,6 +7,9 @@ export class HostInfoDTO {
   id: number;
   @ApiProperty()
   @Expose()
+  photo: string;
+  @ApiProperty()
+  @Expose()
   firstName: string;
   @ApiProperty()
   @Expose()

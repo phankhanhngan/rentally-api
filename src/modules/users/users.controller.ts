@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   Res,
@@ -28,6 +29,8 @@ import { fileFilter } from './helpers/file-filter.helper';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
+import { UpdateCurrentUserDTO } from './dtos/update-current-user.dto';
+import { UpdateCurrentUserPasswordDTO } from './dtos/udpdate-current-user-password.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -38,7 +41,7 @@ export class UsersController {
   ) {}
 
   @Get('/me')
-  async getCurrentUser(@Req() req, @Res() res: Response) {
+  async getCurrentUserInfo(@Res() res: Response, @Req() req) {
     try {
       const user = await this.usersService.getUserById(req.user.id);
       const userDto = plainToInstance(UserDTO, user, {
@@ -48,12 +51,12 @@ export class UsersController {
         message: 'Get current user successfully',
         status: 'success',
         data: {
-          userDto,
+          ...userDto,
         },
       });
     } catch (error) {
       this.logger.error(
-        'Calling getCurrentUser()',
+        'Calling getCurrentUserInfo()',
         error,
         UsersController.name,
       );
@@ -195,6 +198,62 @@ export class UsersController {
       });
     } catch (error) {
       this.logger.error('Calling deleteUser()', error, UsersController.name);
+      throw error;
+    }
+  }
+
+  @Put('/me')
+  @UseInterceptors(FileInterceptor('photo', fileFilter))
+  async updateCurrentUserInfo(
+    @Res() res: Response,
+    @Req() req,
+    @Body(new ValidationPipe()) updateCurrentUserDto: UpdateCurrentUserDTO,
+    @UploadedFile()
+    file: Express.Multer.File,
+  ) {
+    try {
+      await this.usersService.updateCurrentUser(
+        updateCurrentUserDto,
+        file,
+        req.user,
+      );
+      res.status(200).json({
+        message: 'Update current user successfully',
+        status: 'success',
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling updateCurrentUserInfo()',
+        error,
+        UsersController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Put('/me/password')
+  @UseInterceptors(FileInterceptor('photo', fileFilter))
+  async updateCurrentUserPassword(
+    @Res() res: Response,
+    @Req() req,
+    @Body(new ValidationPipe())
+    updateCurrentUserPasswordDto: UpdateCurrentUserPasswordDTO,
+  ) {
+    try {
+      await this.usersService.updateCurrentUserPassword(
+        updateCurrentUserPasswordDto,
+        req.user,
+      );
+      res.status(200).json({
+        message: 'Update current user password successfully',
+        status: 'success',
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling updateCurrentUserPassword()',
+        error,
+        UsersController.name,
+      );
       throw error;
     }
   }

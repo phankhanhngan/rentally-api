@@ -17,9 +17,9 @@ import { RatingService } from '../rating/rating.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { Rental } from 'src/entities/rental.entity';
 import { LandLordDTO } from './dtos/landlord.dto';
-import { ProvinceService } from '../province/province.service';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class FindingService {
@@ -73,8 +73,8 @@ export class FindingService {
 
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { district: district.name },
-          { city: province.name },
+          { district: district.full_name },
+          { city: province.full_name },
         ];
       }
 
@@ -90,11 +90,11 @@ export class FindingService {
 
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { city: province.name },
+          { city: province.full_name },
         ];
       }
 
-      const queryObjUitilities = {};      
+      const queryObjUitilities = {};
       if (findRoomDto.utilities) {
         findRoomDto.utilities.forEach((utilitty, index) => {
           if (index == 0) {
@@ -119,6 +119,11 @@ export class FindingService {
         priceRangeQr['price'] = { $gte: findRoomDto.minPrice };
       }
 
+      const limit =
+        findRoomDto.perPage && findRoomDto.perPage >= 1
+          ? findRoomDto.perPage
+          : 20;
+      const offset = findRoomDto.page >= 1 ? limit * (findRoomDto.page - 1) : 0;
       const rooms = await this.roomRepository.find(
         {
           $and: [
@@ -130,10 +135,21 @@ export class FindingService {
         },
         {
           populate: ['roomblock'],
+          limit,
+          offset,
         },
       );
       console.log(queryObjBlockRoom);
 
+      const total = await this.roomRepository.count({
+        $and: [
+          { roomblock: queryObjBlockRoom },
+          queryObjUitilities,
+          priceRangeQr,
+          { status: RoomStatus.EMPTY },
+        ],
+      });
+      const numberOfPage = new Decimal(total).div(limit).ceil().d[0];
       const roomsDto = plainToClass(ViewFindRoomDTO, rooms);
 
       for (let i = 0; i < rooms.length; i++) {
@@ -169,8 +185,8 @@ export class FindingService {
         const rating = await this.ratingService.findByRoom(rooms[i].id);
         if (rating.ratings) roomsDto[i].avgRate = rating.avgRate;
       }
-
-      return roomsDto;
+      const currentPage = Number(findRoomDto.page >= 1 ? findRoomDto.page : 1);
+      return { roomsDto, numberOfPage, currentPage, totalRoom: total };
     } catch (err) {
       this.logger.error('Calling findAllRoom()', err, FindingService.name);
       throw err;
@@ -213,8 +229,13 @@ export class FindingService {
       roomDto.landlord = landlordDto;
 
       const rating = await this.ratingService.findByRoom(room.id);
-      if (rating.ratings) {        
+      if (rating.ratings) {
         roomDto.ratingDetail = rating;
+      } else {
+        roomDto.ratingDetail = {
+          ratings: [],
+          totalRating: 0,
+        };
       }
 
       const utilities = JSON.parse(room.utilities);

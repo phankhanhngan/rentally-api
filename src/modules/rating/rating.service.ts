@@ -101,7 +101,7 @@ export class RatingService {
       const result = new RatingRtnDTO();
       if (res.length < 1) {
         return {
-          ratings: null,
+          ratings: [],
           avgRate: 0,
         };
       }

@@ -182,7 +182,13 @@ export class RoomBlocksService {
 
       const roomBlockDtoList = roomBlockEntityList.map((el) => {
         const dto = plainToInstance(RoomBlockAdminDTO, el);
-        dto.landlord = plainToInstance(GetUserDTO, el.landlord);
+        dto.landlord = {
+          id: el.landlord.id,
+          phoneNumber: el.landlord.phoneNumber,
+          deletedAt: el.landlord.deleted_at,
+          name: el.landlord.firstName + el.landlord.lastName,
+          photo: el.landlord.photo,
+        };
         dto['quantityRooms'] = roomQuantity.get(el.id)[0];
         dto['emptyRooms'] = roomQuantity.get(el.id)[1];
         return dto;

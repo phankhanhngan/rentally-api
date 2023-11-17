@@ -5,6 +5,7 @@ import { RoomInfoDTO } from './RoomInfo.dto';
 import { RentalInfoDTO } from './RentalInfo.dto';
 import { RenterInfoDTO } from './RenterInfo.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { RentalStatus } from 'src/common/enum/common.enum';
 @Exclude()
 export class MyRentalDTO {
   @ApiProperty()
@@ -22,4 +23,7 @@ export class MyRentalDTO {
   @ApiProperty()
   @Expose()
   renterInfo: RenterInfoDTO;
+  @ApiProperty()
+  @Expose()
+  status: RentalStatus;
 }
