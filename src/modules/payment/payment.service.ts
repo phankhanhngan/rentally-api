@@ -24,14 +24,10 @@ import { RentalService } from '../rental/rental.service';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
 import { PaymentDTO } from './dtos/payment.dto';
 import { plainToInstance } from 'class-transformer';
-import { CheckOutDTO } from './dtos/check-out.dto';
 import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
-import { log } from 'console';
-import { RenterInfoDTO } from '../rental/dtos/RenterInfo.dto';
 import { Room } from 'src/entities';
-import { ro } from '@faker-js/faker';
 import { EventGateway } from '../notification/event.gateway';
 
 @Injectable()
@@ -45,18 +41,40 @@ export class PaymentService {
     private readonly paymentRepository: EntityRepository<Payment>,
     private readonly eventGateway: EventGateway,
   ) {}
+  async findMyPayment(user: any) {
+    try {
+      const payments = await this.em.find(
+        Payment,
+        {
+          rental: { renter: { id: user.id } },
+          deleted_at: null,
+        },
+        {
+          populate: [
+            'rental',
+            'rental.room',
+            'rental.room.roomblock',
+            'rental.landlord',
+            'rental.rentalDetail',
+          ],
+        },
+      );
+      const paymentDTOs = await Promise.all(
+        payments.map(async (payment) => {
+          const paymentDTO = plainToInstance(PaymentDTO, payment);
+          paymentDTO.rental = await this.rentalService.setRentalDTO(
+            payment.rental,
+          );
+          return paymentDTO;
+        }),
+      );
+      return paymentDTOs;
+    } catch (error) {
+      throw error;
+    }
+  }
   async callBackWebHook(req: any) {
     try {
-      // const sig = req.headers['stripe-signature'];
-      // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-      // const endpointSecret =
-      //   'whsec_649f2a2216d6db4fc1848dc5fd0968aad7a9a234c56be6cea15ff5f098322378';
-      // let event;
-      // try {
-      //   event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-      // } catch (err) {
-      //   throw new InternalServerErrorException('Stripe Webhook Error');
-      // }
       const event = req.body;
       switch (event.type) {
         case 'checkout.session.completed':
@@ -98,6 +116,17 @@ export class PaymentService {
               throw new BadRequestException('This room are already OCCIPIED!');
             rental.status = RentalStatus.COMPLETED;
             room.status = RoomStatus.OCCUPIED;
+            const dto: TransactionDTO = {
+              description: metadata.description,
+              status: TransactionStatus.DEPOSITED,
+              stripeId: event.data.object.id,
+            };
+            await this.transacService.createTransaction(
+              dto,
+              null,
+              rental.id,
+              metadata.renterId,
+            );
             await this.em.persistAndFlush(rental);
             await this.em.persistAndFlush(room);
           }
@@ -164,7 +193,7 @@ export class PaymentService {
         metadata: {
           paymentId: payment.id,
           createdAt: new Date().toDateString(),
-          description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} chuyển tiền nhà tháng ${payment.month}/${payment.year}`,
+          description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} transfers money for monthly rent in ${payment.month}/${payment.year}`,
           renterId: user.id,
           type: 'CHECKOUT',
         },
@@ -174,8 +203,9 @@ export class PaymentService {
               unit_amount: payment.totalPrice,
               currency: process.env.STRIPE_CURRENCY,
               product_data: {
-                name: `Room ${payment.rental.room.roomName}`,
-                description: `${payment.rental.room.roomblock.description}. ${payment.rental.room.roomblock.address}`,
+                name: `${payment.rental.room.roomName}`,
+                description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} transfers money for monthly rent in ${payment.month}/${payment.year}.
+                              \nAddress: ${payment.rental.room.roomblock.address} ${payment.rental.room.roomblock.district} ${payment.rental.room.roomblock.city} ${payment.rental.room.roomblock.country}.`,
                 images: JSON.parse(payment.rental.room.images),
               },
             },
@@ -195,7 +225,6 @@ export class PaymentService {
   }
   async findAll(userLogined: any, keyword: string) {
     try {
-      let payments = [];
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
       const queryObj = {
@@ -259,7 +288,25 @@ export class PaymentService {
         };
       }
 
-      return await this.em.find(Payment, queryObj);
+      const payments = await this.em.find(Payment, queryObj, {
+        populate: [
+          'rental',
+          'rental.room',
+          'rental.room.roomblock',
+          'rental.landlord',
+          'rental.rentalDetail',
+        ],
+      });
+      const paymentDTOs = await Promise.all(
+        payments.map(async (payment) => {
+          const paymentDTO = plainToInstance(PaymentDTO, payment);
+          paymentDTO.rental = await this.rentalService.setRentalDTO(
+            payment.rental,
+          );
+          return paymentDTO;
+        }),
+      );
+      return paymentDTOs;
     } catch (error) {
       this.logger.error('Calling findAll()', error, PaymentService.name);
       throw error;
@@ -274,13 +321,16 @@ export class PaymentService {
       if (user.role === Role.ADMIN) {
         payment = await this.findById(paymentId);
       }
+      if (user.role === Role.USER) {
+        payment = await this.findByIdAndRenterPopulate(paymentId, user.id);
+      }
       if (!payment) {
         throw new BadRequestException(
           'Can not find this payment or you are not own this payment',
         );
       }
       const paymentDTO = plainToInstance(PaymentDTO, payment);
-      paymentDTO.rental = payment.rental.id;
+      paymentDTO.rental = await this.rentalService.setRentalDTO(payment.rental);
       return paymentDTO;
     } catch (error) {
       this.logger.error('Calling findByRentalId()', error, PaymentService.name);
@@ -335,7 +385,14 @@ export class PaymentService {
           deleted_at: null,
         },
         {
-          populate: ['rental'],
+          populate: [
+            'rental',
+            'rental.room',
+            'rental.room.roomblock',
+            'rental.landlord',
+            'rental.renter',
+            'rental.rentalDetail',
+          ],
         },
       );
       return payment;
@@ -357,7 +414,14 @@ export class PaymentService {
           deleted_at: null,
         },
         {
-          populate: ['rental'],
+          populate: [
+            'rental',
+            'rental.room',
+            'rental.room.roomblock',
+            'rental.landlord',
+            'rental.renter',
+            'rental.rentalDetail',
+          ],
         },
       );
       return payment;
@@ -377,7 +441,14 @@ export class PaymentService {
           rental: { renter: { id: renterId } },
         },
         {
-          populate: ['rental', 'rental.room', 'rental.room.roomblock'],
+          populate: [
+            'rental',
+            'rental.room',
+            'rental.room.roomblock',
+            'rental.landlord',
+            'rental.renter',
+            'rental.rentalDetail',
+          ],
         },
       );
       return payment;
@@ -432,7 +503,14 @@ export class PaymentService {
       const rentalDetailEntity = this.paymentRepository.create(payment);
       await this.em.persistAndFlush(rentalDetailEntity);
       // Send notification
-      await this.eventGateway.sendNotification(rental.renter.id, paymentDTO.month, paymentDTO.year, rentalDetailEntity.id)
+      await this.eventGateway.sendNotification(
+        rental.renter.id,
+        paymentDTO.month,
+        paymentDTO.year,
+        rentalDetailEntity.id,
+      );
+      console.log(rentalDetailEntity.id);
+      //code tiep
     } catch (error) {
       this.logger.error('Calling createPayment()', error, PaymentService.name);
       throw error;

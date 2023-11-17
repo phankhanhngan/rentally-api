@@ -24,7 +24,6 @@ import { Role } from 'src/common/enum/common.enum';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { Response } from 'express';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
-import { User } from '../../entities/user.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('payments')
@@ -126,7 +125,27 @@ export class PaymentController {
     }
   }
 
-  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  @Get('my-payment')
+  async findMyPayment(@Req() req, @Res() res: Response) {
+    try {
+      const user = req.user;
+      const paymentDTOs = await this.paymentService.findMyPayment(user);
+      res.status(200).json({
+        message: 'Get my payment successfully',
+        status: 'success',
+        data: paymentDTOs,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling findAllPayment()',
+        error,
+        PaymentController.name,
+      );
+      throw error;
+    }
+  }
+
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN, Role.USER]))
   @Get(':id')
   async findPaymentById(
     @Req() req,

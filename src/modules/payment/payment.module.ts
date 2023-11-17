@@ -22,7 +22,7 @@ import { EventGateway } from '../notification/event.gateway';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
-    NotificationModule
+    NotificationModule,
   ],
   controllers: [PaymentController, StripeController],
   providers: [
@@ -32,7 +32,7 @@ import { EventGateway } from '../notification/event.gateway';
     RentalService,
     RatingService,
     TransactionService,
-    EventGateway
+    EventGateway,
   ],
 })
 export class PaymentModule {}

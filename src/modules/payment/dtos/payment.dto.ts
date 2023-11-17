@@ -1,11 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
+import { PaymentStatus } from 'src/common/enum/common.enum';
 import { MyRentalDTO } from 'src/modules/rental/dtos/MyRental.dto';
 @Exclude()
 export class PaymentDTO {
   @ApiProperty()
   @Expose()
-  rental: number;
+  id: string;
+
+  @ApiProperty()
+  @Expose()
+  rental: MyRentalDTO;
 
   @ApiProperty()
   @Expose()
@@ -38,4 +43,8 @@ export class PaymentDTO {
   @ApiProperty()
   @Expose()
   year: number;
+
+  @ApiProperty()
+  @Expose()
+  status: PaymentStatus;
 }

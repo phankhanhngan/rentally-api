@@ -83,7 +83,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     ProvinceModule,
     PaymentModule,
     TransactionModule,
-    NotificationModule
+    NotificationModule,
   ],
 
   controllers: [AppController],
