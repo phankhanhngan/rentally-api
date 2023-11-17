@@ -12,6 +12,8 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
 import { StripeController } from './stripe/stripe.controller';
 import { TransactionService } from '../transaction/transaction.service';
+import { NotificationModule } from '../notification/notification.module';
+import { EventGateway } from '../notification/event.gateway';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { TransactionService } from '../transaction/transaction.service';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
+    NotificationModule
   ],
   controllers: [PaymentController, StripeController],
   providers: [
@@ -29,6 +32,7 @@ import { TransactionService } from '../transaction/transaction.service';
     RentalService,
     RatingService,
     TransactionService,
+    EventGateway
   ],
 })
 export class PaymentModule {}

@@ -40,7 +40,6 @@ export class PointType extends Type<Point | undefined, string | undefined> {
 }
 
 @Entity({ tableName: 'roomblocks' })
-@Index({ properties: ['city', 'district', 'address'] })
 export class RoomBlock extends Base {
   @Property({ type: 'text', nullable: true })
   address?: string;

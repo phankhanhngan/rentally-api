@@ -32,6 +32,7 @@ import { log } from 'console';
 import { RenterInfoDTO } from '../rental/dtos/RenterInfo.dto';
 import { Room } from 'src/entities';
 import { ro } from '@faker-js/faker';
+import { EventGateway } from '../notification/event.gateway';
 
 @Injectable()
 export class PaymentService {
@@ -42,6 +43,7 @@ export class PaymentService {
     private readonly transacService: TransactionService,
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
+    private readonly eventGateway: EventGateway,
   ) {}
   async callBackWebHook(req: any) {
     try {
@@ -429,6 +431,8 @@ export class PaymentService {
       };
       const rentalDetailEntity = this.paymentRepository.create(payment);
       await this.em.persistAndFlush(rentalDetailEntity);
+      // Send notification
+      await this.eventGateway.sendNotification(rental.renter.id, paymentDTO.month, paymentDTO.year, rentalDetailEntity.id)
     } catch (error) {
       this.logger.error('Calling createPayment()', error, PaymentService.name);
       throw error;
