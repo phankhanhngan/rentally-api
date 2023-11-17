@@ -4,7 +4,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import {

@@ -24,7 +24,6 @@ import { Role } from 'src/common/enum/common.enum';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { Response } from 'express';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
-import { User } from '../../entities/user.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('payments')
@@ -125,7 +124,7 @@ export class PaymentController {
       throw error;
     }
   }
-  @UseGuards(RoleAuthGuard([Role.USER]))
+
   @Get('my-payment')
   async findMyPayment(@Req() req, @Res() res: Response) {
     try {

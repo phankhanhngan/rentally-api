@@ -24,14 +24,11 @@ import { RentalService } from '../rental/rental.service';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
 import { PaymentDTO } from './dtos/payment.dto';
 import { plainToInstance } from 'class-transformer';
-import { CheckOutDTO } from './dtos/check-out.dto';
 import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
-import { log } from 'console';
-import { RenterInfoDTO } from '../rental/dtos/RenterInfo.dto';
 import { Room } from 'src/entities';
-import { ro } from '@faker-js/faker';
+import { EventGateway } from '../notification/event.gateway';
 
 @Injectable()
 export class PaymentService {
@@ -42,6 +39,7 @@ export class PaymentService {
     private readonly transacService: TransactionService,
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
+    private readonly eventGateway: EventGateway,
   ) {}
   async findMyPayment(user: any) {
     try {
@@ -504,6 +502,13 @@ export class PaymentService {
       };
       const rentalDetailEntity = this.paymentRepository.create(payment);
       await this.em.persistAndFlush(rentalDetailEntity);
+      // Send notification
+      await this.eventGateway.sendNotification(
+        rental.renter.id,
+        paymentDTO.month,
+        paymentDTO.year,
+        rentalDetailEntity.id,
+      );
       console.log(rentalDetailEntity.id);
       //code tiep
     } catch (error) {
