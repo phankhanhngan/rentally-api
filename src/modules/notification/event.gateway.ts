@@ -18,7 +18,7 @@ export class EventGateway
 
   afterInit(server: any) {}
   handleConnection(client: any) {
-    client.join(client.handshake.query.renterId);
+    client.join(client.handshake.query.loginId);
   }
 
   sendNotification(
