@@ -16,6 +16,7 @@ import {
   PaymentStatus,
   RentalStatus,
   Role,
+  RoomStatus,
   TransactionStatus,
 } from 'src/common/enum/common.enum';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -29,6 +30,8 @@ import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
 import { log } from 'console';
 import { RenterInfoDTO } from '../rental/dtos/RenterInfo.dto';
+import { Room } from 'src/entities';
+import { ro } from '@faker-js/faker';
 
 @Injectable()
 export class PaymentService {
@@ -71,6 +74,30 @@ export class PaymentService {
             );
           }
           if (metadata.type === 'DEPOSITED') {
+            const metadata = event.data.object.metadata;
+            const rentalId = metadata.rentalId;
+            const rental = await this.em.findOne(
+              Rental,
+              { id: rentalId },
+              { populate: ['room'] },
+            );
+            const room = await this.em.findOne(Room, { id: rental.room.id });
+
+            if (!rental)
+              throw new BadRequestException('Can not find this rental!');
+
+            if (!room) throw new BadRequestException('Can not find this room!');
+
+            if (rental.status === RentalStatus.COMPLETED)
+              throw new BadRequestException(
+                'This rental are already COMPLETED!',
+              );
+            if (room.status === RoomStatus.OCCUPIED)
+              throw new BadRequestException('This room are already OCCIPIED!');
+            rental.status = RentalStatus.COMPLETED;
+            room.status = RoomStatus.OCCUPIED;
+            await this.em.persistAndFlush(rental);
+            await this.em.persistAndFlush(room);
           }
           break;
         case 'invoice.payment_failed' ||
