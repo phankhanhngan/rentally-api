@@ -238,10 +238,14 @@ export class RentalController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
-      await this.rentalService.confirmRentalRequest(id, req.user);
+      const session = await this.rentalService.confirmRentalRequest(
+        id,
+        req.user,
+      );
       res.status(200).json({
         success: true,
         message: `Confirm rental contract successfully`,
+        data: session.url,
       });
     } catch (error) {
       this.logger.error(

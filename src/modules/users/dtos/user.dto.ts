@@ -25,14 +25,12 @@ export class UserDTO {
   @Expose()
   @IsEmail({}, { message: 'Invalid email' })
   email!: string | undefined;
-
   @ApiProperty()
   @Expose()
   @ValidateIf((obj, value) => value)
   @MinLength(2, { message: 'Password at least 2 characters' })
   @IsString({ message: 'password must be a string' })
   password?: string;
-
   @ApiProperty()
   @Expose()
   @IsNotEmpty({ message: 'First name cannot be null' })

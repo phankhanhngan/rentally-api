@@ -3,6 +3,7 @@ import { Seeder } from '@mikro-orm/seeder';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import {
+  PaymentStatus,
   RatingStatus,
   RentalStatus,
   Role,
@@ -19,6 +20,9 @@ import { RentalDetail } from '../../entities/rental_detail.entity';
 import { Rental } from '../../entities/rental.entity';
 import { RoomRating } from '../../entities/room-rating.entity';
 import { Checklist } from '../../entities/checklist.entity';
+import * as moment from 'moment';
+import { Payment } from '../../entities/payment.entity';
+import { add } from 'winston';
 export class DatabaseSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
@@ -172,6 +176,54 @@ export class DatabaseSeeder extends Seeder {
       });
     }
     await em.insertMany(Checklist, checklist);
+    // payment ------------------------------------------------------
+    const payments = [];
+    const rentals1 = await em.find(
+      Rental,
+      {},
+      {
+        populate: [
+          'renter',
+          'landlord',
+          'room',
+          'rentalDetail',
+          'room.roomblock',
+        ],
+      },
+    );
+    rentals1.forEach((rental) => {
+      for (let i = 1; i < 5; i++) {
+        const nextMonthDt = moment(rental.rentalDetail.moveInDate).add(i, 'M');
+        const eleNum = Math.floor(Math.random() * (150 - 80 + 1)) + 80;
+        const waterNum = Math.floor(Math.random() * (8 - 4 + 1)) + 4;
+        const elePrice = eleNum * rental.rentalDetail.electricPrice;
+        const waterPrice = waterNum * rental.rentalDetail.waterPrice;
+        const addPrice = 0;
+        payments.push({
+          rental: rental,
+          electricNumber: eleNum,
+          waterNumber: waterNum,
+          totalElectricPrice: elePrice,
+          totalWaterPrice: waterPrice,
+          totalPrice:
+            Number(rental.rentalDetail.monthlyRent) +
+            Number(elePrice) +
+            Number(waterPrice) +
+            Number(addPrice),
+          additionalPrice: addPrice,
+          month: nextMonthDt.month() + 1,
+          year: nextMonthDt.year(),
+          paidAt: nextMonthDt.endOf('month').toDate(),
+          status: PaymentStatus.PAID,
+          created_at: new Date(),
+          updated_at: new Date(),
+          created_id: 1,
+          updated_id: 1,
+        });
+      }
+    });
+    await em.insertMany(Payment, payments);
+    // ---------------------------------------------------------------
   }
   randomEnumValue = (enumeration) => {
     const values = Object.keys(enumeration);

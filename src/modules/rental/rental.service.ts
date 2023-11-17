@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import {
@@ -24,6 +25,7 @@ import { HostInfoDTO } from './dtos/HostInfo.dto';
 import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
 import * as moment from 'moment';
 import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
+import Stripe from 'stripe';
 
 @Injectable()
 export class RentalService {
@@ -68,6 +70,47 @@ export class RentalService {
     } catch (error) {
       this.logger.error(
         'Calling findByIdAndRenter()',
+        error,
+        RentalService.name,
+      );
+      throw error;
+    }
+  }
+
+  async findByIdAndLandLord(
+    rentalId: number,
+    landlordId: number,
+    status: RentalStatus,
+  ) {
+    try {
+      const queryObj = {
+        $and: [
+          {
+            landlord: {
+              $and: [{ id: landlordId }],
+            },
+          },
+          {
+            id: rentalId,
+          },
+          {
+            status: status,
+          },
+        ],
+      };
+      const rental = await this.em.findOne(Rental, queryObj, {
+        populate: [
+          'renter',
+          'room',
+          'landlord',
+          'room.roomblock',
+          'rentalDetail',
+        ],
+      });
+      return rental;
+    } catch (error) {
+      this.logger.error(
+        'Calling findByIdAndLandLord()',
         error,
         RentalService.name,
       );
@@ -514,10 +557,13 @@ export class RentalService {
 
   async confirmRentalRequest(id: number, user: any) {
     try {
-      const rental = await this.rentalRepository.findOne({
-        id,
-        renter: user,
-      });
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          renter: user,
+        },
+        { populate: ['room', 'renter', 'room.roomblock'] },
+      );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental`);
       }
@@ -526,15 +572,37 @@ export class RentalService {
           `Only rental request with status ${RentalStatus.APPROVED} could be confirmed`,
         );
       }
-      const room = await this.roomRepository.findOne({ id: rental.room.id });
-
-      rental.status = RentalStatus.COMPLETED;
-      this.em.persist(rental);
-
-      room.status = RoomStatus.OCCUPIED;
-      this.em.persist(room);
-
-      await this.em.flush();
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        success_url: process.env.STRIPE_SUCCESS_URL,
+        cancel_url: process.env.STRIPE_CANCEL_URL,
+        mode: 'payment',
+        customer_email: user.email,
+        client_reference_id: rental.id.toString(),
+        metadata: {
+          rentalId: rental.id,
+          createdAt: new Date().toDateString(),
+          description: `${rental.renter.firstName} ${rental.renter.lastName} transfers deposit to rent (Room name: ${rental.room.roomName}).`,
+          renterId: user.id,
+          type: 'DEPOSITED',
+        },
+        line_items: [
+          {
+            price_data: {
+              unit_amount: Number(rental.room.depositAmount),
+              currency: process.env.STRIPE_CURRENCY,
+              product_data: {
+                name: `${rental.room.roomName}`,
+                description: `${rental.renter.firstName} ${rental.renter.lastName} transfers deposit to rent (Room name: ${rental.room.roomName}).`,
+                images: JSON.parse(rental.room.images),
+              },
+            },
+            quantity: 1,
+          },
+        ],
+      });
+      return session;
     } catch (err) {
       this.logger.error(
         'Calling confirmRentalRequest()',
