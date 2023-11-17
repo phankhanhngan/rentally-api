@@ -4,7 +4,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import {
@@ -26,6 +25,7 @@ import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
 import * as moment from 'moment';
 import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 import Stripe from 'stripe';
+import { MailerService } from '@nest-modules/mailer';
 
 @Injectable()
 export class RentalService {
@@ -40,6 +40,7 @@ export class RentalService {
     private readonly rentalDetailRepository: EntityRepository<RentalDetail>,
     @InjectRepository(Rental)
     private readonly rentalRepository: EntityRepository<Rental>,
+    private readonly mailerService: MailerService,
   ) {}
 
   async findByIdAndRenter(
@@ -212,7 +213,14 @@ export class RentalService {
       });
       this.em.persist(rentalEntity);
 
-      this.em.flush();
+      await this.em.flush();
+      const dto = await this.setRentalDTO(rentalEntity);
+      this.sendMail(
+        dto.hostInfo.email,
+        dto.hostInfo.firstName.concat(dto.hostInfo.lastName),
+        dto,
+        './rental_created',
+      );
     } catch (err) {
       this.logger.error('Calling create()', err, RentalService.name);
       throw err;
@@ -262,7 +270,7 @@ export class RentalService {
         id: user.id,
         photo: user.photo,
         firstName: user.firstName,
-        lastname: user.lastName,
+        lastName: user.lastName,
         email: user.email,
         phone: user.phoneNumber,
         identityNumber: rental.rentalDetail.landlordIdentifyNo,
@@ -311,7 +319,7 @@ export class RentalService {
       rental.rentalDetail.landlordIdentifyAddress =
         updateRentalDto.hostInfo.identityPlaceOfIssue;
 
-      this.em.persistAndFlush(rental.rentalDetail);
+      await this.em.persistAndFlush(rental.rentalDetail);
     } catch (err) {
       this.logger.error(
         'Calling modUpdateRentalInfo()',
@@ -351,7 +359,7 @@ export class RentalService {
         identityDateOfIssue: rental.rentalDetail.landlordIdentifyDate,
         identityPlaceOfIssue: rental.rentalDetail.landlordIdentifyAddress,
         identityNumber: rental.rentalDetail.landlordIdentifyNo,
-        lastname: rental.landlord.lastName,
+        lastName: rental.landlord.lastName,
         phone: rental.landlord.phoneNumber,
       },
       // set renterInfo
@@ -362,7 +370,7 @@ export class RentalService {
         identityDateOfIssue: rental.rentalDetail.renterIdentifyDate,
         identityNumber: rental.rentalDetail.renterIdentifyNo,
         identityPlaceOfIssue: rental.rentalDetail.renterIdentifyAddress,
-        lastname: rental.renter.lastName,
+        lastName: rental.renter.lastName,
         phone: rental.renter.phoneNumber,
         birthday: rental.rentalDetail.renterBirthday,
       },
@@ -474,10 +482,13 @@ export class RentalService {
 
   async approveRentalRequest(id: number, user: any) {
     try {
-      const rental = await this.rentalRepository.findOne({
-        id,
-        landlord: user,
-      });
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          renter: user,
+        },
+        { populate: ['room', 'renter'] },
+      );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
@@ -489,6 +500,13 @@ export class RentalService {
 
       rental.status = RentalStatus.APPROVED;
       await this.em.persistAndFlush(rental);
+      const dto = await this.setRentalDTO(rental);
+      this.sendMail(
+        rental.renter.email,
+        rental.renter.firstName.concat(rental.renter.lastName),
+        dto,
+        './rental_udpate_status',
+      );
     } catch (err) {
       this.logger.error(
         'Calling approveRentalRequest()',
@@ -501,10 +519,13 @@ export class RentalService {
 
   async cancelRentalRequest(id: number, user: any) {
     try {
-      const rental = await this.rentalRepository.findOne({
-        id,
-        landlord: user,
-      });
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          renter: user,
+        },
+        { populate: ['room', 'renter'] },
+      );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
@@ -516,7 +537,15 @@ export class RentalService {
 
       rental.status = RentalStatus.CANCELED;
       rental.room.status = RoomStatus.EMPTY;
+
       await this.em.persistAndFlush(rental);
+      const dto = await this.setRentalDTO(rental);
+      this.sendMail(
+        rental.renter.email,
+        rental.renter.firstName.concat(rental.renter.lastName),
+        dto,
+        './rental_udpate_status',
+      );
     } catch (err) {
       this.logger.error(
         'Calling cancelRentalRequest()',
@@ -529,10 +558,13 @@ export class RentalService {
 
   async acceptBreakRentalRequest(id: number, user: any) {
     try {
-      const rental = await this.rentalRepository.findOne({
-        id,
-        landlord: user,
-      });
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          renter: user,
+        },
+        { populate: ['room', 'renter'] },
+      );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
@@ -545,6 +577,13 @@ export class RentalService {
       rental.status = RentalStatus.BROKEN;
       rental.room.status = RoomStatus.EMPTY;
       await this.em.persistAndFlush(rental);
+      const dto = await this.setRentalDTO(rental);
+      this.sendMail(
+        rental.renter.email,
+        rental.renter.firstName.concat(rental.renter.lastName),
+        dto,
+        './rental_udpate_status',
+      );
     } catch (err) {
       this.logger.error(
         'Calling acceptBreakRentalRequest()',
@@ -615,10 +654,13 @@ export class RentalService {
 
   async requestBreakRentalRequest(id: number, user: any) {
     try {
-      const rental = await this.rentalRepository.findOne({
-        id,
-        renter: user,
-      });
+      const rental = await this.rentalRepository.findOne(
+        {
+          id,
+          renter: user,
+        },
+        { populate: ['room', 'renter'] },
+      );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
@@ -630,6 +672,13 @@ export class RentalService {
 
       rental.status = RentalStatus.REQUEST_BREAK;
       await this.em.persistAndFlush(rental);
+      const dto = await this.setRentalDTO(rental);
+      this.sendMail(
+        dto.hostInfo.email,
+        dto.hostInfo.firstName.concat(dto.hostInfo.lastName),
+        dto,
+        './rental_udpate_status',
+      );
     } catch (err) {
       this.logger.error(
         'Calling requestBreakRentalRequest()',
@@ -645,9 +694,9 @@ export class RentalService {
       const rental = await this.rentalRepository.findOne(
         {
           id,
-          landlord: user,
+          renter: user,
         },
-        { populate: ['rentalDetail'] },
+        { populate: ['room', 'renter', 'rentalDetail'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -666,6 +715,13 @@ export class RentalService {
       rental.status = RentalStatus.ENDED;
       rental.room.status = RoomStatus.EMPTY;
       await this.em.persistAndFlush(rental);
+      const dto = await this.setRentalDTO(rental);
+      this.sendMail(
+        rental.renter.email,
+        rental.renter.firstName.concat(rental.renter.lastName),
+        dto,
+        './rental_udpate_status',
+      );
     } catch (err) {
       this.logger.error(
         'Calling requestBreakRentalRequest()',
@@ -673,6 +729,27 @@ export class RentalService {
         RentalService.name,
       );
       throw err;
+    }
+  }
+
+  async sendMail(
+    to: string,
+    name: string,
+    rental: MyRentalDTO,
+    template: string,
+  ) {
+    try {
+      await this.mailerService.sendMail({
+        to: to,
+        subject: 'Your rental has some changes',
+        template: template,
+        context: {
+          rental: rental,
+          name: name,
+        },
+      });
+    } catch (error) {
+      throw error;
     }
   }
 }

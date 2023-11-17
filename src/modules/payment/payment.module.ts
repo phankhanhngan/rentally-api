@@ -14,6 +14,7 @@ import { StripeController } from './stripe/stripe.controller';
 import { TransactionService } from '../transaction/transaction.service';
 import { NotificationModule } from '../notification/notification.module';
 import { EventGateway } from '../notification/event.gateway';
+import { MailerService } from '@nest-modules/mailer';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { EventGateway } from '../notification/event.gateway';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
-    NotificationModule
+    NotificationModule,
+    MailerService,
   ],
   controllers: [PaymentController, StripeController],
   providers: [
@@ -32,7 +34,7 @@ import { EventGateway } from '../notification/event.gateway';
     RentalService,
     RatingService,
     TransactionService,
-    EventGateway
+    EventGateway,
   ],
 })
 export class PaymentModule {}

@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  Req,
 } from '@nestjs/common';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
@@ -24,15 +22,12 @@ import { RentalService } from '../rental/rental.service';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
 import { PaymentDTO } from './dtos/payment.dto';
 import { plainToInstance } from 'class-transformer';
-import { CheckOutDTO } from './dtos/check-out.dto';
 import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
-import { log } from 'console';
-import { RenterInfoDTO } from '../rental/dtos/RenterInfo.dto';
 import { Room } from 'src/entities';
-import { ro } from '@faker-js/faker';
 import { EventGateway } from '../notification/event.gateway';
+import { MailerService } from '@nest-modules/mailer';
 
 @Injectable()
 export class PaymentService {
@@ -44,6 +39,7 @@ export class PaymentService {
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
     private readonly eventGateway: EventGateway,
+    private readonly mailerService: MailerService,
   ) {}
   async callBackWebHook(req: any) {
     try {
@@ -81,7 +77,7 @@ export class PaymentService {
             const rental = await this.em.findOne(
               Rental,
               { id: rentalId },
-              { populate: ['room'] },
+              { populate: ['room', 'landlord', 'room.roomblock'] },
             );
             const room = await this.em.findOne(Room, { id: rental.room.id });
 
@@ -98,8 +94,18 @@ export class PaymentService {
               throw new BadRequestException('This room are already OCCIPIED!');
             rental.status = RentalStatus.COMPLETED;
             room.status = RoomStatus.OCCUPIED;
-            await this.em.persistAndFlush(rental);
-            await this.em.persistAndFlush(room);
+            this.em.persist(rental);
+            this.em.persist(room);
+            await this.em.flush();
+            this.mailerService.sendMail({
+              to: rental.landlord.email,
+              subject: `Request rent of room ${rental.room.roomName} - roomblock ${rental.room.roomblock.address} was deposited`,
+              template: './deposite_rental',
+              context: {
+                rental: rental,
+                transaction_link: 'https://rentally.netlify.app/',
+              },
+            });
           }
           break;
         case 'invoice.payment_failed' ||
@@ -195,7 +201,7 @@ export class PaymentService {
   }
   async findAll(userLogined: any, keyword: string) {
     try {
-      let payments = [];
+      const payments = [];
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
       const queryObj = {
@@ -432,7 +438,12 @@ export class PaymentService {
       const rentalDetailEntity = this.paymentRepository.create(payment);
       await this.em.persistAndFlush(rentalDetailEntity);
       // Send notification
-      await this.eventGateway.sendNotification(rental.renter.id, paymentDTO.month, paymentDTO.year, rentalDetailEntity.id)
+      await this.eventGateway.sendNotification(
+        rental.renter.id,
+        paymentDTO.month,
+        paymentDTO.year,
+        rentalDetailEntity.id,
+      );
     } catch (error) {
       this.logger.error('Calling createPayment()', error, PaymentService.name);
       throw error;
