@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Inject,
   Param,
@@ -52,7 +51,9 @@ export class StripeController {
         req,
       );
       res.status(200).json({
-        data: session,
+        success: true,
+        message: `Checkout payment successfully`,
+        data: session.url,
       });
     } catch (error) {
       this.logger.error(

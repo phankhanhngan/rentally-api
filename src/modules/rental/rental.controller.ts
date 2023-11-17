@@ -245,7 +245,7 @@ export class RentalController {
       res.status(200).json({
         success: true,
         message: `Confirm rental contract successfully`,
-        data: session,
+        data: session.url,
       });
     } catch (error) {
       this.logger.error(
