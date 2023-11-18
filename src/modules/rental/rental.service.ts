@@ -381,7 +381,7 @@ export class RentalService {
         area: rental.room.area,
         depositAmount: rental.room.depositAmount,
         id: rental.room.id,
-        images: rental.room.images,
+        images: JSON.parse(rental.room.images),
         price: rental.room.price,
         roomName: rental.room.roomName,
         utilities: rental.room.utilities,
