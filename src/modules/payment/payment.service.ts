@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  Req,
 } from '@nestjs/common';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
@@ -101,7 +99,7 @@ export class PaymentService {
             const rental = await this.em.findOne(
               Rental,
               { id: rentalId },
-              { populate: ['room', 'landlord', 'room.roomblock'] },
+              { populate: ['room', 'landlord', 'room.roomblock', 'renter'] },
             );
             const room = await this.em.findOne(Room, { id: rental.room.id });
 
