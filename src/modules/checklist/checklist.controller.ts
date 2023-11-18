@@ -27,7 +27,6 @@ export class ChecklistController {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
-  @UseGuards(RoleAuthGuard([Role.USER]))
   @Post()
   async addToChecklist(
     @Res() res: Response,
@@ -81,7 +80,6 @@ export class ChecklistController {
   //   }
   // }
 
-  @UseGuards(RoleAuthGuard([Role.USER]))
   @Get()
   async findAllMyChecklist(@Res() res: Response, @Req() req) {
     try {

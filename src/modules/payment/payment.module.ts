@@ -14,6 +14,8 @@ import { StripeController } from './stripe/stripe.controller';
 import { TransactionService } from '../transaction/transaction.service';
 import { NotificationModule } from '../notification/notification.module';
 import { EventGateway } from '../notification/event.gateway';
+import { NotificationService } from '../notification/notification.service';
+import { Notification } from 'src/entities/notification.entity';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { EventGateway } from '../notification/event.gateway';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
+    MikroOrmModule.forFeature([Notification]),
     NotificationModule,
   ],
   controllers: [PaymentController, StripeController],
@@ -33,6 +36,7 @@ import { EventGateway } from '../notification/event.gateway';
     RatingService,
     TransactionService,
     EventGateway,
+    NotificationService,
   ],
 })
 export class PaymentModule {}

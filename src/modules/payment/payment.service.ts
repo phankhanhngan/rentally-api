@@ -28,6 +28,10 @@ import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
 import { Room } from 'src/entities';
 import { EventGateway } from '../notification/event.gateway';
 import { MailerService } from '@nest-modules/mailer';
+import { NotificationDTO } from '../notification/dtos/notification.dto';
+import { RenterInformationDTO } from '../notification/dtos/renter-information.dto';
+import { PaymentInformationDTO } from '../notification/dtos/payment-information.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class PaymentService {
@@ -40,6 +44,7 @@ export class PaymentService {
     private readonly paymentRepository: EntityRepository<Payment>,
     private readonly eventGateway: EventGateway,
     private readonly mailerService: MailerService,
+    private readonly notificationService: NotificationService,
   ) {}
   async findMyPayment(user: any) {
     try {
@@ -92,6 +97,16 @@ export class PaymentService {
               null,
               metadata.renterId,
             );
+
+            this.mailerService.sendMail({
+              to: payment.rental.landlord.email,
+              subject: `Payment monthly rent of room ${payment.rental.room.roomName} - roomblock ${payment.rental.room.roomblock.address} in ${payment.month}/${payment.year} was completed`,
+              template: './checkout_rental',
+              context: {
+                payment: payment,
+                transaction_link: 'https://rentally.netlify.app/',
+              },
+            });
           }
           if (metadata.type === 'DEPOSITED') {
             const metadata = event.data.object.metadata;
@@ -174,6 +189,7 @@ export class PaymentService {
         );
       }
       payment.status = PaymentStatus.PAID;
+      payment.paidAt = new Date();
       await this.em.persistAndFlush(payment);
       return payment;
     } catch (error) {
@@ -471,6 +487,7 @@ export class PaymentService {
 
   async createPayment(paymentDTO: CreatePaymentDTO, idLogined: any) {
     try {
+      console.log(idLogined);
       const rental = await this.rentalService.findByIdAndLandLord(
         paymentDTO.rental_id,
         idLogined,
@@ -520,8 +537,15 @@ export class PaymentService {
         paymentDTO.year,
         rentalDetailEntity.id,
       );
-      console.log(rentalDetailEntity.id);
-      //code tiep
+      // send mail inform
+      const dto: NotificationDTO = {};
+      dto.renter = plainToInstance(RenterInformationDTO, rental.renter);
+      dto.payment = plainToInstance(PaymentInformationDTO, payment);
+      dto.payment.roomPrice = payment.rental.room.price;
+      dto.landlordName = rental.landlord.firstName;
+      if (rental.landlord.lastName)
+        dto.landlordName += ' ' + rental.landlord.lastName;
+      this.notificationService.sendMail(dto, './notification');
     } catch (error) {
       this.logger.error('Calling createPayment()', error, PaymentService.name);
       throw error;

@@ -13,6 +13,8 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Room, User } from 'src/entities';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { Utility } from 'src/entities/utility.entity';
 
 @Module({
   imports: [
@@ -23,8 +25,15 @@ import { Rental } from 'src/entities/rental.entity';
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([Room]),
+    MikroOrmModule.forFeature([Utility]),
   ],
   controllers: [ChecklistController],
-  providers: [ChecklistService, RatingService, RentalService, UsersService],
+  providers: [
+    ChecklistService,
+    RatingService,
+    RentalService,
+    UsersService,
+    UtilitiesService,
+  ],
 })
 export class ChecklistModule {}

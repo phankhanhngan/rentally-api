@@ -47,4 +47,8 @@ export class PaymentDTO {
   @ApiProperty()
   @Expose()
   status: PaymentStatus;
+
+  @ApiProperty()
+  @Expose()
+  paidAt: Date;
 }
