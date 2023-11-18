@@ -40,5 +40,5 @@ export class ViewFindRoomDTO {
   @ApiProperty()
   avgRate: number;
 
-  // move_out_date: Date;
+  isInCheckList: boolean;
 }

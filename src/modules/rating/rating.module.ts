@@ -9,6 +9,8 @@ import { Room, User } from 'src/entities';
 import { AWSService } from '../aws/aws.service';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
+import { NotificationModule } from '../notification/notification.module';
+import { EventGateway } from '../notification/event.gateway';
 
 @Module({
   imports: [
@@ -17,8 +19,9 @@ import { Rental } from 'src/entities/rental.entity';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
+    NotificationModule
   ],
-  providers: [RatingService, RentalService, UsersService, AWSService],
+  providers: [RatingService, RentalService, UsersService, AWSService, EventGateway],
   controllers: [RatingController],
 })
 export class RatingModule {}

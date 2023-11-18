@@ -230,6 +230,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rentalEntity.landlord.id,
         'Rental request was created',
+        rentalEntity.id
       );
     } catch (err) {
       this.logger.error('Calling create()', err, RentalService.name);
@@ -525,6 +526,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental was approved',
+        rental.id
       );
     } catch (err) {
       this.logger.error(
@@ -572,6 +574,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental request was canceled',
+        rental.id
       );
     } catch (err) {
       this.logger.error(
@@ -617,6 +620,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental was accepted to break',
+        rental.id
       );
     } catch (err) {
       this.logger.error(
@@ -719,6 +723,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         dto.hostInfo.id,
         'Rental was requested to break',
+        rental.id
       );
     } catch (err) {
       this.logger.error(
@@ -767,6 +772,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental was ended',
+        rental.id
       );
     } catch (err) {
       this.logger.error(

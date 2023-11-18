@@ -33,9 +33,9 @@ export class FindingController {
     findRoomDto: FindRoomDTO,
   ) {
     try {
-      const user = req.user; //day ne khang, co user thi co, k co user thi undefind
+      const loginId = req.user ? req.user.id : 0; //day ne khang, co user thi co, k co user thi undefind
       const { roomsDto, numberOfPage, currentPage, totalRoom } =
-        await this.findingService.findAllRoom(findRoomDto);
+        await this.findingService.findAllRoom(findRoomDto, loginId);
       return res.status(200).json({
         status: 'success',
         message: 'Get rooms successfully',
