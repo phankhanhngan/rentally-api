@@ -8,12 +8,14 @@ import {
   Query,
   Req,
   Res,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { FindingService } from './finding.service';
 import { Response } from 'express';
 import { FindRoomDTO } from './dtos/find-room.dto';
+import { CustomAuthGuard } from 'src/common/guards/custom-auth.guard';
 
 @Controller('finding')
 export class FindingController {
@@ -22,6 +24,7 @@ export class FindingController {
     private readonly findingService: FindingService,
   ) {}
 
+  @UseGuards(CustomAuthGuard)
   @Get()
   async findAllRoom(
     @Req() req,
@@ -30,9 +33,9 @@ export class FindingController {
     findRoomDto: FindRoomDTO,
   ) {
     try {
-      const { roomsDto, numberOfPage, currentPage, totalRoom } = await this.findingService.findAllRoom(
-        findRoomDto,
-      );
+      const user = req.user; //day ne khang, co user thi co, k co user thi undefind
+      const { roomsDto, numberOfPage, currentPage, totalRoom } =
+        await this.findingService.findAllRoom(findRoomDto);
       return res.status(200).json({
         status: 'success',
         message: 'Get rooms successfully',

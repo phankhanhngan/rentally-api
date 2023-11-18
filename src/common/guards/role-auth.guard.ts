@@ -1,16 +1,6 @@
 import { UsersService } from '../../modules/users/users.service';
-import {
-  UnauthorizedException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  CanActivate,
-  ExecutionContext,
-  Inject,
-  BadRequestException,
-  mixin,
-} from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, mixin } from '@nestjs/common';
 
 export const RoleAuthGuard = (acceptedRoles: Array<string>) => {
   class RoleAuthGuardMixin implements CanActivate {
