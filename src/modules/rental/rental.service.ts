@@ -763,8 +763,8 @@ export class RentalService {
         template: template,
         context: {
           link: link,
-          status_from: status_from.toString(),
-          status_to: status_to.toString(),
+          status_from: status_from ? status_from : '',
+          status_to: status_to ? status_to : '',
           rental: rental,
         },
       });
