@@ -26,7 +26,6 @@ import { ProvinceModule } from './modules/province/province.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { NotificationModule } from './modules/notification/notification.module';
-
 @Module({
   imports: [
     MorganModule,

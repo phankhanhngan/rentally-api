@@ -15,6 +15,9 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
 import { EventGateway } from '../notification/event.gateway';
 import { NotificationModule } from '../notification/notification.module';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { Utility } from 'src/entities/utility.entity';
+import { UtilitiesModule } from '../utilities/utilities.module';
 
 @Module({
   imports: [
@@ -25,9 +28,11 @@ import { NotificationModule } from '../notification/notification.module';
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([Room]),
-    NotificationModule
+    MikroOrmModule.forFeature([Utility]),
+    NotificationModule,
+    UtilitiesModule
   ],
   controllers: [ChecklistController],
-  providers: [ChecklistService, RatingService, RentalService, UsersService, EventGateway],
+  providers: [ChecklistService, RatingService, RentalService, UsersService, EventGateway, UtilitiesService],
 })
 export class ChecklistModule {}

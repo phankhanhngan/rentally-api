@@ -170,6 +170,23 @@ export class RentalService {
           `This room was already rented by someone`,
         );
       }
+      const rentalDb = await this.em.findOne(Rental, {
+        room: { id: createRentalDTO.roomId },
+        renter: { id: user.id },
+      });
+
+      // fix spam rental
+      if (
+        rentalDb &&
+        (rentalDb.status === RentalStatus.CREATED ||
+          rentalDb.status === RentalStatus.APPROVED ||
+          rentalDb.status === RentalStatus.COMPLETED ||
+          rentalDb.status === RentalStatus.REQUEST_BREAK)
+      )
+        throw new BadRequestException(
+          'You are already created request for this room!',
+        );
+      //
 
       const landlord = this.em.getReference(User, room.roomblock.landlord.id);
       const renter = this.em.getReference(User, user.id);

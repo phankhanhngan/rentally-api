@@ -6,13 +6,18 @@ import { RoomsService } from '../admin/rooms/rooms.service';
 import { UsersService } from '../users/users.service';
 import { Room } from 'src/entities';
 import { RatingService } from '../rating/rating.service';
-import { classToPlain, plainToInstance } from 'class-transformer';
+import { classToPlain, plainToClass, plainToInstance } from 'class-transformer';
+import { check } from 'prettier';
+import { ViewFindRoomDTO } from '../finding/dtos/view-find-room';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { ChecklistRoomDTO } from './dtos/room-checklist.dto';
 
 @Injectable()
 export class ChecklistService {
   constructor(
     private readonly ratingService: RatingService,
     private readonly userService: UsersService,
+    private readonly utilitiesService: UtilitiesService,
     private readonly em: EntityManager,
   ) {}
   async findAllMyChecklist(idLogined: any) {
@@ -24,37 +29,34 @@ export class ChecklistService {
         },
         {
           populate: ['room', 'room.roomblock', 'room.roomblock.landlord'],
-          fields: [
-            'id',
-            'room.id',
-            'room.roomName',
-            'room.area',
-            'room.price',
-            'room.depositAmount',
-            'room.images',
-            'room.utilities',
-            'room.status',
-            'room.roomblock.id',
-            'room.roomblock.address',
-            'room.roomblock.city',
-            'room.roomblock.district',
-            'room.roomblock.country',
-            'room.roomblock.coordinate',
-            'room.roomblock.description',
-            'room.roomblock.landlord.id',
-            'room.roomblock.landlord.email',
-            'room.roomblock.landlord.firstName',
-            'room.roomblock.landlord.lastName',
-            'room.roomblock.landlord.phoneNumber',
-          ],
         },
       );
-      const x = classToPlain(checklist);
-      for (let i = 0; i < x.length; i++) {
-        const rating = await this.ratingService.findByRoom(x[i].room.id);
-        x[i].rating = rating;
+      const dtos = [];
+      for (let i = 0; i < checklist.length; i++) {
+        const roomsDto = plainToClass(ChecklistRoomDTO, checklist[i].room);
+        roomsDto.city = checklist[i].room.roomblock.city;
+        roomsDto.country = checklist[i].room.roomblock.country;
+        roomsDto.roomName = checklist[i].room.roomName;
+        roomsDto.address = checklist[i].room.roomblock.address;
+        roomsDto.district = checklist[i].room.roomblock.district;
+        roomsDto.coordinate = checklist[i].room.roomblock.coordinate;
+        const utilities = JSON.parse(checklist[i].room.utilities);
+        const utilitiesDetail = [];
+        for (let j = 0; j < utilities.length; j++) {
+          const utilityDto = await this.utilitiesService.getUtilityById(
+            utilities[j],
+          );
+          utilitiesDetail.push(utilityDto);
+        }
+        roomsDto.utilities = utilitiesDetail;
+        const rating = await this.ratingService.findByRoom(
+          checklist[i].room.id,
+        );
+
+        if (rating.ratings) roomsDto.avgRate = rating.avgRate;
+        dtos.push(roomsDto);
       }
-      return x;
+      return dtos;
     } catch (error) {
       throw error;
     }
