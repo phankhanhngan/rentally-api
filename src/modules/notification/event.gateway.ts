@@ -34,5 +34,9 @@ export class EventGateway
     this.server.to(renterId.toString()).emit('getNotification', data);
   }
 
+  sendNotificationRental(toId: number, message: string) {
+    this.server.to(toId.toString()).emit('getNotification', { message });
+  }
+
   handleDisconnect(client: any) {}
 }

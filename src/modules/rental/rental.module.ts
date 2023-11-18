@@ -9,8 +9,10 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { UsersService } from '../users/users.service';
 import { AWSService } from '../aws/aws.service';
 import { Rental } from 'src/entities/rental.entity';
+import { NotificationModule } from '../notification/notification.module';
+import { EventGateway } from '../notification/event.gateway';
 @Module({
-  providers: [RentalService, RatingService, UsersService, AWSService],
+  providers: [RentalService, RatingService, UsersService, AWSService, EventGateway],
   controllers: [RentalController],
   imports: [
     forwardRef(() => RatingModule),
@@ -18,6 +20,7 @@ import { Rental } from 'src/entities/rental.entity';
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([User]),
+    NotificationModule,
   ],
 })
 export class RentalModule {}
