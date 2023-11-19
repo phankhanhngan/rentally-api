@@ -20,6 +20,7 @@ import { LandLordDTO } from './dtos/landlord.dto';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
 import Decimal from 'decimal.js';
+import { Checklist } from 'src/entities/checklist.entity';
 
 @Injectable()
 export class FindingService {
@@ -30,8 +31,8 @@ export class FindingService {
     private readonly roomRepository: EntityRepository<Room>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
-    @InjectRepository(Rental)
-    private readonly rentalRepository: EntityRepository<Rental>,
+    @InjectRepository(Checklist)
+    private readonly checklistRepository: EntityRepository<Checklist>,
     @InjectRepository(Province)
     private readonly provinceRepository: EntityRepository<Province>,
     @InjectRepository(District)
@@ -40,7 +41,7 @@ export class FindingService {
     private readonly ratingService: RatingService,
   ) {}
 
-  async findAllRoom(findRoomDto: FindRoomDTO) {
+  async findAllRoom(findRoomDto: FindRoomDTO, loginId: number) {
     try {
       if (findRoomDto.district && !findRoomDto.province) return null;
 
@@ -122,7 +123,7 @@ export class FindingService {
       const limit =
         findRoomDto.perPage && findRoomDto.perPage >= 1
           ? findRoomDto.perPage
-          : 20;
+          : 10;
       const offset = findRoomDto.page >= 1 ? limit * (findRoomDto.page - 1) : 0;
       const rooms = await this.roomRepository.find(
         {
@@ -157,20 +158,11 @@ export class FindingService {
         roomsDto[i].district = rooms[i].roomblock.district;
         roomsDto[i].coordinate = rooms[i].roomblock.coordinate;
 
-        // const rental = await this.rentalRepository.findOne(
-        //   {
-        //     room: { id: rooms[i].id },
-        //   },
-        //   {
-        //     populate: ['rentalDetail'],
-        //     orderBy: { rentalDetail: { moveOutDate: -1 } },
-        //   },
-        // );
-        // if (rooms[i].status === RoomStatus.OCCUPIED) {
-        //   roomsDto[i].move_out_date = rental.rentalDetail.moveOutDate;
-        // } else {
-        //   roomsDto[i].move_out_date = null;
-        // }
+        const checklist = await this.checklistRepository.findOne({
+          room: { id: rooms[i].id },
+          renter: { id: loginId },
+        });
+        roomsDto[i].isInCheckList = checklist ? true : false;
 
         const utilities = JSON.parse(rooms[i].utilities);
         const utilitiesDetail = [];

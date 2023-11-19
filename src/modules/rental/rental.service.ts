@@ -26,6 +26,7 @@ import * as moment from 'moment';
 import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 import Stripe from 'stripe';
 import { MailerService } from '@nest-modules/mailer';
+import { EventGateway } from '../notification/event.gateway';
 
 @Injectable()
 export class RentalService {
@@ -41,6 +42,7 @@ export class RentalService {
     @InjectRepository(Rental)
     private readonly rentalRepository: EntityRepository<Rental>,
     private readonly mailerService: MailerService,
+    private readonly eventGateway: EventGateway,
   ) {}
 
   async findByIdAndRenter(
@@ -237,6 +239,13 @@ export class RentalService {
         dto,
         'Rental request was created',
         './rental_created',
+      );
+
+      // Send Notification
+      this.eventGateway.sendNotificationRental(
+        rentalEntity.landlord.id,
+        'Rental request was created',
+        rentalEntity.id,
       );
     } catch (err) {
       this.logger.error('Calling create()', err, RentalService.name);
@@ -504,7 +513,7 @@ export class RentalService {
           id,
           landlord: user,
         },
-        { populate: ['room', 'renter', 'room.roomblock'] },
+        { populate: ['room', 'renter', 'room.roomblock', 'rentalDetail'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -512,6 +521,12 @@ export class RentalService {
       if (rental.status != RentalStatus.CREATED) {
         throw new BadRequestException(
           `Only rental request with status ${RentalStatus.CREATED} could be approved`,
+        );
+      }
+
+      if (rental.rentalDetail.landlordIdentifyNo == null) {
+        throw new BadRequestException(
+          `Please update neccessary information before approve this rental request`,
         );
       }
 
@@ -526,6 +541,13 @@ export class RentalService {
         './rental_udpate_status',
         RentalStatus.CREATED,
         RentalStatus.APPROVED,
+      );
+
+      // Send Notification
+      this.eventGateway.sendNotificationRental(
+        rental.renter.id,
+        'Rental was approved',
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
@@ -569,6 +591,12 @@ export class RentalService {
         RentalStatus.CREATED,
         RentalStatus.CANCELED,
       );
+      // Send Notification
+      this.eventGateway.sendNotificationRental(
+        rental.renter.id,
+        'Rental request was canceled',
+        rental.id,
+      );
     } catch (err) {
       this.logger.error(
         'Calling cancelRentalRequest()',
@@ -609,6 +637,11 @@ export class RentalService {
         './rental_udpate_status',
         RentalStatus.REQUEST_BREAK,
         RentalStatus.BROKEN,
+      );
+      this.eventGateway.sendNotificationRental(
+        rental.renter.id,
+        'Rental was accepted to break',
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
@@ -708,6 +741,11 @@ export class RentalService {
         RentalStatus.COMPLETED,
         RentalStatus.REQUEST_BREAK,
       );
+      this.eventGateway.sendNotificationRental(
+        dto.hostInfo.id,
+        'Rental was requested to break',
+        rental.id,
+      );
     } catch (err) {
       this.logger.error(
         'Calling requestBreakRentalRequest()',
@@ -751,6 +789,11 @@ export class RentalService {
         './rental_udpate_status',
         prevStatus,
         RentalStatus.ENDED,
+      );
+      this.eventGateway.sendNotificationRental(
+        rental.renter.id,
+        'Rental was ended',
+        rental.id,
       );
     } catch (err) {
       this.logger.error(

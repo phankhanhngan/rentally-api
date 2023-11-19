@@ -13,6 +13,10 @@ export class RoomDetailDTO {
 
   @ApiProperty()
   @Expose()
+  roomName: string;
+  
+  @ApiProperty()
+  @Expose()
   price!: number;
 
   @ApiProperty()
