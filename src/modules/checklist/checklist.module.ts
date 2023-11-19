@@ -6,9 +6,7 @@ import { UsersModule } from '../users/users.module';
 import { ChecklistService } from './checklist.service';
 import { UsersService } from '../users/users.service';
 import { AWSModule } from '../aws/aws.module';
-import { RentalModule } from '../rental/rental.module';
 import { RentalService } from '../rental/rental.service';
-import { MikroORM } from '@mikro-orm/mysql';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Room, User } from 'src/entities';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
@@ -30,9 +28,16 @@ import { UtilitiesModule } from '../utilities/utilities.module';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([Utility]),
     NotificationModule,
-    UtilitiesModule
+    UtilitiesModule,
   ],
   controllers: [ChecklistController],
-  providers: [ChecklistService, RatingService, RentalService, UsersService, EventGateway, UtilitiesService],
+  providers: [
+    ChecklistService,
+    RatingService,
+    RentalService,
+    UsersService,
+    EventGateway,
+    UtilitiesService,
+  ],
 })
 export class ChecklistModule {}

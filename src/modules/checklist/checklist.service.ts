@@ -2,13 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CheckListDTO } from './dtos/Checklist.dto';
 import { EntityManager } from '@mikro-orm/mysql';
 import { Checklist } from 'src/entities/checklist.entity';
-import { RoomsService } from '../admin/rooms/rooms.service';
 import { UsersService } from '../users/users.service';
 import { Room } from 'src/entities';
 import { RatingService } from '../rating/rating.service';
-import { classToPlain, plainToClass, plainToInstance } from 'class-transformer';
-import { check } from 'prettier';
-import { ViewFindRoomDTO } from '../finding/dtos/view-find-room';
+import { plainToClass } from 'class-transformer';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { ChecklistRoomDTO } from './dtos/room-checklist.dto';
 
@@ -40,6 +37,7 @@ export class ChecklistService {
         roomsDto.address = checklist[i].room.roomblock.address;
         roomsDto.district = checklist[i].room.roomblock.district;
         roomsDto.coordinate = checklist[i].room.roomblock.coordinate;
+        roomsDto.isInCheckList = true;
         const utilities = JSON.parse(checklist[i].room.utilities);
         const utilitiesDetail = [];
         for (let j = 0; j < utilities.length; j++) {

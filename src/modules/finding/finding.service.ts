@@ -15,7 +15,6 @@ import { RoomStatus } from 'src/common/enum/common.enum';
 import { RoomDetailDTO } from './dtos/room-detail.dto';
 import { RatingService } from '../rating/rating.service';
 import { UtilitiesService } from '../utilities/utilities.service';
-import { Rental } from 'src/entities/rental.entity';
 import { LandLordDTO } from './dtos/landlord.dto';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
@@ -185,7 +184,7 @@ export class FindingService {
     }
   }
 
-  async getRoomDetailById(id: string) {
+  async getRoomDetailById(id: string, loginId: number) {
     try {
       const room = await this.roomRepository.findOne(
         {
@@ -210,9 +209,17 @@ export class FindingService {
         // throw new BadRequestException(`Can not find room with id=[${id}]`);
         return null;
       }
-      const landlord = await this.userRepository.findOne({
-        id: room.roomblock.id,
-      });
+      const [landlord, rating, isInCheckList] = await Promise.all([
+        this.userRepository.findOne({
+          id: room.roomblock.id,
+        }),
+        this.ratingService.findByRoom(room.id),
+        this.checklistRepository.findOne({
+          room: { id: id },
+          renter: { id: loginId },
+        }),
+      ]);
+
       const landlordDto = plainToInstance(LandLordDTO, landlord);
       landlordDto.name = landlord.firstName;
       if (landlord.lastName) landlordDto.name += ' ' + landlord.lastName;
@@ -220,7 +227,6 @@ export class FindingService {
       const roomDto = plainToInstance(RoomDetailDTO, room);
       roomDto.landlord = landlordDto;
 
-      const rating = await this.ratingService.findByRoom(room.id);
       if (rating.ratings) {
         roomDto.ratingDetail = rating;
       } else {
@@ -239,6 +245,7 @@ export class FindingService {
         utilitiesDetail.push(utilityDto);
       }
       roomDto.utilities = utilitiesDetail;
+      roomDto.isInCheckList = isInCheckList ? true : false;
 
       return roomDto;
     } catch (err) {
