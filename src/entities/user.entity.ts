@@ -37,6 +37,12 @@ export class User extends Base {
   @Unique()
   phoneNumber!: string;
 
+  @Property({ nullable: true })
+  bankCode!: string;
+
+  @Property({ nullable: true })
+  accountNumber!: string;
+
   @Property({ nullable: false })
   @Enum({ items: () => Role })
   role: Role;

@@ -10,6 +10,7 @@ export class AccountSeeder extends Seeder {
     const users = [];
     const password = await bcrypt.hash('123456', 10);
     Array.from(Array(40).keys()).forEach(async () => {
+      const role = this.randomEnumValue(Role);
       users.push({
         // id: faker.number.int({ min: 0, max: 100 }),
         googleId: faker.string.uuid(),
@@ -19,7 +20,9 @@ export class AccountSeeder extends Seeder {
         lastName: faker.animal.bear(),
         photo: faker.image.avatar(),
         phoneNumber: faker.phone.number(),
-        role: this.randomEnumValue(Role),
+        accountNumber: role == Role.MOD ? faker.string.numeric(12) : null,
+        bankCode: role == Role.MOD ? faker.string.numeric(8) : null,
+        role: role,
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
         created_at: new Date(),
