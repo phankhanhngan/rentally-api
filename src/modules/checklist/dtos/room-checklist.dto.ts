@@ -49,5 +49,6 @@ export class ChecklistRoomDTO {
   @ApiProperty()
   country: string;
 
+  isInCheckList: boolean;
   // move_out_date: Date;
 }

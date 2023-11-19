@@ -33,7 +33,7 @@ export class FindingController {
     findRoomDto: FindRoomDTO,
   ) {
     try {
-      const loginId = req.user ? req.user.id : 0; //day ne khang, co user thi co, k co user thi undefind
+      const loginId = req.user ? req.user.id : 0;
       const { roomsDto, numberOfPage, currentPage, totalRoom } =
         await this.findingService.findAllRoom(findRoomDto, loginId);
       return res.status(200).json({
@@ -53,7 +53,7 @@ export class FindingController {
   }
 
   @Get('/price')
-  async getPrice(@Res() res: Response) {
+  async getPrice(@Req() req, @Res() res: Response) {
     try {
       const data = await this.findingService.getPrice();
       return res.status(200).json({
@@ -67,6 +67,7 @@ export class FindingController {
     }
   }
 
+  @UseGuards(CustomAuthGuard)
   @Get('/:id')
   async getRoomDetailById(
     @Req() req,
@@ -74,7 +75,8 @@ export class FindingController {
     @Param('id') id: string,
   ) {
     try {
-      const room = await this.findingService.getRoomDetailById(id);
+      const loginId = req.user ? req.user.id : 0;
+      const room = await this.findingService.getRoomDetailById(id, loginId);
 
       if (!room) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);
