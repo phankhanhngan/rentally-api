@@ -177,9 +177,7 @@ export class RentalService {
       if (
         rentalDb &&
         (rentalDb.status === RentalStatus.CREATED ||
-          rentalDb.status === RentalStatus.APPROVED ||
-          rentalDb.status === RentalStatus.COMPLETED ||
-          rentalDb.status === RentalStatus.REQUEST_BREAK)
+          rentalDb.status === RentalStatus.APPROVED)
       )
         throw new BadRequestException(
           'You are already created request for this room!',
