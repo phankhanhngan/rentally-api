@@ -247,7 +247,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rentalEntity.landlord.id,
         'Rental request was created',
-        rentalEntity.id
+        rentalEntity.id,
       );
     } catch (err) {
       this.logger.error('Calling create()', err, RentalService.name);
@@ -515,7 +515,7 @@ export class RentalService {
           id,
           landlord: user,
         },
-        { populate: ['room', 'renter', 'room.roomblock'] },
+        { populate: ['room', 'renter', 'room.roomblock', 'rentalDetail'] },
       );
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
@@ -523,6 +523,12 @@ export class RentalService {
       if (rental.status != RentalStatus.CREATED) {
         throw new BadRequestException(
           `Only rental request with status ${RentalStatus.CREATED} could be approved`,
+        );
+      }
+
+      if (rental.rentalDetail.landlordIdentifyNo == null) {
+        throw new BadRequestException(
+          `Please update neccessary information before approve this rental request`,
         );
       }
 
@@ -543,7 +549,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental was approved',
-        rental.id
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
@@ -591,7 +597,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental request was canceled',
-        rental.id
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
@@ -637,7 +643,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental was accepted to break',
-        rental.id
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
@@ -740,7 +746,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         dto.hostInfo.id,
         'Rental was requested to break',
-        rental.id
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
@@ -789,7 +795,7 @@ export class RentalService {
       this.eventGateway.sendNotificationRental(
         rental.renter.id,
         'Rental was ended',
-        rental.id
+        rental.id,
       );
     } catch (err) {
       this.logger.error(
