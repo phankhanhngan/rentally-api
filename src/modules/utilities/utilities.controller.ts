@@ -22,6 +22,7 @@ import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
 import { Request, Response } from 'express';
 import { UtilitiesDTO } from './dtos/UtilitiesDTO';
+import { AddUtilityDTO } from './dtos/add-utility.dto';
 @Controller('utilities')
 export class UtilitiesController {
   constructor(
@@ -52,23 +53,20 @@ export class UtilitiesController {
       throw error;
     }
   }
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
+  // @UseGuards()
+  @UseGuards(JwtAuthGuard, RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Post()
   async addUtility(
     @Req() req,
     @Res() res: Response,
     @Body(new ValidationPipe({ transform: true }))
-    dto: UtilitiesDTO,
+    dto: AddUtilityDTO,
   ) {
     try {
       await this.utilitiesService.addUtility(req.user, dto);
       res.status(200).json({
         status: 'success',
-        message: 'Get room blocks successfully',
-        data: {
-          room: dto,
-        },
+        message: 'Add utility successfully',
       });
     } catch (error) {
       this.logger.error(
@@ -80,17 +78,21 @@ export class UtilitiesController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
+  @UseGuards(JwtAuthGuard, RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Put('/:id')
   async updateUtility(
     @Req() req: Request,
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
     @Body(new ValidationPipe({ transform: true }))
-    dto: UtilitiesDTO,
+    dto: AddUtilityDTO,
   ) {
     try {
+      await this.utilitiesService.updateUtility(req.user, dto, id);
+      res.status(200).json({
+        status: 'success',
+        message: 'Update utility successfully',
+      });
     } catch (error) {
       this.logger.error(
         'Calling updateUtility()',
@@ -118,8 +120,7 @@ export class UtilitiesController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(RoleAuthGuard([Role.ADMIN, Role.MOD]))
+  @UseGuards(JwtAuthGuard, RoleAuthGuard([Role.ADMIN, Role.MOD]))
   @Delete('/:id')
   async deleteutilityById(
     @Req() req: Request,
@@ -127,6 +128,11 @@ export class UtilitiesController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     try {
+      await this.utilitiesService.delete(id);
+      res.status(200).json({
+        status: 'success',
+        message: 'Delete utility successfully',
+      });
     } catch (error) {
       this.logger.error(
         'Calling deleteutilityById()',
