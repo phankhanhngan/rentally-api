@@ -16,9 +16,14 @@ export class UtilitiesService {
     private readonly utilitiesRepository: EntityRepository<Utility>,
     private readonly em: EntityManager,
   ) {}
-  async findAllUtility() {
+  async findAllUtility(keyword: string) {
     try {
-      const utilities = await this.utilitiesRepository.find({});
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [{ name: likeQr }, { note: likeQr }],
+      };
+      const utilities = await this.utilitiesRepository.find(queryObj);
       const utilitiesDTO = utilities.map((el) => {
         const dto = plainToInstance(UtilitiesDTO, el);
         return dto;

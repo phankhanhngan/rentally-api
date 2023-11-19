@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -28,9 +29,13 @@ export class UtilitiesController {
     private readonly utilitiesService: UtilitiesService,
   ) {}
   @Get()
-  async findAllUtility(@Req() req: Request, @Res() res: Response) {
+  async findAllUtility(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('keyword') keyword: string,
+  ) {
     try {
-      const utilities = await this.utilitiesService.findAllUtility();
+      const utilities = await this.utilitiesService.findAllUtility(keyword);
       res.status(200).json({
         status: 'success',
         message: 'Get utilities successfully',
