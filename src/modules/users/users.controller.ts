@@ -31,6 +31,7 @@ import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
 import { Role } from 'src/common/enum/common.enum';
 import { UpdateCurrentUserDTO } from './dtos/update-current-user.dto';
 import { UpdateCurrentUserPasswordDTO } from './dtos/udpdate-current-user-password.dto';
+import { BecomeHostDTO } from './dtos/become-host.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -113,6 +114,26 @@ export class UsersController {
       });
     } catch (error) {
       this.logger.error('Calling getAll()', error, UsersController.name);
+      throw error;
+    }
+  }
+
+  @Post('become-host')
+  @UseGuards(RoleAuthGuard([Role.USER]))
+  async becomeHost(
+    @Req() req,
+    @Res() res: Response,
+    @Body(new ValidationPipe()) dto: BecomeHostDTO,
+  ) {
+    try {
+      const token = await this.usersService.becomeHost(req.user.id, dto);
+      res.status(200).json({
+        message: 'Upgrade account to HOST successfully',
+        status: 'success',
+        token,
+      });
+    } catch (error) {
+      this.logger.error('Calling becomeHost()', error, UsersController.name);
       throw error;
     }
   }
@@ -212,7 +233,7 @@ export class UsersController {
     file: Express.Multer.File,
   ) {
     try {
-      await this.usersService.updateCurrentUser(
+      const token = await this.usersService.updateCurrentUser(
         updateCurrentUserDto,
         file,
         req.user,
@@ -220,6 +241,7 @@ export class UsersController {
       res.status(200).json({
         message: 'Update current user successfully',
         status: 'success',
+        token,
       });
     } catch (error) {
       this.logger.error(
