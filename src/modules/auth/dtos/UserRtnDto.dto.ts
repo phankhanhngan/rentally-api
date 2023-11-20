@@ -38,4 +38,8 @@ export class UserRtnDto {
   @ApiProperty()
   @Expose()
   updated_at: Date;
+
+  @ApiProperty()
+  @Expose()
+  phoneNumber: string;
 }
