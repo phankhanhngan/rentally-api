@@ -95,9 +95,9 @@ export class DatabaseSeeder extends Seeder {
         created_id: faker.number.int({ min: 0, max: 10 }),
         updated_id: faker.number.int({ min: 0, max: 10 }),
         roomName: faker.animal.bear(),
-        area: faker.number.int({ min: 0, max: 100 }),
-        price: faker.number.int({ min: 0, max: 100 }),
-        depositAmount: faker.number.int({ min: 0, max: 100 }),
+        area: faker.number.int({ min: 10, max: 50 }),
+        price: faker.number.int({ min: 1000000, max: 7000000 }),
+        depositAmount: faker.number.int({ min: 500000, max: 4000000 }),
         images: JSON.stringify([
           faker.image.urlPicsumPhotos(),
           faker.image.urlPicsumPhotos(),
