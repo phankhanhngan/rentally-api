@@ -27,6 +27,7 @@ import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 import Stripe from 'stripe';
 import { MailerService } from '@nest-modules/mailer';
 import { EventGateway } from '../notification/event.gateway';
+import { UtilitiesService } from '../utilities/utilities.service';
 
 @Injectable()
 export class RentalService {
@@ -43,6 +44,7 @@ export class RentalService {
     private readonly rentalRepository: EntityRepository<Rental>,
     private readonly mailerService: MailerService,
     private readonly eventGateway: EventGateway,
+    private readonly utilitiesService: UtilitiesService,
   ) {}
 
   async findByIdAndRenter(
@@ -386,7 +388,14 @@ export class RentalService {
 
   async setRentalDTO(rental: Rental): Promise<MyRentalDTO> {
     const rating = await this.ratingService.findByRoom(rental.room.id);
-
+    const utilities = JSON.parse(rental.room.utilities);
+    const utilitiesDetail = [];
+    for (let j = 0; j < utilities.length; j++) {
+      const utilityDto = await this.utilitiesService.getUtilityById(
+        utilities[j],
+      );
+      utilitiesDetail.push(utilityDto);
+    }
     const dto: MyRentalDTO = {
       status: rental.status,
       // set rentalInfo
@@ -436,7 +445,7 @@ export class RentalService {
         images: JSON.parse(rental.room.images),
         price: rental.room.price,
         roomName: rental.room.roomName,
-        utilities: rental.room.utilities,
+        utilities: utilitiesDetail,
         roomRatings: {
           avgRate: rating ? rating.avgRate : 0,
           numberOfRatings: rating ? rating.totalRating : 0,

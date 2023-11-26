@@ -23,7 +23,7 @@ export class RoomInfoDTO {
   images: string;
   @ApiProperty()
   @Expose()
-  utilities: string;
+  utilities: string[];
   @ApiProperty()
   @Expose()
   roomRatings: RoomRatingInfoDTO;
