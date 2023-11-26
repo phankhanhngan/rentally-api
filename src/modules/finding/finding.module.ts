@@ -20,6 +20,9 @@ import { Rental } from 'src/entities/rental.entity';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
+import { NotificationModule } from '../notification/notification.module';
+import { EventGateway } from '../notification/event.gateway';
+import { Checklist } from 'src/entities/checklist.entity';
 
 @Module({
   imports: [
@@ -37,6 +40,8 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
     MikroOrmModule.forFeature([Province]),
     MikroOrmModule.forFeature([District]),
     MikroOrmModule.forFeature([RentalDetail]),
+    MikroOrmModule.forFeature([Checklist]),
+    NotificationModule,
   ],
   providers: [
     FindingService,
@@ -46,6 +51,7 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
     AWSService,
     UtilitiesService,
     UsersService,
+    EventGateway
   ],
   controllers: [FindingController],
 })

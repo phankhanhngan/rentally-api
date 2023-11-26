@@ -16,7 +16,7 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { ViewRoomDTO } from './dto/view-room.dto';
 import { UpdateRoomModDTO } from './dto/update-room.dto';
 import { AWSService } from 'src/modules/aws/aws.service';
-import { RoomStatus } from 'src/common/enum/common.enum';
+import { Role, RoomStatus } from 'src/common/enum/common.enum';
 
 @Injectable()
 export class ModRoomsService {
@@ -163,12 +163,17 @@ export class ModRoomsService {
     }
   }
 
-  async findRoomById(id: string, idUser: number) {
+  async findRoomById(id: string, user: any) {
     try {
-      const roomEntity = await this.roomRepository.findOne({
+      const queryObj = {
         id,
-        roomblock: { landlord: { id: idUser } },
-      });
+      };
+      if (user.role === Role.MOD) {
+        queryObj['roomBlock'] = {
+          landlord: { id: user.id },
+        };
+      }
+      const roomEntity = await this.roomRepository.findOne(queryObj);
       if (!roomEntity) {
         // throw new BadRequestException(`Can not find room with id=[${id}]`);
         return null;

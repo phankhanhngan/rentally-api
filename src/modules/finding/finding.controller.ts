@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Body,
   Controller,
   Get,
   Inject,
@@ -9,12 +8,14 @@ import {
   Query,
   Req,
   Res,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { FindingService } from './finding.service';
 import { Response } from 'express';
 import { FindRoomDTO } from './dtos/find-room.dto';
+import { CustomAuthGuard } from 'src/common/guards/custom-auth.guard';
 
 @Controller('finding')
 export class FindingController {
@@ -23,6 +24,7 @@ export class FindingController {
     private readonly findingService: FindingService,
   ) {}
 
+  @UseGuards(CustomAuthGuard)
   @Get()
   async findAllRoom(
     @Req() req,
@@ -31,11 +33,18 @@ export class FindingController {
     findRoomDto: FindRoomDTO,
   ) {
     try {
-      const rooms = await this.findingService.findAllRoom(findRoomDto);
+      const loginId = req.user ? req.user.id : 0;
+      const { roomsDto, numberOfPage, currentPage, totalRoom } =
+        await this.findingService.findAllRoom(findRoomDto, loginId);
       return res.status(200).json({
         status: 'success',
         message: 'Get rooms successfully',
-        data: rooms,
+        data: {
+          numberOfPage,
+          currentPage,
+          totalRoom,
+          rooms: roomsDto,
+        },
       });
     } catch (error) {
       this.logger.error('Calling findAllRoom()', error, FindingController.name);
@@ -44,7 +53,7 @@ export class FindingController {
   }
 
   @Get('/price')
-  async getPrice(@Res() res: Response) {
+  async getPrice(@Req() req, @Res() res: Response) {
     try {
       const data = await this.findingService.getPrice();
       return res.status(200).json({
@@ -58,6 +67,7 @@ export class FindingController {
     }
   }
 
+  @UseGuards(CustomAuthGuard)
   @Get('/:id')
   async getRoomDetailById(
     @Req() req,
@@ -65,7 +75,8 @@ export class FindingController {
     @Param('id') id: string,
   ) {
     try {
-      const room = await this.findingService.getRoomDetailById(id);
+      const loginId = req.user ? req.user.id : 0;
+      const room = await this.findingService.getRoomDetailById(id, loginId);
 
       if (!room) {
         throw new BadRequestException(`Can not find room with id=[${id}]`);

@@ -174,8 +174,6 @@ export class ModRoomBlocksService {
         },
       );
 
-      console.log(roomBlockEntityList);
-      
       const dtos = plainToClass(RoomBlockModDTO, roomBlockEntityList);
 
       for (let i = 0; i < dtos.length; i++) {

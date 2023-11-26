@@ -15,10 +15,11 @@ import { RoomStatus } from 'src/common/enum/common.enum';
 import { RoomDetailDTO } from './dtos/room-detail.dto';
 import { RatingService } from '../rating/rating.service';
 import { UtilitiesService } from '../utilities/utilities.service';
-import { Rental } from 'src/entities/rental.entity';
 import { LandLordDTO } from './dtos/landlord.dto';
 import { Province } from 'src/entities/province.entity';
 import { District } from 'src/entities/district.entity';
+import Decimal from 'decimal.js';
+import { Checklist } from 'src/entities/checklist.entity';
 
 @Injectable()
 export class FindingService {
@@ -29,8 +30,8 @@ export class FindingService {
     private readonly roomRepository: EntityRepository<Room>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
-    @InjectRepository(Rental)
-    private readonly rentalRepository: EntityRepository<Rental>,
+    @InjectRepository(Checklist)
+    private readonly checklistRepository: EntityRepository<Checklist>,
     @InjectRepository(Province)
     private readonly provinceRepository: EntityRepository<Province>,
     @InjectRepository(District)
@@ -39,7 +40,7 @@ export class FindingService {
     private readonly ratingService: RatingService,
   ) {}
 
-  async findAllRoom(findRoomDto: FindRoomDTO) {
+  async findAllRoom(findRoomDto: FindRoomDTO, loginId: number) {
     try {
       if (findRoomDto.district && !findRoomDto.province) return null;
 
@@ -72,8 +73,8 @@ export class FindingService {
 
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { district: district.name },
-          { city: province.name },
+          { district: district.full_name },
+          { city: province.full_name },
         ];
       }
 
@@ -89,11 +90,11 @@ export class FindingService {
 
         queryObjBlockRoom['$and'] = [
           ...queryObjBlockRoom['$and'],
-          { city: province.name },
+          { city: province.full_name },
         ];
       }
 
-      const queryObjUitilities = {};      
+      const queryObjUitilities = {};
       if (findRoomDto.utilities) {
         findRoomDto.utilities.forEach((utilitty, index) => {
           if (index == 0) {
@@ -118,6 +119,11 @@ export class FindingService {
         priceRangeQr['price'] = { $gte: findRoomDto.minPrice };
       }
 
+      const limit =
+        findRoomDto.perPage && findRoomDto.perPage >= 1
+          ? findRoomDto.perPage
+          : 10;
+      const offset = findRoomDto.page >= 1 ? limit * (findRoomDto.page - 1) : 0;
       const rooms = await this.roomRepository.find(
         {
           $and: [
@@ -129,10 +135,21 @@ export class FindingService {
         },
         {
           populate: ['roomblock'],
+          limit,
+          offset,
         },
       );
       console.log(queryObjBlockRoom);
 
+      const total = await this.roomRepository.count({
+        $and: [
+          { roomblock: queryObjBlockRoom },
+          queryObjUitilities,
+          priceRangeQr,
+          { status: RoomStatus.EMPTY },
+        ],
+      });
+      const numberOfPage = new Decimal(total).div(limit).ceil().d[0];
       const roomsDto = plainToClass(ViewFindRoomDTO, rooms);
 
       for (let i = 0; i < rooms.length; i++) {
@@ -140,20 +157,11 @@ export class FindingService {
         roomsDto[i].district = rooms[i].roomblock.district;
         roomsDto[i].coordinate = rooms[i].roomblock.coordinate;
 
-        // const rental = await this.rentalRepository.findOne(
-        //   {
-        //     room: { id: rooms[i].id },
-        //   },
-        //   {
-        //     populate: ['rentalDetail'],
-        //     orderBy: { rentalDetail: { moveOutDate: -1 } },
-        //   },
-        // );
-        // if (rooms[i].status === RoomStatus.OCCUPIED) {
-        //   roomsDto[i].move_out_date = rental.rentalDetail.moveOutDate;
-        // } else {
-        //   roomsDto[i].move_out_date = null;
-        // }
+        const checklist = await this.checklistRepository.findOne({
+          room: { id: rooms[i].id },
+          renter: { id: loginId },
+        });
+        roomsDto[i].isInCheckList = checklist ? true : false;
 
         const utilities = JSON.parse(rooms[i].utilities);
         const utilitiesDetail = [];
@@ -168,15 +176,15 @@ export class FindingService {
         const rating = await this.ratingService.findByRoom(rooms[i].id);
         if (rating.ratings) roomsDto[i].avgRate = rating.avgRate;
       }
-
-      return roomsDto;
+      const currentPage = Number(findRoomDto.page >= 1 ? findRoomDto.page : 1);
+      return { roomsDto, numberOfPage, currentPage, totalRoom: total };
     } catch (err) {
       this.logger.error('Calling findAllRoom()', err, FindingService.name);
       throw err;
     }
   }
 
-  async getRoomDetailById(id: string) {
+  async getRoomDetailById(id: string, loginId: number) {
     try {
       const room = await this.roomRepository.findOne(
         {
@@ -201,9 +209,17 @@ export class FindingService {
         // throw new BadRequestException(`Can not find room with id=[${id}]`);
         return null;
       }
-      const landlord = await this.userRepository.findOne({
-        id: room.roomblock.id,
-      });
+      const [landlord, rating, isInCheckList] = await Promise.all([
+        this.userRepository.findOne({
+          id: room.roomblock.id,
+        }),
+        this.ratingService.findByRoom(room.id),
+        this.checklistRepository.findOne({
+          room: { id: id },
+          renter: { id: loginId },
+        }),
+      ]);
+
       const landlordDto = plainToInstance(LandLordDTO, landlord);
       landlordDto.name = landlord.firstName;
       if (landlord.lastName) landlordDto.name += ' ' + landlord.lastName;
@@ -211,9 +227,13 @@ export class FindingService {
       const roomDto = plainToInstance(RoomDetailDTO, room);
       roomDto.landlord = landlordDto;
 
-      const rating = await this.ratingService.findByRoom(room.id);
-      if (rating.ratings) {        
+      if (rating.ratings) {
         roomDto.ratingDetail = rating;
+      } else {
+        roomDto.ratingDetail = {
+          ratings: [],
+          totalRating: 0,
+        };
       }
 
       const utilities = JSON.parse(room.utilities);
@@ -225,6 +245,7 @@ export class FindingService {
         utilitiesDetail.push(utilityDto);
       }
       roomDto.utilities = utilitiesDetail;
+      roomDto.isInCheckList = isInCheckList ? true : false;
 
       return roomDto;
     } catch (err) {

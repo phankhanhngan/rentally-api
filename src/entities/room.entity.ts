@@ -4,7 +4,6 @@ import { RoomStatus } from '../common/enum/common.enum';
 import { BaseUUID } from './baseUUID.enity';
 
 @Entity({ tableName: 'rooms' })
-@Index({ properties: ['utilities', 'price'] })
 export class Room extends BaseUUID {
   @ManyToOne({
     entity: () => RoomBlock,

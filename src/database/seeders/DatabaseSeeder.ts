@@ -31,6 +31,7 @@ export class DatabaseSeeder extends Seeder {
     const password = await bcrypt.hash('123456', 10);
     this.createDefaultUser(users, password);
     Array.from(Array(40).keys()).forEach(async () => {
+      const role = this.randomEnumValue(Role);
       users.push({
         // id: faker.number.int({ min: 0, max: 100 }),
         googleId: faker.string.uuid(),
@@ -40,7 +41,9 @@ export class DatabaseSeeder extends Seeder {
         lastName: faker.animal.bear(),
         photo: faker.image.avatar(),
         phoneNumber: faker.phone.number(),
-        role: this.randomEnumValue(Role),
+        accountNumber: role == Role.MOD ? faker.string.numeric(12) : null,
+        bankCode: role == Role.MOD ? faker.string.numeric(8) : null,
+        role: role,
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
         created_at: new Date(),
@@ -92,9 +95,9 @@ export class DatabaseSeeder extends Seeder {
         created_id: faker.number.int({ min: 0, max: 10 }),
         updated_id: faker.number.int({ min: 0, max: 10 }),
         roomName: faker.animal.bear(),
-        area: faker.number.int({ min: 0, max: 100 }),
-        price: faker.number.int({ min: 0, max: 100 }),
-        depositAmount: faker.number.int({ min: 0, max: 100 }),
+        area: faker.number.int({ min: 10, max: 50 }),
+        price: faker.number.int({ min: 1000000, max: 7000000 }),
+        depositAmount: faker.number.int({ min: 500000, max: 4000000 }),
         images: JSON.stringify([
           faker.image.urlPicsumPhotos(),
           faker.image.urlPicsumPhotos(),
@@ -211,7 +214,7 @@ export class DatabaseSeeder extends Seeder {
             Number(waterPrice) +
             Number(addPrice),
           additionalPrice: addPrice,
-          month: nextMonthDt.month()+1,
+          month: nextMonthDt.month() + 1,
           year: nextMonthDt.year(),
           paidAt: nextMonthDt.endOf('month').toDate(),
           status: PaymentStatus.PAID,
@@ -321,6 +324,8 @@ export class DatabaseSeeder extends Seeder {
         phoneNumber: faker.phone.number(),
         role: Role.MOD,
         verificationCode: faker.string.uuid(),
+        accountNumber: faker.string.numeric(12),
+        bankCode: faker.string.numeric(8),
         timeStamp: new Date(),
         created_at: new Date(),
         updated_at: new Date(),

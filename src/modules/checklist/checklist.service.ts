@@ -2,17 +2,19 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CheckListDTO } from './dtos/Checklist.dto';
 import { EntityManager } from '@mikro-orm/mysql';
 import { Checklist } from 'src/entities/checklist.entity';
-import { RoomsService } from '../admin/rooms/rooms.service';
 import { UsersService } from '../users/users.service';
 import { Room } from 'src/entities';
 import { RatingService } from '../rating/rating.service';
-import { classToPlain, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { ChecklistRoomDTO } from './dtos/room-checklist.dto';
 
 @Injectable()
 export class ChecklistService {
   constructor(
     private readonly ratingService: RatingService,
     private readonly userService: UsersService,
+    private readonly utilitiesService: UtilitiesService,
     private readonly em: EntityManager,
   ) {}
   async findAllMyChecklist(idLogined: any) {
@@ -24,37 +26,35 @@ export class ChecklistService {
         },
         {
           populate: ['room', 'room.roomblock', 'room.roomblock.landlord'],
-          fields: [
-            'id',
-            'room.id',
-            'room.roomName',
-            'room.area',
-            'room.price',
-            'room.depositAmount',
-            'room.images',
-            'room.utilities',
-            'room.status',
-            'room.roomblock.id',
-            'room.roomblock.address',
-            'room.roomblock.city',
-            'room.roomblock.district',
-            'room.roomblock.country',
-            'room.roomblock.coordinate',
-            'room.roomblock.description',
-            'room.roomblock.landlord.id',
-            'room.roomblock.landlord.email',
-            'room.roomblock.landlord.firstName',
-            'room.roomblock.landlord.lastName',
-            'room.roomblock.landlord.phoneNumber',
-          ],
         },
       );
-      const x = classToPlain(checklist);
-      for (let i = 0; i < x.length; i++) {
-        const rating = await this.ratingService.findByRoom(x[i].room.id);
-        x[i].rating = rating;
+      const dtos = [];
+      for (let i = 0; i < checklist.length; i++) {
+        const roomsDto = plainToClass(ChecklistRoomDTO, checklist[i].room);
+        roomsDto.city = checklist[i].room.roomblock.city;
+        roomsDto.country = checklist[i].room.roomblock.country;
+        roomsDto.roomName = checklist[i].room.roomName;
+        roomsDto.address = checklist[i].room.roomblock.address;
+        roomsDto.district = checklist[i].room.roomblock.district;
+        roomsDto.coordinate = checklist[i].room.roomblock.coordinate;
+        roomsDto.isInCheckList = true;
+        const utilities = JSON.parse(checklist[i].room.utilities);
+        const utilitiesDetail = [];
+        for (let j = 0; j < utilities.length; j++) {
+          const utilityDto = await this.utilitiesService.getUtilityById(
+            utilities[j],
+          );
+          utilitiesDetail.push(utilityDto);
+        }
+        roomsDto.utilities = utilitiesDetail;
+        const rating = await this.ratingService.findByRoom(
+          checklist[i].room.id,
+        );
+
+        if (rating.ratings) roomsDto.avgRate = rating.avgRate;
+        dtos.push(roomsDto);
       }
-      return x;
+      return dtos;
     } catch (error) {
       throw error;
     }
@@ -118,10 +118,10 @@ export class ChecklistService {
       const checklistDb = await this.em.findOne(Checklist, queryObj, {
         populate: ['room', 'renter'],
       });
-      if (checklistDb)
-        throw new BadRequestException(
-          'You are already add this room to checklist!',
-        );
+      if (checklistDb) {
+        await this.em.removeAndFlush(checklistDb);
+        return false;
+      }
       const checklist = new Checklist();
       checklist.renter = renter;
       checklist.room = room;
@@ -130,6 +130,7 @@ export class ChecklistService {
       checklist.created_at = new Date();
       checklist.updated_at = new Date();
       await this.em.persistAndFlush(checklist);
+      return true;
     } catch (error) {
       throw error;
     }

@@ -7,6 +7,9 @@ export class RentalInfoDTO {
   id: number;
   @ApiProperty()
   @Expose()
+  photo: string;
+  @ApiProperty()
+  @Expose()
   rentalDetailId: number;
   @ApiProperty()
   @Expose()

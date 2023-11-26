@@ -17,6 +17,9 @@ import { Role, UserStatus } from 'src/common/enum/common.enum';
 import { GetUserDTO } from './dtos/get-user.dto';
 import { UpdateCurrentUserDTO } from './dtos/update-current-user.dto';
 import { UpdateCurrentUserPasswordDTO } from './dtos/udpdate-current-user-password.dto';
+import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
+import { JwtService } from '@nestjs/jwt';
+import { BecomeHostDTO } from './dtos/become-host.dto';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +28,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
     private readonly awsService: AWSService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async hashPassword(password: string) {
@@ -317,6 +321,13 @@ export class UsersService {
       );
 
       await this.em.persistAndFlush(userEntity);
+      const userDto: UserRtnDto = plainToInstance(UserRtnDto, userEntity);
+      const accessToken = await this.jwtService.signAsync({
+        ...userDto,
+      });
+      return {
+        token: accessToken,
+      };
     } catch (err) {
       throw err;
     }
@@ -371,6 +382,61 @@ export class UsersService {
         role: Role.MOD,
       });
       return plainToInstance(GetUserDTO, mods);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async becomeHost(idLogin: number, dto: BecomeHostDTO) {
+    try {
+      const { phoneNumber, accountNumber, bankCode } = dto;
+      const user = await this.getUserById(idLogin);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      user.role = Role.MOD;
+      user.phoneNumber = phoneNumber;
+      user.accountNumber = accountNumber;
+      user.bankCode = bankCode;
+
+      await this.em.persistAndFlush(user);
+      const userDto: UserRtnDto = plainToInstance(UserRtnDto, user);
+      const accessToken = await this.jwtService.signAsync({
+        ...userDto,
+      });
+      return {
+        token: accessToken,
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async disableUser(userId: number, password: string) {
+    try {
+      const user = await this.userRepository.findOne({ id: userId });
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+      console.log(password);
+      
+      const isValidPass = await bcrypt.compare(password, user.password);
+      if (!isValidPass) {
+        throw new BadRequestException(`Incorrect current password`);
+      }
+
+      if (user.status === UserStatus.DISABLED) {
+        throw new BadRequestException(`Account has been disabled`);
+      }
+
+      if (user.status === UserStatus.REGISTING) {
+        throw new BadRequestException('Account needs to be activated');
+      }
+
+      user.status = UserStatus.DISABLED;
+
+      await this.em.persistAndFlush(user);
     } catch (error) {
       throw error;
     }

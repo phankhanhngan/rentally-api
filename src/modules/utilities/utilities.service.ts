@@ -7,6 +7,7 @@ import { Logger } from 'winston';
 import { UtilitiesDTO } from './dtos/UtilitiesDTO';
 import { plainToInstance } from 'class-transformer';
 import { User } from 'src/entities';
+import { AddUtilityDTO } from './dtos/add-utility.dto';
 
 @Injectable()
 export class UtilitiesService {
@@ -16,9 +17,14 @@ export class UtilitiesService {
     private readonly utilitiesRepository: EntityRepository<Utility>,
     private readonly em: EntityManager,
   ) {}
-  async findAllUtility() {
+  async findAllUtility(keyword: string) {
     try {
-      const utilities = await this.utilitiesRepository.find({});
+      if (!keyword) keyword = '';
+      const likeQr = { $like: `%${keyword}%` };
+      const queryObj = {
+        $or: [{ name: likeQr }, { note: likeQr }],
+      };
+      const utilities = await this.utilitiesRepository.find(queryObj);
       const utilitiesDTO = utilities.map((el) => {
         const dto = plainToInstance(UtilitiesDTO, el);
         return dto;
@@ -33,9 +39,10 @@ export class UtilitiesService {
       throw error;
     }
   }
-  async addUtility(user: User, dto: UtilitiesDTO) {
+  async addUtility(user: User, dto: AddUtilityDTO) {
     try {
       const utility = plainToInstance(Utility, dto);
+      utility.icon = process.env.DEFAULT_UTILITY_ICON;
       utility.created_at = new Date();
       utility.updated_at = new Date();
       utility.created_id = user.id;
@@ -46,11 +53,11 @@ export class UtilitiesService {
       throw error;
     }
   }
-  async updateUtility(user: User, dto: UtilitiesDTO, id: number) {
+  async updateUtility(user: any, dto: AddUtilityDTO, id: number) {
     try {
       const utilityDb = await this.utilitiesRepository.findOne({ id: id });
       if (!utilityDb) {
-        throw new BadRequestException(`Can't find utility with id=${id}`);
+        throw new BadRequestException(`Can't find utility`);
       }
       utilityDb.name = dto.name;
       utilityDb.note = dto.note;
@@ -58,7 +65,28 @@ export class UtilitiesService {
       utilityDb.updated_id = user.id;
       await this.em.persistAndFlush(utilityDb);
     } catch (error) {
-      this.logger.error('Calling addUtility()', error, UtilitiesService.name);
+      this.logger.error(
+        'Calling updateUtility()',
+        error,
+        UtilitiesService.name,
+      );
+      throw error;
+    }
+  }
+
+  async delete(id: number) {
+    try {
+      const utilityDb = await this.utilitiesRepository.findOne({ id: id });
+      if (!utilityDb) {
+        throw new BadRequestException(`Can't find utility`);
+      }
+      await this.em.removeAndFlush(utilityDb);
+    } catch (error) {
+      this.logger.error(
+        'Calling deleteUtility()',
+        error,
+        UtilitiesService.name,
+      );
       throw error;
     }
   }

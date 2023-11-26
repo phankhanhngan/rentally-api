@@ -1,5 +1,5 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
-import { Point, RoomBlock } from 'src/entities';
+import { RoomBlock } from 'src/entities';
 import { LandLordDTO } from './landlord.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -10,6 +10,10 @@ export class RoomDetailDTO {
   @ApiProperty()
   @Expose()
   id: number;
+
+  @ApiProperty()
+  @Expose()
+  roomName: string;
 
   @ApiProperty()
   @Expose()
@@ -46,4 +50,6 @@ export class RoomDetailDTO {
   roomblock: RoomBlock;
 
   ratingDetail: object;
+
+  isInCheckList: boolean;
 }
