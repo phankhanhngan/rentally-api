@@ -306,9 +306,9 @@ export class UsersService {
           `photo_user/${timestamp}`,
         );
         updateCurrentUserDto.photo = photo;
-      }
-      if (userEntity.photo) {
-        await this.awsService.bulkDeleteObject(userEntity.photo);
+        if (userEntity.photo) {
+          await this.awsService.bulkDeleteObject(userEntity.photo);
+        }
       }
 
       wrap(userEntity).assign(
