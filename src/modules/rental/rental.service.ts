@@ -151,6 +151,34 @@ export class RentalService {
     }
   }
 
+  async getMyRentalById(id: number, idLogined: any): Promise<MyRentalDTO> {
+    try {
+      const rental = await this.em.findOne(
+        Rental,
+        {
+          id: id,
+          renter: { id: idLogined },
+        },
+        {
+          populate: [
+            'landlord',
+            'renter',
+            'room',
+            'room.roomblock',
+            'rentalDetail',
+          ],
+        },
+      );
+      if (!rental) {
+        throw new BadRequestException('Cannot find rental');
+      }
+      return await this.setRentalDTO(rental);
+    } catch (error) {
+      this.logger.error('Calling getMyRental()', error, RentalService.name);
+      throw error;
+    }
+  }
+
   async create(createRentalDTO: CreateRentalDTO, user: any) {
     try {
       const room = await this.roomRepository.findOne(
