@@ -710,7 +710,7 @@ export class RentalService {
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        success_url: `${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}`,
+        success_url: `${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}?confirm=success`,
         cancel_url: process.env.STRIPE_CANCEL_URL,
         mode: 'payment',
         customer_email: user.email,
