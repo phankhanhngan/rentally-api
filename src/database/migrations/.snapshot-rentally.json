@@ -1294,6 +1294,26 @@
           "primary": false,
           "nullable": false,
           "mappedType": "integer"
+        },
+        "is_extended": {
+          "name": "is_extended",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "old_rental_id": {
+          "name": "old_rental_id",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "default": "null",
+          "mappedType": "integer"
         }
       },
       "name": "rental",

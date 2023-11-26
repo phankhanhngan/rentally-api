@@ -45,4 +45,10 @@ export class Rental extends Base {
 
   @Property({ nullable: false })
   tenants: number;
+
+  @Property({ nullable: true, default: false })
+  isExtended: boolean;
+
+  @Property({ nullable: true, default: null })
+  oldRentalId: number;
 }

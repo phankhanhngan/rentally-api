@@ -31,6 +31,7 @@ export enum RentalStatus {
   REQUEST_BREAK = 'REQUEST_BREAK',
   BROKEN = 'BROKEN',
   ENDED = 'ENDED',
+  REQUEST_EXTENDED = 'REQUEST_EXTENDED',
 }
 
 export enum RatingStatus {
