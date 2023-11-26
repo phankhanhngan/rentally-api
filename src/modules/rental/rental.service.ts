@@ -708,6 +708,9 @@ export class RentalService {
         );
       }
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      console.log(
+        `urlurl: ${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}?confirm=success`,
+      );
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         success_url: `${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}?confirm=success`,
