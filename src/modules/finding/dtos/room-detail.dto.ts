@@ -2,6 +2,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 import { RoomBlock } from 'src/entities';
 import { LandLordDTO } from './landlord.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { RoomStatus } from 'src/common/enum/common.enum';
 
 @Exclude()
 export class RoomDetailDTO {
@@ -26,6 +27,10 @@ export class RoomDetailDTO {
     toPlainOnly: true,
   })
   images: string[];
+
+  @ApiProperty()
+  @Expose()
+  status: RoomStatus;
 
   @ApiProperty()
   @Expose()

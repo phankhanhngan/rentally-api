@@ -187,10 +187,7 @@ export class FindingService {
   async getRoomDetailById(id: string, loginId: number) {
     try {
       const room = await this.roomRepository.findOne(
-        {
-          id,
-          status: RoomStatus.EMPTY,
-        },
+        { id },
         {
           populate: ['roomblock'],
           fields: [
@@ -203,7 +200,7 @@ export class FindingService {
             'roomblock.country',
           ],
         },
-      );
+      );    
 
       if (!room) {
         // throw new BadRequestException(`Can not find room with id=[${id}]`);
