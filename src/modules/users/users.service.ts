@@ -412,4 +412,33 @@ export class UsersService {
       throw err;
     }
   }
+
+  async disableUser(userId: number, password: string) {
+    try {
+      const user = await this.userRepository.findOne({ id: userId });
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+      console.log(password);
+      
+      const isValidPass = await bcrypt.compare(password, user.password);
+      if (!isValidPass) {
+        throw new BadRequestException(`Incorrect current password`);
+      }
+
+      if (user.status === UserStatus.DISABLED) {
+        throw new BadRequestException(`Account has been disabled`);
+      }
+
+      if (user.status === UserStatus.REGISTING) {
+        throw new BadRequestException('Account needs to be activated');
+      }
+
+      user.status = UserStatus.DISABLED;
+
+      await this.em.persistAndFlush(user);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
