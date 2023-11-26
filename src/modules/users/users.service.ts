@@ -252,9 +252,9 @@ export class UsersService {
           `photo_user/${timestamp}`,
         );
         updateUserDto.photo = photo;
-      }
-      if (userEntity.photo) {
-        await this.awsService.bulkDeleteObject(userEntity.photo);
+        if (userEntity.photo) {
+          await this.awsService.bulkDeleteObject(userEntity.photo);
+        }
       }
 
       if (updateUserDto.password)
@@ -420,7 +420,7 @@ export class UsersService {
         throw new BadRequestException('User not found');
       }
       console.log(password);
-      
+
       const isValidPass = await bcrypt.compare(password, user.password);
       if (!isValidPass) {
         throw new BadRequestException(`Incorrect current password`);
