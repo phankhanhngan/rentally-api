@@ -20,6 +20,7 @@ import { UpdateCurrentUserPasswordDTO } from './dtos/udpdate-current-user-passwo
 import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 import { JwtService } from '@nestjs/jwt';
 import { BecomeHostDTO } from './dtos/become-host.dto';
+import { StripeService } from '../stripe/stripe.service';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +30,7 @@ export class UsersService {
     private readonly userRepository: EntityRepository<User>,
     private readonly awsService: AWSService,
     private readonly jwtService: JwtService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async hashPassword(password: string) {
@@ -390,7 +392,8 @@ export class UsersService {
 
   async becomeHost(idLogin: number, dto: BecomeHostDTO) {
     try {
-      const { phoneNumber, accountNumber, bankCode } = dto;
+      const { phoneNumber, cardNumber, cardCVC, cardExpMonth, cardExpYear } =
+        dto;
       const user = await this.getUserById(idLogin);
       if (!user) {
         throw new BadRequestException('User not found');
@@ -398,8 +401,16 @@ export class UsersService {
 
       user.role = Role.MOD;
       user.phoneNumber = phoneNumber;
-      user.accountNumber = accountNumber;
-      user.bankCode = bankCode;
+      user.cardNumber = cardNumber;
+      user.cardCVC = cardCVC;
+      user.cardExpMonth = cardExpMonth;
+      user.cardExpYear = cardExpYear;
+
+      const stripeCustomer = await this.stripeService.createCustomer(user);
+      user.customerId = stripeCustomer.id;
+
+      const card = await this.stripeService.createCard(user);
+      user.cardId = card.id;
 
       await this.em.persistAndFlush(user);
       const userDto: UserRtnDto = plainToInstance(UserRtnDto, user);

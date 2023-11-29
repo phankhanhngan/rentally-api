@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Inject,
   Param,
@@ -11,20 +12,37 @@ import {
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Logger } from 'winston';
-import { PaymentService } from '../payment.service';
+import { PaymentService } from '../payment/payment.service';
 import { Response } from 'express';
+import { StripeService } from './stripe.service';
 
 @Controller('stripe')
 export class StripeController {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly paymentService: PaymentService,
+    private readonly stripeService: StripeService,
   ) {}
 
   @Post('webhook')
   async webHookCallback(@Req() req, @Res() res: Response) {
     try {
       await this.paymentService.callBackWebHook(req);
+      res.json({ received: true });
+    } catch (error) {
+      this.logger.error(
+        'Calling checkOutPaymnent()',
+        error,
+        StripeController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Post('payout')
+  async payout(@Req() req, @Body() body, @Res() res: Response) {
+    try {
+      await this.stripeService.testPayout(body);
       res.json({ received: true });
     } catch (error) {
       this.logger.error(

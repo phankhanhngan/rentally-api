@@ -38,10 +38,22 @@ export class User extends Base {
   phoneNumber!: string;
 
   @Property({ nullable: true })
-  bankCode!: string;
+  cardNumber!: string;
 
   @Property({ nullable: true })
-  accountNumber!: string;
+  cardExpMonth!: string;
+
+  @Property({ nullable: true })
+  cardExpYear!: string;
+
+  @Property({ nullable: true })
+  cardCVC!: string;
+
+  @Property({ nullable: true })
+  customerId: string;
+
+  @Property({ nullable: true })
+  cardId: string;
 
   @Property({ nullable: false })
   @Enum({ items: () => Role })

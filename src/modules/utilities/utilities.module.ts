@@ -7,6 +7,7 @@ import { User } from 'src/entities';
 import { Utility } from 'src/entities/utility.entity';
 import { UsersService } from '../users/users.service';
 import { AWSModule } from '../aws/aws.module';
+import { StripeService } from '../stripe/stripe.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { AWSModule } from '../aws/aws.module';
     MikroOrmModule.forFeature([Utility]),
   ],
   controllers: [UtilitiesController],
-  providers: [UtilitiesService, UsersService],
+  providers: [UtilitiesService, UsersService, StripeService],
 })
 export class UtilitiesModule {}

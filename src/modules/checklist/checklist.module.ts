@@ -16,6 +16,7 @@ import { NotificationModule } from '../notification/notification.module';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { Utility } from 'src/entities/utility.entity';
 import { UtilitiesModule } from '../utilities/utilities.module';
+import { StripeService } from '../stripe/stripe.service';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UtilitiesModule } from '../utilities/utilities.module';
     UsersService,
     EventGateway,
     UtilitiesService,
+    StripeService,
   ],
 })
 export class ChecklistModule {}

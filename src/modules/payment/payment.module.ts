@@ -10,7 +10,7 @@ import { RentalService } from '../rental/rental.service';
 import { RatingService } from '../rating/rating.service';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
-import { StripeController } from './stripe/stripe.controller';
+import { StripeController } from '../stripe/stripe.controller';
 import { TransactionService } from '../transaction/transaction.service';
 import { NotificationModule } from '../notification/notification.module';
 import { EventGateway } from '../notification/event.gateway';
@@ -18,6 +18,7 @@ import { NotificationService } from '../notification/notification.service';
 import { Notification } from 'src/entities/notification.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { Utility } from 'src/entities/utility.entity';
+import { StripeService } from '../stripe/stripe.service';
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { Utility } from 'src/entities/utility.entity';
     TransactionService,
     EventGateway,
     NotificationService,
-    UtilitiesService,
+    StripeService,
   ],
 })
 export class PaymentModule {}

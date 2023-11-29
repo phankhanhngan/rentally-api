@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -24,7 +23,6 @@ import { Role } from 'src/common/enum/common.enum';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { Response } from 'express';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
-import { User } from '../../entities/user.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('payments')

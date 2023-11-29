@@ -11,9 +11,15 @@ export class BecomeHostDTO {
   @ApiProperty()
   @Expose()
   @IsString()
-  bankCode: string;
+  cardExpMonth: string;
+  @Expose()
+  @IsString()
+  cardExpYear: string;
+  @Expose()
+  @IsString()
+  cardCVC: string;
   @ApiProperty()
   @Expose()
   @IsString()
-  accountNumber: string;
+  cardNumber: string;
 }

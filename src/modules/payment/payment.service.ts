@@ -32,6 +32,7 @@ import { NotificationDTO } from '../notification/dtos/notification.dto';
 import { RenterInformationDTO } from '../notification/dtos/renter-information.dto';
 import { PaymentInformationDTO } from '../notification/dtos/payment-information.dto';
 import { NotificationService } from '../notification/notification.service';
+import { StripeService } from '../stripe/stripe.service';
 
 @Injectable()
 export class PaymentService {
@@ -39,12 +40,13 @@ export class PaymentService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
     private readonly rentalService: RentalService,
-    private readonly transacService: TransactionService,
+    private readonly transactionService: TransactionService,
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
     private readonly eventGateway: EventGateway,
     private readonly mailerService: MailerService,
     private readonly notificationService: NotificationService,
+    private readonly stripeService: StripeService,
   ) {}
   async findMyPayment(user: any) {
     try {
@@ -86,18 +88,30 @@ export class PaymentService {
           const metadata = event.data.object.metadata;
           if (metadata.type === 'CHECKOUT') {
             const payment = await this.updateStatus(metadata.paymentId);
-            const dto: TransactionDTO = {
-              description: metadata.description,
-              status: TransactionStatus.PAID,
-              stripeId: event.data.object.id,
-            };
-            await this.transacService.createTransaction(
-              dto,
+            await this.transactionService.createTransaction(
+              {
+                description: metadata.description,
+                status: TransactionStatus.PAID,
+                stripeId: event.data.object.id,
+              },
               payment.id,
               null,
               metadata.renterId,
             );
-
+            const payout = await this.stripeService.payout(
+              payment.rental.landlord,
+              payment.totalPrice,
+            );
+            await this.transactionService.createTransaction(
+              {
+                description: `Payout to mod id=[${payment.rental.landlord.id}], with amount=[${payment.totalPrice}]`,
+                status: TransactionStatus.PAYOUT,
+                stripeId: payout.id,
+              },
+              null,
+              null,
+              metadata.renterId,
+            );
             this.mailerService.sendMail({
               to: payment.rental.landlord.email,
               subject: `Payment monthly rent of room ${payment.rental.room.roomName} - roomblock ${payment.rental.room.roomblock.address} in ${payment.month}/${payment.year} was completed`,
@@ -118,17 +132,6 @@ export class PaymentService {
             );
             const room = await this.em.findOne(Room, { id: rental.room.id });
 
-            if (!rental)
-              throw new BadRequestException('Can not find this rental!');
-
-            if (!room) throw new BadRequestException('Can not find this room!');
-
-            if (rental.status === RentalStatus.COMPLETED)
-              throw new BadRequestException(
-                'This rental are already COMPLETED!',
-              );
-            if (room.status === RoomStatus.OCCUPIED)
-              throw new BadRequestException('This room are already OCCIPIED!');
             rental.status = RentalStatus.COMPLETED;
             room.status = RoomStatus.OCCUPIED;
             const dto: TransactionDTO = {
@@ -136,7 +139,7 @@ export class PaymentService {
               status: TransactionStatus.DEPOSITED,
               stripeId: event.data.object.id,
             };
-            await this.transacService.createTransaction(
+            await this.transactionService.createTransaction(
               dto,
               null,
               rental.id,
@@ -145,6 +148,22 @@ export class PaymentService {
             this.em.persist(rental);
             this.em.persist(room);
             await this.em.flush();
+
+            const payout = await this.stripeService.payout(
+              rental.landlord,
+              Number(rental.room.depositAmount),
+            );
+
+            await this.transactionService.createTransaction(
+              {
+                description: `Payout to mod id=[${rental.landlord.id}], with amount=[${rental.room.depositAmount}]`,
+                status: TransactionStatus.PAYOUT,
+                stripeId: payout.id,
+              },
+              null,
+              null,
+              metadata.renterId,
+            );
 
             this.mailerService.sendMail({
               to: rental.landlord.email,
@@ -170,7 +189,7 @@ export class PaymentService {
       }
     } catch (error) {
       this.logger.error(
-        'Calling checkOcallBackWebHookutPayment()',
+        'Calling callBackWebHook()',
         error,
         PaymentService.name,
       );

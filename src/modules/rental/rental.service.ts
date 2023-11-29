@@ -713,6 +713,10 @@ export class RentalService {
           `Only rental request with status ${RentalStatus.APPROVED} could be confirmed`,
         );
       }
+      if (rental.room.status === RoomStatus.OCCUPIED) {
+        throw new BadRequestException('This room are already OCCIPIED!');
+      }
+
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
       console.log(
         `urlurl: ${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}?confirm=success`,

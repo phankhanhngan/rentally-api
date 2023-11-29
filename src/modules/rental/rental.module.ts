@@ -13,6 +13,7 @@ import { NotificationModule } from '../notification/notification.module';
 import { EventGateway } from '../notification/event.gateway';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { Utility } from 'src/entities/utility.entity';
+import { StripeService } from '../stripe/stripe.service';
 @Module({
   providers: [
     RentalService,
@@ -21,6 +22,7 @@ import { Utility } from 'src/entities/utility.entity';
     AWSService,
     EventGateway,
     UtilitiesService,
+    StripeService,
   ],
   controllers: [RentalController],
   imports: [
