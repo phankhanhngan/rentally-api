@@ -115,6 +115,9 @@ export class RatingService {
       for (let index = 0; index < res.length; index++) {
         res[index].avgRate = Number(res[index].avgRate);
         avgRate += parseFloat(res[index].avgRate);
+        res[index].avgRate = Math.round(
+          parseFloat(res[index].avgRate.toFixed(1)),
+        );
         avgClean += res[index].cleanRate;
         avgLocation += res[index].locationRate;
         avgSecurity += res[index].securityRate;
@@ -122,7 +125,9 @@ export class RatingService {
         userRatings.push(plainToClass(UserRatingDTO, res[index]));
       }
       result.ratings = userRatings;
-      (result.avgRate = parseFloat((avgRate / totalRating).toFixed(1))),
+      (result.avgRate = Math.round(
+        parseFloat((avgRate / totalRating).toFixed(1)),
+      )),
         (result.avgClean = avgClean / totalRating);
       result.avgLocation = avgLocation / totalRating;
       result.avgSecurity = avgSecurity / totalRating;
