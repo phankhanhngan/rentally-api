@@ -411,6 +411,7 @@ export class RentalService {
         moveInDate: rental.rentalDetail.moveInDate,
         moveOutDate: rental.rentalDetail.moveOutDate,
         numberOfTenants: rental.tenants,
+        ratingStatus: rental.ratingStatus,
       },
       // set hostInfo
       hostInfo: {
