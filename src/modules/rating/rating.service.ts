@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { RatingDTO } from './dto/rating.dto';
 import { EntityManager } from '@mikro-orm/mysql';
 import { RentalService } from '../rental/rental.service';
-import { RentalStatus } from 'src/common/enum/common.enum';
+import { RatingStatus, RentalStatus } from 'src/common/enum/common.enum';
 import { RoomRating } from 'src/entities/room-rating.entity';
 import { RatingRtnDTO } from './dto/rating-rtn.dto';
 import { plainToClass } from 'class-transformer';
@@ -45,7 +45,10 @@ export class RatingService {
       rating.updated_id = idLogin;
       rating.created_at = new Date();
       rating.updated_at = new Date();
-      await this.em.persistAndFlush(rating);
+      rental.ratingStatus = RatingStatus.RATED;
+      this.em.persist(rating);
+      this.em.persist(rental);
+      await this.em.flush();
       return rating;
     } catch (error) {
       throw error;
