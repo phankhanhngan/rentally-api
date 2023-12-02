@@ -212,16 +212,21 @@ export class RentalService {
           rentalDb.status === RentalStatus.APPROVED)
       )
         throw new BadRequestException(
-          'You are already created request for this room!',
+          'You has already created rental request for this room!',
         );
       //
 
       const landlord = this.em.getReference(User, room.roomblock.landlord.id);
       const renter = this.em.getReference(User, user.id);
-      const moveInDate = moment(
+      const moveinMoment = moment(
         createRentalDTO.rentalInfo.moveInDate,
         'DD/MM/YYYY',
-      ).toDate();
+      );
+      if (!moveinMoment.isSameOrAfter(moment())) {
+        throw new BadRequestException('Move in date must be in the future');
+      }
+
+      const moveInDate = moveinMoment.toDate();
       const rentalDetail = {
         moveInDate: moveInDate,
         moveOutDate: moment(moveInDate)
