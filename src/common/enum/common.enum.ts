@@ -49,4 +49,5 @@ export enum TransactionStatus {
   PAID = 'PAID',
   PAYOUT = 'PAYOUT',
   DEPOSITED = 'DEPOSITED',
+  FAILED = 'FAILED',
 }

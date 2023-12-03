@@ -1,5 +1,12 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { EXCHANGE_RATE, EXCHANGE_RATE_BACK } from 'src/common/constants/stripe';
 import { User } from 'src/entities';
 import Stripe from 'stripe';
 
@@ -12,118 +19,92 @@ export class StripeService {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   }
 
-  async createCustomer(user: User): Promise<Stripe.Response<Stripe.Customer>> {
-    return await this.stripe.customers.create({
+  async createConnectAccount(
+    user: User,
+  ): Promise<Stripe.Response<Stripe.Account>> {
+    return await this.stripe.accounts.create({
+      type: 'custom',
+      country: 'VN',
       email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
-      phone: user.phoneNumber,
-      description: `Created from server for user with id [${user.id}]`,
-    });
-  }
+      business_type: 'individual',
 
-  async createCard(
-    user: User,
-  ): Promise<Stripe.Response<Stripe.CustomerSource>> {
-    try {
-      const token = await this.stripe.tokens.create({
-        card: {
-          number: user.cardNumber,
-          exp_month: user.cardExpMonth,
-          exp_year: user.cardExpYear,
-          cvc: user.cardCVC,
+      individual: {
+        email: user.email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        gender: 'female',
+        phone: user.phoneNumber,
+        dob: {
+          day: 1,
+          month: 1,
+          year: 2002,
         },
-      });
-      return await this.stripe.customers.createSource(user.customerId, {
-        // source: token.id,
-        source: 'tok_mastercard',
-      });
-    } catch (e) {
-      this.logger.error('Calling createCard()', e, StripeService.name);
-      throw e;
-    }
-  }
-
-  async payout(
-    user: User,
-    amount: number,
-  ): Promise<Stripe.Response<Stripe.Payout>> {
-    return await this.stripe.payouts.create({
-      amount: amount,
-      currency: 'vnd',
-      destination: user.cardId,
-    });
-  }
-
-  async testPayout(body) {
-    // const account = await this.stripe.accounts.create({
-    //   type: 'custom',
-    //   country: 'VN',
-    //   email: body.email,
-    //   business_type: 'individual',
-
-    //   individual: {
-    //     email: body.email,
-    //     first_name: body.firstName,
-    //     last_name: body.lastName,
-    //     gender: 'female',
-    //     phone: '+84896224055',
-    //     dob: {
-    //       day: 1,
-    //       month: 1,
-    //       year: 2002,
-    //     },
-    //   },
-    //   capabilities: {
-    //     transfers: { requested: true },
-    //   },
-    //   tos_acceptance: {
-    //     date: Math.floor(Date.now() / 1000),
-    //     ip: '8.8.8.8',
-    //     service_agreement: 'recipient',
-    //   },
-    // });
-
-    // const transfer = await this.stripe.transfers.create({
-    //   amount: Math.round(Number(body.amount) / 24000) * 100,
-    //   currency: 'usd',
-    //   destination: account.id,
-    //   transfer_group: 'ORDER_95',
-    // });
-    // const token = await this.stripe.tokens.create({
-    //   bank_account: {
-    //     country: 'VN',
-    //     currency: 'vnd',
-    //     account_holder_name: 'Jenny Rosen',
-    //     account_holder_type: 'individual',
-    //     routing_number: '01101100',
-    //     account_number: '000123456789',
-    //   },
-    // });
-
-    // const bankAccount = await this.stripe.accounts.createExternalAccount(
-    //   account.id,
-    //   {
-    //     external_account: token.id,
-    //   },
-    // );
-    // console.log(transfer.amount);
-    // console.log(((transfer.amount - 500) * 24000) / 100);
-    // console.log(account.id);
-    const balance = await this.stripe.balance.retrieve({
-      stripeAccount: 'acct_1OH7F2PxWdElQ2Kk',
-    });
-    console.log(balance.available[0].source_types);
-    return await this.stripe.payouts.create(
-      {
-        amount: 1000000,
-        currency: 'vnd',
-        destination: 'ba_1OH7FBPxWdElQ2Kkm1N6Iwca',
-        source_type: 'card',
-        method: 'standard',
       },
+      capabilities: {
+        transfers: { requested: true },
+      },
+      tos_acceptance: {
+        date: Math.floor(Date.now() / 1000),
+        ip: '8.8.8.8',
+        service_agreement: 'recipient',
+      },
+    });
+  }
+
+  async createBankAccount(
+    user: User,
+  ): Promise<Stripe.Response<Stripe.ExternalAccount>> {
+    const token = await this.stripe.tokens.create({
+      bank_account: {
+        country: 'VN',
+        currency: 'vnd',
+        account_holder_name: 'Jenny Rosen',
+        account_holder_type: 'individual',
+        routing_number: user.bankCode,
+        account_number: user.accountNumber,
+      },
+    });
+
+    return await this.stripe.accounts.createExternalAccount(
+      user.stripeAccountId,
       {
-        stripeAccount: 'acct_1OH7F2PxWdElQ2Kk',
+        external_account: token.id,
       },
     );
+  }
+
+  async payout(user: User, amount: number) {
+    try {
+      if (!user.stripeAccountId || !user.stripeBankAccountId) {
+        this.logger.error(
+          `Calling payout() - User account id=[${user.id}] missing stripe account id and stripe bank account id`,
+          StripeService.name,
+        );
+        return;
+      }
+      const amountInCent = Math.round(amount * EXCHANGE_RATE * 100);
+      await this.stripe.transfers.create({
+        amount: amountInCent,
+        currency: 'usd',
+        destination: user.stripeAccountId,
+      });
+      console.log(amountInCent);
+      const amountInVND = Math.round(amountInCent / EXCHANGE_RATE_BACK) / 100;
+      await this.stripe.payouts.create(
+        {
+          amount: Math.round(amountInVND),
+          currency: 'vnd',
+          destination: user.stripeBankAccountId,
+          source_type: 'card',
+          method: 'standard',
+        },
+        {
+          stripeAccount: user.stripeAccountId,
+        },
+      );
+      return Math.round(amountInVND);
+    } catch (e) {
+      throw e;
+    }
   }
 }

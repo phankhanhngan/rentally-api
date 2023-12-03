@@ -25,7 +25,7 @@ import { plainToInstance } from 'class-transformer';
 import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
-import { Room } from 'src/entities';
+import { Room, User } from 'src/entities';
 import { EventGateway } from '../notification/event.gateway';
 import { MailerService } from '@nest-modules/mailer';
 import { NotificationDTO } from '../notification/dtos/notification.dto';
@@ -43,6 +43,8 @@ export class PaymentService {
     private readonly transactionService: TransactionService,
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
+    @InjectRepository(User)
+    private readonly userRepository: EntityRepository<User>,
     private readonly eventGateway: EventGateway,
     private readonly mailerService: MailerService,
     private readonly notificationService: NotificationService,
@@ -88,6 +90,7 @@ export class PaymentService {
           const metadata = event.data.object.metadata;
           if (metadata.type === 'CHECKOUT') {
             const payment = await this.updateStatus(metadata.paymentId);
+
             await this.transactionService.createTransaction(
               {
                 description: metadata.description,
@@ -98,15 +101,19 @@ export class PaymentService {
               null,
               metadata.renterId,
             );
-            const payout = await this.stripeService.payout(
-              payment.rental.landlord,
+            const landlord = await this.userRepository.findOne({
+              id: metadata.landlordId,
+            });
+            const amountInVND = await this.stripeService.payout(
+              landlord,
               payment.totalPrice,
             );
+
             await this.transactionService.createTransaction(
               {
-                description: `Payout to mod id=[${payment.rental.landlord.id}], with amount=[${payment.totalPrice}]`,
+                description: `Payout to mod id=[${landlord.id}], with amount=[${amountInVND}]`,
                 status: TransactionStatus.PAYOUT,
-                stripeId: payout.id,
+                stripeId: event.data.object.id,
               },
               null,
               null,
@@ -149,16 +156,16 @@ export class PaymentService {
             this.em.persist(room);
             await this.em.flush();
 
-            const payout = await this.stripeService.payout(
+            const amount = await this.stripeService.payout(
               rental.landlord,
               Number(rental.room.depositAmount),
             );
 
             await this.transactionService.createTransaction(
               {
-                description: `Payout to mod id=[${rental.landlord.id}], with amount=[${rental.room.depositAmount}]`,
+                description: `Payout to mod id=[${rental.landlord.id}], with amount=[${amount}]`,
                 status: TransactionStatus.PAYOUT,
-                stripeId: payout.id,
+                stripeId: event.data.object.id,
               },
               null,
               null,
@@ -183,6 +190,16 @@ export class PaymentService {
             'Calling callBackWebHook()',
             new InternalServerErrorException('Payment failed'),
             PaymentService.name,
+          );
+          await this.transactionService.createTransaction(
+            {
+              description: event.type,
+              status: TransactionStatus.FAILED,
+              stripeId: event.data.object.id,
+            },
+            null,
+            null,
+            null,
           );
           break;
         default:
@@ -237,6 +254,7 @@ export class PaymentService {
         customer_email: req.user.email,
         client_reference_id: payment.id.toString(),
         metadata: {
+          landlordId: payment.rental.landlord.id,
           paymentId: payment.id,
           createdAt: new Date().toDateString(),
           description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} transfers money for monthly rent in ${payment.month}/${payment.year}`,

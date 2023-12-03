@@ -22,6 +22,7 @@ import { StripeService } from '../stripe/stripe.service';
     MikroOrmModule.forFeature([Room]),
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
+    MikroOrmModule.forFeature([Utility]),
     NotificationModule,
   ],
   providers: [

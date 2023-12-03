@@ -2,7 +2,6 @@ import { Entity, Enum, Property, Unique } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { IsEmail, IsPhoneNumber, MaxLength, MinLength } from 'class-validator';
 import { Role, UserStatus } from '../common/enum/common.enum';
-// import { Role, UserStatus } from 'src/common/enum/common.enum';
 
 @Entity({ tableName: 'users' })
 export class User extends Base {
@@ -38,22 +37,16 @@ export class User extends Base {
   phoneNumber!: string;
 
   @Property({ nullable: true })
-  cardNumber!: string;
+  stripeAccountId!: string;
 
   @Property({ nullable: true })
-  cardExpMonth!: string;
+  stripeBankAccountId!: string;
 
   @Property({ nullable: true })
-  cardExpYear!: string;
+  bankCode!: string;
 
   @Property({ nullable: true })
-  cardCVC!: string;
-
-  @Property({ nullable: true })
-  customerId: string;
-
-  @Property({ nullable: true })
-  cardId: string;
+  accountNumber!: string;
 
   @Property({ nullable: false })
   @Enum({ items: () => Role })

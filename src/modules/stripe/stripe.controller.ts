@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Inject,
   Param,
@@ -28,21 +27,6 @@ export class StripeController {
   async webHookCallback(@Req() req, @Res() res: Response) {
     try {
       await this.paymentService.callBackWebHook(req);
-      res.json({ received: true });
-    } catch (error) {
-      this.logger.error(
-        'Calling checkOutPaymnent()',
-        error,
-        StripeController.name,
-      );
-      throw error;
-    }
-  }
-
-  @Post('payout')
-  async payout(@Req() req, @Body() body, @Res() res: Response) {
-    try {
-      await this.stripeService.testPayout(body);
       res.json({ received: true });
     } catch (error) {
       this.logger.error(

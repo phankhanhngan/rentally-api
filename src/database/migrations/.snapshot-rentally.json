@@ -750,8 +750,8 @@
           "nullable": true,
           "mappedType": "string"
         },
-        "card_number": {
-          "name": "card_number",
+        "stripe_account_id": {
+          "name": "stripe_account_id",
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
@@ -759,8 +759,8 @@
           "nullable": true,
           "mappedType": "string"
         },
-        "card_exp_month": {
-          "name": "card_exp_month",
+        "stripe_bank_account_id": {
+          "name": "stripe_bank_account_id",
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
@@ -768,8 +768,8 @@
           "nullable": true,
           "mappedType": "string"
         },
-        "card_exp_year": {
-          "name": "card_exp_year",
+        "bank_code": {
+          "name": "bank_code",
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
@@ -777,26 +777,8 @@
           "nullable": true,
           "mappedType": "string"
         },
-        "card_cvc": {
-          "name": "card_cvc",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "string"
-        },
-        "customer_id": {
-          "name": "customer_id",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "string"
-        },
-        "bank_account_id": {
-          "name": "bank_account_id",
+        "account_number": {
+          "name": "account_number",
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,

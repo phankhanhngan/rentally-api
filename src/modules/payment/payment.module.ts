@@ -42,6 +42,7 @@ import { StripeService } from '../stripe/stripe.service';
     EventGateway,
     NotificationService,
     StripeService,
+    UtilitiesService,
   ],
 })
 export class PaymentModule {}

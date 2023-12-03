@@ -21,6 +21,7 @@ import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 import { JwtService } from '@nestjs/jwt';
 import { BecomeHostDTO } from './dtos/become-host.dto';
 import { StripeService } from '../stripe/stripe.service';
+import parsePhoneNumberFromString from 'libphonenumber-js';
 
 @Injectable()
 export class UsersService {
@@ -54,7 +55,11 @@ export class UsersService {
 
   async duplicatedPhoneNumber(phoneNumber: string) {
     try {
-      const count = await this.em.count('User', { phoneNumber: phoneNumber });
+      const parsedPhoneNumber = this.parsePhone(phoneNumber);
+      console.log(parsedPhoneNumber);
+      const count = await this.em.count('User', {
+        phoneNumber: parsedPhoneNumber,
+      });
       if (count < 1) return false;
       return true;
     } catch (error) {
@@ -193,6 +198,8 @@ export class UsersService {
         (await this.duplicatedPhoneNumber(userDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
+      } else {
+        userDto.phoneNumber = this.parsePhone(userDto.phoneNumber);
       }
 
       const user = plainToInstance(User, userDto);
@@ -241,6 +248,8 @@ export class UsersService {
         (await this.duplicatedPhoneNumber(updateUserDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
+      } else {
+        updateUserDto.phoneNumber = this.parsePhone(updateUserDto.phoneNumber);
       }
 
       if (updateUserDto.email && userEntity.email !== updateUserDto.email) {
@@ -299,6 +308,10 @@ export class UsersService {
         (await this.duplicatedPhoneNumber(updateCurrentUserDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
+      } else {
+        updateCurrentUserDto.phoneNumber = this.parsePhone(
+          updateCurrentUserDto.phoneNumber,
+        );
       }
 
       if (file) {
@@ -389,28 +402,39 @@ export class UsersService {
       throw error;
     }
   }
+  private parsePhone(phoneNumberString: string) {
+    // Parse the phone number
+    if (phoneNumberString.startsWith('0')) {
+      return parsePhoneNumberFromString(phoneNumberString, 'VN')
+        .formatInternational()
+        .toString()
+        .replaceAll(' ', '');
+    }
+    return phoneNumberString;
+  }
 
   async becomeHost(idLogin: number, dto: BecomeHostDTO) {
     try {
-      const { phoneNumber, cardNumber, cardCVC, cardExpMonth, cardExpYear } =
-        dto;
+      const { phoneNumber, bankCode, accountNumber } = dto;
       const user = await this.getUserById(idLogin);
       if (!user) {
         throw new BadRequestException('User not found');
       }
-
       user.role = Role.MOD;
-      user.phoneNumber = phoneNumber;
-      user.cardNumber = cardNumber;
-      user.cardCVC = cardCVC;
-      user.cardExpMonth = cardExpMonth;
-      user.cardExpYear = cardExpYear;
+      const parsedPhoneNumber = this.parsePhone(phoneNumber);
+      if (await this.duplicatedPhoneNumber(parsedPhoneNumber)) {
+        throw new BadRequestException('Phone number is already in use');
+      }
+      user.bankCode = bankCode;
+      user.accountNumber = accountNumber;
 
-      const stripeCustomer = await this.stripeService.createCustomer(user);
-      user.customerId = stripeCustomer.id;
+      const stripeAccount = await this.stripeService.createConnectAccount(user);
+      user.stripeAccountId = stripeAccount.id;
 
-      const card = await this.stripeService.createCard(user);
-      user.cardId = card.id;
+      const stripeBankAccount = await this.stripeService.createBankAccount(
+        user,
+      );
+      user.stripeBankAccountId = stripeBankAccount.id;
 
       await this.em.persistAndFlush(user);
       const userDto: UserRtnDto = plainToInstance(UserRtnDto, user);
