@@ -1,12 +1,6 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { EXCHANGE_RATE, EXCHANGE_RATE_BACK } from 'src/common/constants/stripe';
+import { EXCHANGE_RATE_BACK } from 'src/common/constants/stripe';
 import { User } from 'src/entities';
 import Stripe from 'stripe';
 
@@ -82,17 +76,16 @@ export class StripeService {
         );
         return;
       }
-      const amountInCent = Math.round(amount * EXCHANGE_RATE * 100);
-      await this.stripe.transfers.create({
-        amount: amountInCent,
+      const amountInCent = Math.round(amount * EXCHANGE_RATE_BACK * 100);
+      const transfer = await this.stripe.transfers.create({
+        amount: Math.ceil((amountInCent * 101) / 100),
         currency: 'usd',
         destination: user.stripeAccountId,
       });
-      console.log(amountInCent);
-      const amountInVND = Math.round(amountInCent / EXCHANGE_RATE_BACK) / 100;
-      await this.stripe.payouts.create(
+      console.log(transfer.balance_transaction);
+      return await this.stripe.payouts.create(
         {
-          amount: Math.round(amountInVND),
+          amount: amount,
           currency: 'vnd',
           destination: user.stripeBankAccountId,
           source_type: 'card',
@@ -102,7 +95,6 @@ export class StripeService {
           stripeAccount: user.stripeAccountId,
         },
       );
-      return Math.round(amountInVND);
     } catch (e) {
       throw e;
     }

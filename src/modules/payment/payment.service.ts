@@ -104,14 +104,11 @@ export class PaymentService {
             const landlord = await this.userRepository.findOne({
               id: metadata.landlordId,
             });
-            const amountInVND = await this.stripeService.payout(
-              landlord,
-              payment.totalPrice,
-            );
+            await this.stripeService.payout(landlord, payment.totalPrice);
 
             await this.transactionService.createTransaction(
               {
-                description: `Payout to mod id=[${landlord.id}], with amount=[${amountInVND}]`,
+                description: `Payout to mod id=[${landlord.id}], with amount=[${payment.totalPrice}] after PAYMENT`,
                 status: TransactionStatus.PAYOUT,
                 stripeId: event.data.object.id,
               },
@@ -156,14 +153,14 @@ export class PaymentService {
             this.em.persist(room);
             await this.em.flush();
 
-            const amount = await this.stripeService.payout(
+            await this.stripeService.payout(
               rental.landlord,
               Number(rental.room.depositAmount),
             );
 
             await this.transactionService.createTransaction(
               {
-                description: `Payout to mod id=[${rental.landlord.id}], with amount=[${amount}]`,
+                description: `Payout to mod id=[${rental.landlord.id}], with amount=[${rental.room.depositAmount}] after DEPOSIT`,
                 status: TransactionStatus.PAYOUT,
                 stripeId: event.data.object.id,
               },
