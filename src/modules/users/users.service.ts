@@ -198,7 +198,7 @@ export class UsersService {
         (await this.duplicatedPhoneNumber(userDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
-      } else {
+      } else if (userDto.phoneNumber) {
         userDto.phoneNumber = this.parsePhone(userDto.phoneNumber);
       }
 
@@ -250,7 +250,7 @@ export class UsersService {
         (await this.duplicatedPhoneNumber(updateUserDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
-      } else {
+      } else if (updateUserDto.phoneNumber) {
         updateUserDto.phoneNumber = this.parsePhone(updateUserDto.phoneNumber);
       }
 
@@ -310,7 +310,7 @@ export class UsersService {
         (await this.duplicatedPhoneNumber(updateCurrentUserDto.phoneNumber))
       ) {
         throw new BadRequestException('Phone number is already in use');
-      } else {
+      } else if (updateCurrentUserDto.phoneNumber) {
         updateCurrentUserDto.phoneNumber = this.parsePhone(
           updateCurrentUserDto.phoneNumber,
         );
