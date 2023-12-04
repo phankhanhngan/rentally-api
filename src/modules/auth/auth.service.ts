@@ -59,6 +59,7 @@ export class AuthService {
       } else {
         if (!userDb.googleId) {
           userDb.googleId = user.googleId;
+          userDb.status = UserStatus.ACTIVE;
           await this.em.persistAndFlush(userDb);
         }
       }
