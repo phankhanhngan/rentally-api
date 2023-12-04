@@ -212,6 +212,7 @@ export class UsersService {
       user.created_id = create_id;
       user.updated_id = create_id;
       user.status = status;
+      user.verificationCode = "admin_create";
       await this.em.persistAndFlush(user);
     } catch (error) {
       throw error;
