@@ -22,7 +22,6 @@ import { RoomRating } from '../../entities/room-rating.entity';
 import { Checklist } from '../../entities/checklist.entity';
 import * as moment from 'moment';
 import { Payment } from '../../entities/payment.entity';
-import { add } from 'winston';
 export class DatabaseSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
@@ -31,24 +30,21 @@ export class DatabaseSeeder extends Seeder {
     const password = await bcrypt.hash('123456', 10);
     this.createDefaultUser(users, password);
     Array.from(Array(40).keys()).forEach(async () => {
-      const role = this.randomEnumValue(Role);
       users.push({
-        // id: faker.number.int({ min: 0, max: 100 }),
-        googleId: faker.string.uuid(),
         email: faker.internet.email(),
         password: password,
-        firstName: faker.animal.bear(),
-        lastName: faker.animal.bear(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         photo: faker.image.avatar(),
         phoneNumber: faker.phone.number(),
-        role: role,
+        role: this.randomEnumValue(Role),
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
         created_at: new Date(),
         updated_at: new Date(),
         created_id: faker.number.int({ min: 0, max: 10 }),
         updated_id: faker.number.int({ min: 0, max: 10 }),
-        status: UserStatus.ACTIVE,
+        status: this.randomEnumValue(UserStatus),
       });
     });
     await em.insertMany(User, users);
