@@ -22,6 +22,8 @@ import { RoomRating } from '../../entities/room-rating.entity';
 import { Checklist } from '../../entities/checklist.entity';
 import * as moment from 'moment';
 import { Payment } from '../../entities/payment.entity';
+import { vietnamAddress } from '../../database/seeders/jsData/vietnamAddress';
+import { vietnamePhone } from '../../database/seeders/jsData/vietnamePhone';
 export class DatabaseSeeder extends Seeder {
   leaseTerm = [3, 6, 9, 12];
   async run(em: EntityManager): Promise<void> {
@@ -29,14 +31,14 @@ export class DatabaseSeeder extends Seeder {
     const users = [];
     const password = await bcrypt.hash('123456', 10);
     this.createDefaultUser(users, password);
-    Array.from(Array(40).keys()).forEach(async () => {
+    Array.from(Array(40).keys()).forEach(async (index) => {
       users.push({
         email: faker.internet.email(),
         password: password,
         firstName: faker.person.firstName(),
         lastName: faker.person.lastName(),
         photo: faker.image.avatar(),
-        phoneNumber: faker.phone.number(),
+        phoneNumber: vietnamePhone[index].number,
         role: this.randomEnumValue(Role),
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
@@ -54,18 +56,18 @@ export class DatabaseSeeder extends Seeder {
     //---------------------------------------------------------
     // RoomBlock ----------------------------------------------
     const roomBlocks = await Promise.all(
-      Array.from(Array(30).keys()).map(async () => {
+      Array.from(Array(30).keys()).map(async (index) => {
         const landlord = await this.randomLandLord(em);
         return {
-          address: faker.location.streetAddress(),
-          city: faker.location.city(),
-          district: faker.location.state(),
-          country: faker.location.country(),
+          address: vietnamAddress[index].street,
+          city: vietnamAddress[index].city,
+          district: vietnamAddress[index].district,
+          country: 'Việt Nam',
           coordinate: new Point(
-            faker.location.latitude(),
-            faker.location.longitude(),
+            vietnamAddress[index].lat,
+            vietnamAddress[index].long,
           ),
-          description: faker.lorem.sentence(),
+          description: faker.lorem.sentence(200),
           landlord: landlord,
           created_at: new Date(),
           updated_at: new Date(),
@@ -81,6 +83,8 @@ export class DatabaseSeeder extends Seeder {
     // Room ----------------------------------------------
     const roomBlocks1 = await em.find<RoomBlock>(RoomBlock, {});
     const rooms = [];
+    const originalArray = Array.from({ length: 20 }, (_, index) => index + 1);
+
     Array.from(Array(50).keys()).forEach(async () => {
       rooms.push({
         id: uuidv4(),
@@ -99,7 +103,9 @@ export class DatabaseSeeder extends Seeder {
           faker.image.urlPicsumPhotos(),
           faker.image.urlPicsumPhotos(),
         ]),
-        utilities: JSON.stringify([1]),
+        utilities: JSON.stringify(
+          originalArray.sort(() => Math.random() - 0.5).slice(0, 4),
+        ),
         status: RoomStatus.EMPTY,
         roomblock: roomBlocks1[Math.floor(Math.random() * roomBlocks1.length)],
       });
@@ -280,7 +286,7 @@ export class DatabaseSeeder extends Seeder {
         firstName: 'Admin',
         lastName: 'Rentally',
         photo: faker.image.avatar(),
-        phoneNumber: faker.phone.number(),
+        phoneNumber: '+84896224011',
         role: Role.ADMIN,
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
@@ -297,7 +303,7 @@ export class DatabaseSeeder extends Seeder {
         firstName: 'Renter',
         lastName: 'Rentally',
         photo: faker.image.avatar(),
-        phoneNumber: faker.phone.number(),
+        phoneNumber: '+84896224012',
         role: Role.USER,
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
@@ -315,7 +321,7 @@ export class DatabaseSeeder extends Seeder {
         firstName: 'Mod',
         lastName: 'Rentally',
         photo: faker.image.avatar(),
-        phoneNumber: faker.phone.number(),
+        phoneNumber: '+84896224013',
         role: Role.MOD,
         verificationCode: faker.string.uuid(),
         timeStamp: new Date(),
