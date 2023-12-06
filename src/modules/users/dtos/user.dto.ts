@@ -7,8 +7,9 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
+  Matches,
+  MaxLength,
   MinLength,
-  ValidateIf,
 } from 'class-validator';
 import { Role } from 'src/common/enum/common.enum';
 
@@ -27,7 +28,11 @@ export class UserDTO {
   email!: string | undefined;
   @ApiProperty()
   @Expose()
-  @MinLength(2, { message: 'Password at least 2 characters' })
+  @MinLength(8)
+  @MaxLength(20)
+  @Matches(
+    /((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z0-9@$!%*?&]+)+/g,
+  )
   @IsString({ message: 'password must be a string' })
   password?: string;
   @ApiProperty()

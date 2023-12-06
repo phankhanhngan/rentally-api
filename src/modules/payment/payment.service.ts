@@ -116,7 +116,7 @@ export class PaymentService {
                 status: TransactionStatus.PAYOUT,
                 stripeId: event.data.object.id,
               },
-              null,
+              payment.id,
               null,
               metadata.renterId,
             );
@@ -169,7 +169,7 @@ export class PaymentService {
                 stripeId: event.data.object.id,
               },
               null,
-              null,
+              rentalId,
               metadata.renterId,
             );
 
