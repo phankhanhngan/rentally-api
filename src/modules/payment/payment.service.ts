@@ -249,7 +249,7 @@ export class PaymentService {
       }
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        success_url: process.env.STRIPE_SUCCESS_URL,
+        success_url: `${process.env.STRIPE_SUCCESS_URL}/${payment.id}?checkout=success`,
         cancel_url: process.env.STRIPE_CANCEL_URL,
         mode: 'payment',
         customer_email: req.user.email,
