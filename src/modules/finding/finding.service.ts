@@ -99,12 +99,12 @@ export class FindingService {
         findRoomDto.utilities.forEach((utilitty, index) => {
           if (index == 0) {
             queryObjUitilities['$and'] = [
-              { utilities: { $like: `%${utilitty}%` } },
+              { utilities: { $re: `.*[\\[,]${utilitty}[,\\]].*` } },
             ];
           } else {
             queryObjUitilities['$and'] = [
               ...queryObjUitilities['$and'],
-              { utilities: { $like: `%${utilitty}%` } },
+              { utilities: { $re: `.*[\\[,]${utilitty}[,\\]].*` } },
             ];
           }
         });
@@ -200,7 +200,7 @@ export class FindingService {
             'roomblock.country',
           ],
         },
-      );    
+      );
 
       if (!room) {
         // throw new BadRequestException(`Can not find room with id=[${id}]`);
