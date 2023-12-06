@@ -424,7 +424,10 @@ export class UsersService {
       }
       user.role = Role.MOD;
       const parsedPhoneNumber = this.parsePhone(phoneNumber);
-      if (await this.duplicatedPhoneNumber(parsedPhoneNumber)) {
+      if (
+        user.phoneNumber !== dto.phoneNumber &&
+        (await this.duplicatedPhoneNumber(parsedPhoneNumber))
+      ) {
         throw new BadRequestException('Phone number is already in use');
       }
       user.bankCode = bankCode;

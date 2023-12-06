@@ -9,6 +9,14 @@ export class UserRtnDto {
 
   @ApiProperty()
   @Expose()
+  bankCode?: string;
+
+  @ApiProperty()
+  @Expose()
+  accountNumber?: string;
+
+  @ApiProperty()
+  @Expose()
   email!: string | undefined;
 
   @ApiProperty()
