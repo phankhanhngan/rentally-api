@@ -66,6 +66,7 @@ export class PaymentService {
             'rental.landlord',
             'rental.rentalDetail',
           ],
+          orderBy: { status: 'DESC' },
         },
       );
       const paymentDTOs = await Promise.all(
