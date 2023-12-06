@@ -6,7 +6,7 @@ import { MyRentalDTO } from 'src/modules/rental/dtos/MyRental.dto';
 export class PaymentDTO {
   @ApiProperty()
   @Expose()
-  id: string;
+  id: number;
 
   @ApiProperty()
   @Expose()
@@ -51,4 +51,8 @@ export class PaymentDTO {
   @ApiProperty()
   @Expose()
   paidAt: Date;
+
+  @ApiProperty()
+  @Expose()
+  expirationDate: Date;
 }
