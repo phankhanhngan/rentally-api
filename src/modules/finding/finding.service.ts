@@ -131,6 +131,7 @@ export class FindingService {
             queryObjUitilities,
             priceRangeQr,
             { status: RoomStatus.EMPTY },
+            { deleted_at: null },
           ],
         },
         {
@@ -139,7 +140,6 @@ export class FindingService {
           offset,
         },
       );
-      console.log(queryObjBlockRoom);
 
       const total = await this.roomRepository.count({
         $and: [
@@ -187,7 +187,7 @@ export class FindingService {
   async getRoomDetailById(id: string, loginId: number) {
     try {
       const room = await this.roomRepository.findOne(
-        { id },
+        { id, deleted_at: null },
         {
           populate: ['roomblock'],
           fields: [
@@ -198,6 +198,7 @@ export class FindingService {
             'roomblock.district',
             'roomblock.city',
             'roomblock.country',
+            'roomblock.landlord',
           ],
         },
       );
@@ -208,7 +209,7 @@ export class FindingService {
       }
       const [landlord, rating, isInCheckList] = await Promise.all([
         this.userRepository.findOne({
-          id: room.roomblock.id,
+          id: room.roomblock.landlord.id,
         }),
         this.ratingService.findByRoom(room.id),
         this.checklistRepository.findOne({
@@ -221,7 +222,9 @@ export class FindingService {
       landlordDto.name = landlord.firstName;
       if (landlord.lastName) landlordDto.name += ' ' + landlord.lastName;
 
-      const roomDto = plainToInstance(RoomDetailDTO, room);
+      const roomDto = plainToInstance(RoomDetailDTO, room, {
+        excludePrefixes: ['landlord'],
+      });
       roomDto.landlord = landlordDto;
 
       if (rating.ratings) {
