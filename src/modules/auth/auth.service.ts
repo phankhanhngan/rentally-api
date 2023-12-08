@@ -90,7 +90,7 @@ export class AuthService {
         throw new HttpException(
           'Email has not been verified',
           HttpStatus.BAD_REQUEST,
-        );
+        );      
       if (userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.BAD_REQUEST);
       const isValidPass = await bcrypt.compare(

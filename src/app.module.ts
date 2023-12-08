@@ -23,10 +23,12 @@ import { RentalModule } from './modules/rental/rental.module';
 import { FindingModule } from './modules/finding/finding.module';
 import { ChecklistModule } from './modules/checklist/checklist.module';
 import { ProvinceModule } from './modules/province/province.module';
+import { StatisticModule } from './modules/statistic/statistic.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { StripeService } from './modules/stripe/stripe.service';
+
 @Module({
   imports: [
     MorganModule,
@@ -81,6 +83,7 @@ import { StripeService } from './modules/stripe/stripe.service';
     FindingModule,
     ChecklistModule,
     ProvinceModule,
+    StatisticModule,
     PaymentModule,
     TransactionModule,
     NotificationModule,

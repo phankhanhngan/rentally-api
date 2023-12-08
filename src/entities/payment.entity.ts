@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Enum } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property, Enum } from '@mikro-orm/core';
 import { Base } from './base.entity';
 import { Rental } from './rental.entity';
 import { PaymentStatus } from '../common/enum/common.enum';
