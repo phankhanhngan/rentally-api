@@ -612,6 +612,10 @@ export class PaymentService {
         idLogined,
         RentalStatus.COMPLETED,
       );
+      if (!rental)
+        throw new BadRequestException(
+          'Can not found rental or your rental was not in status COMPLETED!',
+        );
       const paymentDb1 = await this.findByRentalIdMonthYear({
         rental_id: rental.id,
         additionalPrice: 0,
@@ -623,10 +627,7 @@ export class PaymentService {
       if (paymentDb1 && paymentDb1.id != paymentDb.id) {
         throw new BadRequestException('You are already create this payment');
       }
-      if (!rental)
-        throw new BadRequestException(
-          'Can not found rental or you are not own this rental!',
-        );
+
       const totalElectricPrice =
         paymentDTO.electricNumber * rental.rentalDetail.electricPrice;
       const totalWaterPrice =
