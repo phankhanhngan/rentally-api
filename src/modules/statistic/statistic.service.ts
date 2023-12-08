@@ -69,11 +69,8 @@ export class StatisticService {
         };
       });
       const res = await this.em.execute(qb);
-      let totalMoney = 0;
-      for(let i=0; i<res.length; i++) {
-        console.log(res[i]);
-        
-        totalMoney += Number(res[i].totalPrice);
+      for(let i=0; i<res.length; i++) {        
+        statisticDto.totalMoney += Number(res[i].totalPrice);
         statisticDto.months[Number(res[i].month)-1] = res[i];
       }
       return statisticDto;
