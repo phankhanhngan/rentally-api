@@ -55,4 +55,8 @@ export class PaymentDTO {
   @ApiProperty()
   @Expose()
   expirationDate: Date;
+
+  @ApiProperty()
+  @Expose()
+  deleted_at: Date;
 }
