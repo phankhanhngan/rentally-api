@@ -750,6 +750,24 @@
           "nullable": true,
           "mappedType": "string"
         },
+        "stripe_account_id": {
+          "name": "stripe_account_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
+        "stripe_bank_account_id": {
+          "name": "stripe_bank_account_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
         "bank_code": {
           "name": "bank_code",
           "type": "varchar(255)",

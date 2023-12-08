@@ -8,6 +8,7 @@ import { Room, RoomBlock, User } from 'src/entities';
 import { UsersModule } from 'src/modules/users/users.module';
 import { UsersService } from 'src/modules/users/users.service';
 import { Utility } from 'src/entities/utility.entity';
+import { StripeService } from 'src/modules/stripe/stripe.service';
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { Utility } from 'src/entities/utility.entity';
     MikroOrmModule.forFeature([Utility]),
   ],
   controllers: [RoomsController],
-  providers: [RoomsService, UsersService],
+  providers: [RoomsService, UsersService, StripeService],
 })
 export class RoomsModule {}

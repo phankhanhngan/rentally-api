@@ -27,6 +27,7 @@ import { UserRtnDto } from '../auth/dtos/UserRtnDto.dto';
 import Stripe from 'stripe';
 import { MailerService } from '@nest-modules/mailer';
 import { EventGateway } from '../notification/event.gateway';
+import { UtilitiesService } from '../utilities/utilities.service';
 
 @Injectable()
 export class RentalService {
@@ -43,6 +44,7 @@ export class RentalService {
     private readonly rentalRepository: EntityRepository<Rental>,
     private readonly mailerService: MailerService,
     private readonly eventGateway: EventGateway,
+    private readonly utilitiesService: UtilitiesService,
   ) {}
 
   async findByIdAndRenter(
@@ -151,6 +153,34 @@ export class RentalService {
     }
   }
 
+  async getMyRentalById(id: number, idLogined: any): Promise<MyRentalDTO> {
+    try {
+      const rental = await this.em.findOne(
+        Rental,
+        {
+          id: id,
+          renter: { id: idLogined },
+        },
+        {
+          populate: [
+            'landlord',
+            'renter',
+            'room',
+            'room.roomblock',
+            'rentalDetail',
+          ],
+        },
+      );
+      if (!rental) {
+        throw new BadRequestException('Cannot find rental');
+      }
+      return await this.setRentalDTO(rental);
+    } catch (error) {
+      this.logger.error('Calling getMyRental()', error, RentalService.name);
+      throw error;
+    }
+  }
+
   async create(createRentalDTO: CreateRentalDTO, user: any) {
     try {
       const room = await this.roomRepository.findOne(
@@ -182,16 +212,21 @@ export class RentalService {
           rentalDb.status === RentalStatus.APPROVED)
       )
         throw new BadRequestException(
-          'You are already created request for this room!',
+          'You has already created rental request for this room!',
         );
       //
 
       const landlord = this.em.getReference(User, room.roomblock.landlord.id);
       const renter = this.em.getReference(User, user.id);
-      const moveInDate = moment(
+      const moveinMoment = moment(
         createRentalDTO.rentalInfo.moveInDate,
         'DD/MM/YYYY',
-      ).toDate();
+      );
+      if (!moveinMoment.isSameOrAfter(moment())) {
+        throw new BadRequestException('Move in date must be in the future');
+      }
+
+      const moveInDate = moveinMoment.toDate();
       const rentalDetail = {
         moveInDate: moveInDate,
         moveOutDate: moment(moveInDate)
@@ -358,7 +393,14 @@ export class RentalService {
 
   async setRentalDTO(rental: Rental): Promise<MyRentalDTO> {
     const rating = await this.ratingService.findByRoom(rental.room.id);
-
+    const utilities = JSON.parse(rental.room.utilities);
+    const utilitiesDetail = [];
+    for (let j = 0; j < utilities.length; j++) {
+      const utilityDto = await this.utilitiesService.getUtilityById(
+        utilities[j],
+      );
+      utilitiesDetail.push(utilityDto);
+    }
     const dto: MyRentalDTO = {
       status: rental.status,
       // set rentalInfo
@@ -374,6 +416,7 @@ export class RentalService {
         moveInDate: rental.rentalDetail.moveInDate,
         moveOutDate: rental.rentalDetail.moveOutDate,
         numberOfTenants: rental.tenants,
+        ratingStatus: rental.ratingStatus,
       },
       // set hostInfo
       hostInfo: {
@@ -408,7 +451,7 @@ export class RentalService {
         images: JSON.parse(rental.room.images),
         price: rental.room.price,
         roomName: rental.room.roomName,
-        utilities: rental.room.utilities,
+        utilities: utilitiesDetail,
         roomRatings: {
           avgRate: rating ? rating.avgRate : 0,
           numberOfRatings: rating ? rating.totalRating : 0,
@@ -670,10 +713,17 @@ export class RentalService {
           `Only rental request with status ${RentalStatus.APPROVED} could be confirmed`,
         );
       }
+      if (rental.room.status === RoomStatus.OCCUPIED) {
+        throw new BadRequestException('This room are already OCCIPIED!');
+      }
+
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      console.log(
+        `urlurl: ${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}?confirm=success`,
+      );
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        success_url: process.env.STRIPE_SUCCESS_URL,
+        success_url: `${process.env.STRIPE_DEPOSITED_SUCCESS_URL}/${rental.id}?confirm=success`,
         cancel_url: process.env.STRIPE_CANCEL_URL,
         mode: 'payment',
         customer_email: user.email,

@@ -50,6 +50,7 @@
     "decimal.js": "^10.4.3",
     "googleapis": "^126.0.1",
     "hbs": "^4.2.0",
+    "libphonenumber-js": "^1.10.51",
     "moment": "^2.29.4",
     "nodemailer": "^6.9.5",
     "passport": "^0.6.0",

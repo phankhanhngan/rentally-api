@@ -3,11 +3,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { TransactionDTO } from './dtos/create-transaction.dto';
-import { PaymentService } from '../payment/payment.service';
-import { Payment } from 'src/entities/payment.entity';
 import { plainToInstance } from 'class-transformer';
 import { Transaction } from 'src/entities/transaction.entity';
-import { use } from 'passport';
 import { Role } from 'src/common/enum/common.enum';
 
 @Injectable()
@@ -45,7 +42,7 @@ export class TransactionService {
     try {
       if (!keyword) keyword = '';
       keyword = `%${keyword}%`;
-      let query = `SELECT t.id, t.description,  t.status, t.created_at
+      const query = `SELECT t.id, t.description,  t.status, t.created_at
         # u1: payment, u2: rental
         FROM rentally.transactions t 
         left outer join rentally.payments p on p.id = t.payment_id

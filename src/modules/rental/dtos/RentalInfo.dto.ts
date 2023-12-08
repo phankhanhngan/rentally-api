@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
+import { RatingStatus } from 'src/common/enum/common.enum';
 @Exclude()
 export class RentalInfoDTO {
   @ApiProperty()
@@ -35,4 +36,7 @@ export class RentalInfoDTO {
   @ApiProperty()
   @Expose()
   additionalPrice: number;
+  @ApiProperty()
+  @Expose()
+  ratingStatus: RatingStatus;
 }

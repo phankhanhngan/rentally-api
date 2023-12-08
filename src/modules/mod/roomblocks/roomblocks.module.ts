@@ -6,6 +6,7 @@ import { AWSModule } from 'src/modules/aws/aws.module';
 import { UsersService } from 'src/modules/users/users.service';
 import { ModRoomBlocksService } from './roomblock.service';
 import { ModRoomBlocksController } from './roomblock.controller';
+import { StripeService } from 'src/modules/stripe/stripe.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { ModRoomBlocksController } from './roomblock.controller';
     MikroOrmModule.forFeature([Room]),
   ],
   controllers: [ModRoomBlocksController],
-  providers: [ModRoomBlocksService, UsersService],
+  providers: [ModRoomBlocksService, UsersService, StripeService],
 })
 export class ModRoomBlocksModule {}

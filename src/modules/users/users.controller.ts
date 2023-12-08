@@ -284,7 +284,7 @@ export class UsersController {
   async disableUser(
     @Res() res: Response,
     @Req() req,
-    @Body('password') password: string
+    @Body('password') password: string,
   ) {
     try {
       await this.usersService.disableUser(req.user.id, password);
@@ -293,11 +293,7 @@ export class UsersController {
         status: 'success',
       });
     } catch (error) {
-      this.logger.error(
-        'Calling disableUser()',
-        error,
-        UsersController.name,
-      );
+      this.logger.error('Calling disableUser()', error, UsersController.name);
       throw error;
     }
   }

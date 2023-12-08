@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsDate,
-  IsDateString,
   IsDefined,
+  IsIn,
   IsInt,
   IsNotEmptyObject,
   IsObject,
+  IsPhoneNumber,
   IsString,
   Max,
   Min,
@@ -16,6 +16,7 @@ import {
 class CreateRentalDetailInfo {
   @ApiProperty()
   @IsInt()
+  @IsIn([3, 6, 9, 12])
   leaseTerm: number;
   @ApiProperty()
   @IsString()
@@ -41,7 +42,7 @@ class CreateRentalTenantInfo {
   @IsString()
   birthday: string;
   @ApiProperty()
-  @IsString()
+  @IsPhoneNumber('VN', { message: 'Invalid Phone number' })
   phoneNumber: string;
 }
 

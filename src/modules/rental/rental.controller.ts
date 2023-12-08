@@ -62,12 +62,36 @@ export class RentalController {
       const idLogined = req.user.id;
       const myRental = await this.rentalService.getMyRental(idLogined);
       res.status(200).json({
-        message: 'Get my rental successfully',
+        message: 'Get my rentals successfully',
         status: 'success',
         data: myRental,
       });
     } catch (error) {
       this.logger.error('Calling getMyRental()', error, RentalController.name);
+      throw error;
+    }
+  }
+
+  @Get('/my-rental/:id')
+  async getMyRentalById(
+    @Param('id') id: number,
+    @Res() res: Response,
+    @Req() req,
+  ) {
+    try {
+      const idLogined = req.user.id;
+      const myRental = await this.rentalService.getMyRentalById(id, idLogined);
+      res.status(200).json({
+        message: 'Get my rental successfully',
+        status: 'success',
+        data: myRental,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getMyRentalById()',
+        error,
+        RentalController.name,
+      );
       throw error;
     }
   }

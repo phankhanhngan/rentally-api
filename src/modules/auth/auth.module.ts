@@ -8,10 +8,17 @@ import { AWSModule } from '../aws/aws.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { OAuth2Client } from './google_client/google-client.config';
+import { StripeService } from '../stripe/stripe.service';
 
 @Module({
   imports: [MikroOrmModule.forFeature([User]), AWSModule, PassportModule],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy, OAuth2Client],
+  providers: [
+    AuthService,
+    UsersService,
+    JwtStrategy,
+    OAuth2Client,
+    StripeService,
+  ],
 })
 export class AuthModule {}

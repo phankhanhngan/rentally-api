@@ -23,6 +23,7 @@ import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { NotificationModule } from '../notification/notification.module';
 import { EventGateway } from '../notification/event.gateway';
 import { Checklist } from 'src/entities/checklist.entity';
+import { StripeService } from '../stripe/stripe.service';
 
 @Module({
   imports: [
@@ -51,7 +52,8 @@ import { Checklist } from 'src/entities/checklist.entity';
     AWSService,
     UtilitiesService,
     UsersService,
-    EventGateway
+    EventGateway,
+    StripeService,
   ],
   controllers: [FindingController],
 })

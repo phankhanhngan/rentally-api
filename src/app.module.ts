@@ -27,6 +27,7 @@ import { StatisticModule } from './modules/statistic/statistic.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { TransactionModule } from './modules/transaction/transaction.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { StripeService } from './modules/stripe/stripe.service';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { NotificationModule } from './modules/notification/notification.module';
       provide: APP_INTERCEPTOR,
       useClass: MorganInterceptor('combined'),
     },
+    StripeService,
   ],
 })
 export class AppModule {}

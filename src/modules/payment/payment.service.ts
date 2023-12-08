@@ -25,13 +25,14 @@ import { plainToInstance } from 'class-transformer';
 import Stripe from 'stripe';
 import { TransactionService } from '../transaction/transaction.service';
 import { TransactionDTO } from '../transaction/dtos/create-transaction.dto';
-import { Room } from 'src/entities';
+import { Room, User } from 'src/entities';
 import { EventGateway } from '../notification/event.gateway';
 import { MailerService } from '@nest-modules/mailer';
 import { NotificationDTO } from '../notification/dtos/notification.dto';
 import { RenterInformationDTO } from '../notification/dtos/renter-information.dto';
 import { PaymentInformationDTO } from '../notification/dtos/payment-information.dto';
 import { NotificationService } from '../notification/notification.service';
+import { StripeService } from '../stripe/stripe.service';
 
 @Injectable()
 export class PaymentService {
@@ -39,12 +40,15 @@ export class PaymentService {
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly em: EntityManager,
     private readonly rentalService: RentalService,
-    private readonly transacService: TransactionService,
+    private readonly transactionService: TransactionService,
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
+    @InjectRepository(User)
+    private readonly userRepository: EntityRepository<User>,
     private readonly eventGateway: EventGateway,
     private readonly mailerService: MailerService,
     private readonly notificationService: NotificationService,
+    private readonly stripeService: StripeService,
   ) {}
   async findMyPayment(user: any) {
     try {
@@ -62,6 +66,7 @@ export class PaymentService {
             'rental.landlord',
             'rental.rentalDetail',
           ],
+          orderBy: { status: 'DESC' },
         },
       );
       const paymentDTOs = await Promise.all(
@@ -70,6 +75,9 @@ export class PaymentService {
           paymentDTO.rental = await this.rentalService.setRentalDTO(
             payment.rental,
           );
+          const expirationDate = new Date(payment.created_at);
+          expirationDate.setDate(expirationDate.getDate() + 7);
+          paymentDTO.expirationDate = expirationDate;
           return paymentDTO;
         }),
       );
@@ -86,18 +94,32 @@ export class PaymentService {
           const metadata = event.data.object.metadata;
           if (metadata.type === 'CHECKOUT') {
             const payment = await this.updateStatus(metadata.paymentId);
-            const dto: TransactionDTO = {
-              description: metadata.description,
-              status: TransactionStatus.PAID,
-              stripeId: event.data.object.id,
-            };
-            await this.transacService.createTransaction(
-              dto,
+
+            await this.transactionService.createTransaction(
+              {
+                description: metadata.description,
+                status: TransactionStatus.PAID,
+                stripeId: event.data.object.id,
+              },
               payment.id,
               null,
               metadata.renterId,
             );
+            const landlord = await this.userRepository.findOne({
+              id: metadata.landlordId,
+            });
+            await this.stripeService.payout(landlord, payment.totalPrice);
 
+            await this.transactionService.createTransaction(
+              {
+                description: `Payout to mod id=[${landlord.id}], with amount=[${payment.totalPrice}] after PAYMENT`,
+                status: TransactionStatus.PAYOUT,
+                stripeId: event.data.object.id,
+              },
+              payment.id,
+              null,
+              metadata.renterId,
+            );
             this.mailerService.sendMail({
               to: payment.rental.landlord.email,
               subject: `Payment monthly rent of room ${payment.rental.room.roomName} - roomblock ${payment.rental.room.roomblock.address} in ${payment.month}/${payment.year} was completed`,
@@ -118,17 +140,6 @@ export class PaymentService {
             );
             const room = await this.em.findOne(Room, { id: rental.room.id });
 
-            if (!rental)
-              throw new BadRequestException('Can not find this rental!');
-
-            if (!room) throw new BadRequestException('Can not find this room!');
-
-            if (rental.status === RentalStatus.COMPLETED)
-              throw new BadRequestException(
-                'This rental are already COMPLETED!',
-              );
-            if (room.status === RoomStatus.OCCUPIED)
-              throw new BadRequestException('This room are already OCCIPIED!');
             rental.status = RentalStatus.COMPLETED;
             room.status = RoomStatus.OCCUPIED;
             const dto: TransactionDTO = {
@@ -136,7 +147,7 @@ export class PaymentService {
               status: TransactionStatus.DEPOSITED,
               stripeId: event.data.object.id,
             };
-            await this.transacService.createTransaction(
+            await this.transactionService.createTransaction(
               dto,
               null,
               rental.id,
@@ -145,6 +156,22 @@ export class PaymentService {
             this.em.persist(rental);
             this.em.persist(room);
             await this.em.flush();
+
+            await this.stripeService.payout(
+              rental.landlord,
+              Number(rental.room.depositAmount),
+            );
+
+            await this.transactionService.createTransaction(
+              {
+                description: `Payout to mod id=[${rental.landlord.id}], with amount=[${rental.room.depositAmount}] after DEPOSIT`,
+                status: TransactionStatus.PAYOUT,
+                stripeId: event.data.object.id,
+              },
+              null,
+              rentalId,
+              metadata.renterId,
+            );
 
             this.mailerService.sendMail({
               to: rental.landlord.email,
@@ -165,12 +192,22 @@ export class PaymentService {
             new InternalServerErrorException('Payment failed'),
             PaymentService.name,
           );
+          await this.transactionService.createTransaction(
+            {
+              description: event.type,
+              status: TransactionStatus.FAILED,
+              stripeId: event.data.object.id,
+            },
+            null,
+            null,
+            null,
+          );
           break;
         default:
       }
     } catch (error) {
       this.logger.error(
-        'Calling checkOcallBackWebHookutPayment()',
+        'Calling callBackWebHook()',
         error,
         PaymentService.name,
       );
@@ -212,12 +249,13 @@ export class PaymentService {
       }
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
-        success_url: process.env.STRIPE_SUCCESS_URL,
+        success_url: `${process.env.STRIPE_SUCCESS_URL}/${payment.id}?checkout=success`,
         cancel_url: process.env.STRIPE_CANCEL_URL,
         mode: 'payment',
         customer_email: req.user.email,
         client_reference_id: payment.id.toString(),
         metadata: {
+          landlordId: payment.rental.landlord.id,
           paymentId: payment.id,
           createdAt: new Date().toDateString(),
           description: `${payment.rental.renter.firstName} ${payment.rental.renter.lastName} transfers money for monthly rent in ${payment.month}/${payment.year}`,
@@ -358,6 +396,9 @@ export class PaymentService {
       }
       const paymentDTO = plainToInstance(PaymentDTO, payment);
       paymentDTO.rental = await this.rentalService.setRentalDTO(payment.rental);
+      const expirationDate = new Date(payment.created_at);
+      expirationDate.setDate(expirationDate.getDate() + 7);
+      paymentDTO.expirationDate = expirationDate;
       return paymentDTO;
     } catch (error) {
       this.logger.error('Calling findByRentalId()', error, PaymentService.name);

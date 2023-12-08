@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { RatingDTO } from './dto/rating.dto';
 import { EntityManager } from '@mikro-orm/mysql';
 import { RentalService } from '../rental/rental.service';
-import { RentalStatus } from 'src/common/enum/common.enum';
+import { RatingStatus, RentalStatus } from 'src/common/enum/common.enum';
 import { RoomRating } from 'src/entities/room-rating.entity';
 import { RatingRtnDTO } from './dto/rating-rtn.dto';
 import { plainToClass } from 'class-transformer';
@@ -45,7 +45,10 @@ export class RatingService {
       rating.updated_id = idLogin;
       rating.created_at = new Date();
       rating.updated_at = new Date();
-      await this.em.persistAndFlush(rating);
+      rental.ratingStatus = RatingStatus.RATED;
+      this.em.persist(rating);
+      this.em.persist(rental);
+      await this.em.flush();
       return rating;
     } catch (error) {
       throw error;
@@ -115,6 +118,9 @@ export class RatingService {
       for (let index = 0; index < res.length; index++) {
         res[index].avgRate = Number(res[index].avgRate);
         avgRate += parseFloat(res[index].avgRate);
+        res[index].avgRate = Math.round(
+          parseFloat(res[index].avgRate.toFixed(1)),
+        );
         avgClean += res[index].cleanRate;
         avgLocation += res[index].locationRate;
         avgSecurity += res[index].securityRate;
@@ -122,7 +128,9 @@ export class RatingService {
         userRatings.push(plainToClass(UserRatingDTO, res[index]));
       }
       result.ratings = userRatings;
-      (result.avgRate = parseFloat((avgRate / totalRating).toFixed(1))),
+      (result.avgRate = Math.round(
+        parseFloat((avgRate / totalRating).toFixed(1)),
+      )),
         (result.avgClean = avgClean / totalRating);
       result.avgLocation = avgLocation / totalRating;
       result.avgSecurity = avgSecurity / totalRating;

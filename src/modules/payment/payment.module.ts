@@ -10,12 +10,15 @@ import { RentalService } from '../rental/rental.service';
 import { RatingService } from '../rating/rating.service';
 import { RentalDetail } from 'src/entities/rental_detail.entity';
 import { Rental } from 'src/entities/rental.entity';
-import { StripeController } from './stripe/stripe.controller';
+import { StripeController } from '../stripe/stripe.controller';
 import { TransactionService } from '../transaction/transaction.service';
 import { NotificationModule } from '../notification/notification.module';
 import { EventGateway } from '../notification/event.gateway';
 import { NotificationService } from '../notification/notification.service';
 import { Notification } from 'src/entities/notification.entity';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { Utility } from 'src/entities/utility.entity';
+import { StripeService } from '../stripe/stripe.service';
 
 @Module({
   imports: [
@@ -25,6 +28,7 @@ import { Notification } from 'src/entities/notification.entity';
     MikroOrmModule.forFeature([RentalDetail]),
     MikroOrmModule.forFeature([Rental]),
     MikroOrmModule.forFeature([Notification]),
+    MikroOrmModule.forFeature([Utility]),
     NotificationModule,
   ],
   controllers: [PaymentController, StripeController],
@@ -37,6 +41,8 @@ import { Notification } from 'src/entities/notification.entity';
     TransactionService,
     EventGateway,
     NotificationService,
+    StripeService,
+    UtilitiesService,
   ],
 })
 export class PaymentModule {}

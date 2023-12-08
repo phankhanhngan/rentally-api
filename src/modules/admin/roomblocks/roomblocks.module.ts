@@ -6,6 +6,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { AWSModule } from 'src/modules/aws/aws.module';
 import { UsersService } from 'src/modules/users/users.service';
+import { StripeService } from 'src/modules/stripe/stripe.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { UsersService } from 'src/modules/users/users.service';
     MikroOrmModule.forFeature([Room]),
   ],
   controllers: [RoomBlocksController],
-  providers: [RoomBlocksService, UsersService],
+  providers: [RoomBlocksService, UsersService, StripeService],
 })
 export class RoomBlocksModule {}

@@ -1,0 +1,1 @@
+export const EXCHANGE_RATE_BACK = 0.0000416;
