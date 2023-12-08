@@ -32,6 +32,10 @@ export class UserDTO {
   @MaxLength(20)
   @Matches(
     /((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@$!%*?&])[A-Za-z0-9@$!%*?&]+)+/g,
+    {
+      message:
+        'Password must have at lease 8 characters, having number, letters and special character',
+    },
   )
   @IsString({ message: 'password must be a string' })
   password?: string;
