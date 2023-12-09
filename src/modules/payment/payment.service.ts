@@ -126,7 +126,8 @@ export class PaymentService {
               template: './checkout_rental',
               context: {
                 payment: payment,
-                transaction_link: 'https://rentally.netlify.app/',
+                transaction_link:
+                  'https://rentally.netlify.app/mod/transactions',
               },
             });
           }
@@ -179,7 +180,8 @@ export class PaymentService {
               template: './deposite_rental',
               context: {
                 rental: rental,
-                transaction_link: 'https://rentally.netlify.app/',
+                transaction_link:
+                  'https://rentally.netlify.app/mod/transactions',
               },
             });
           }

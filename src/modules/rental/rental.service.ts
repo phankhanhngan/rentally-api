@@ -46,7 +46,7 @@ export class RentalService {
     private readonly eventGateway: EventGateway,
     private readonly utilitiesService: UtilitiesService,
   ) {}
-
+  feLink = 'https://rentally.netlify.app';
   async findByIdAndRenter(
     rentalId: number,
     renterId: number,
@@ -267,7 +267,7 @@ export class RentalService {
 
       await this.em.flush();
       const dto = await this.setRentalDTO(rentalEntity);
-      const rentalLink = '';
+      const rentalLink = this.feLink + '/mod/rentals/' + rentalDb.id;
       this.sendMail(
         rentalEntity.landlord.email,
         rentalLink,
@@ -576,9 +576,10 @@ export class RentalService {
       rental.status = RentalStatus.APPROVED;
       await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
+      const rentalLink = this.feLink + '/my-rental/' + rental.id;
       this.sendMail(
         rental.renter.email,
-        '',
+        rentalLink,
         dto,
         'Rental was approved',
         './rental_udpate_status',
@@ -625,9 +626,10 @@ export class RentalService {
 
       await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
+      const rentalLink = this.feLink + '/my-rental/' + rental.id;
       this.sendMail(
         rental.renter.email,
-        '',
+        rentalLink,
         dto,
         'Rental request was canceled',
         './rental_udpate_status',
@@ -672,9 +674,10 @@ export class RentalService {
       rental.room.status = RoomStatus.EMPTY;
       await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
+      const rentalLink = this.feLink + '/my-rental/' + rental.id;
       this.sendMail(
         rental.renter.email,
-        '',
+        rentalLink,
         dto,
         'Rental was accepted to break',
         './rental_udpate_status',
@@ -782,9 +785,10 @@ export class RentalService {
       rental.status = RentalStatus.REQUEST_BREAK;
       await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
+      const rentalLink = this.feLink + '/mod/rentals/' + rental.id;
       this.sendMail(
         dto.hostInfo.email,
-        '',
+        rentalLink,
         dto,
         'Rental was requested to break',
         './rental_udpate_status',
@@ -831,9 +835,10 @@ export class RentalService {
       rental.room.status = RoomStatus.EMPTY;
       await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
+      const rentalLink = this.feLink + '/my-rental/' + rental.id;
       this.sendMail(
         rental.renter.email,
-        '',
+        rentalLink,
         dto,
         'Rental was ended',
         './rental_udpate_status',
