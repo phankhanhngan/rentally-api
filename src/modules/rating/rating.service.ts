@@ -131,10 +131,10 @@ export class RatingService {
       (result.avgRate = Math.round(
         parseFloat((avgRate / totalRating).toFixed(1)),
       )),
-        (result.avgClean = avgClean / totalRating);
-      result.avgLocation = avgLocation / totalRating;
-      result.avgSecurity = avgSecurity / totalRating;
-      result.avgSupport = avgSupport / totalRating;
+        (result.avgClean = parseFloat((avgClean / totalRating).toFixed(1)));
+      result.avgLocation = parseFloat((avgLocation / totalRating).toFixed(1));
+      result.avgSecurity = parseFloat((avgSecurity / totalRating).toFixed(1));
+      result.avgSupport = parseFloat((avgSupport / totalRating).toFixed(1));
       result.totalRating = totalRating;
       return result;
     } catch (error) {
