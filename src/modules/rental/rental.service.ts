@@ -266,8 +266,9 @@ export class RentalService {
       this.em.persist(rentalEntity);
 
       await this.em.flush();
+
       const dto = await this.setRentalDTO(rentalEntity);
-      const rentalLink = this.feLink + '/mod/rentals/' + rentalDb.id;
+      const rentalLink = this.feLink + '/mod/rentals/' + rentalEntity.id;
       this.sendMail(
         rentalEntity.landlord.email,
         rentalLink,
