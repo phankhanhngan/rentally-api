@@ -293,6 +293,7 @@ export class PaymentService {
       if (!keyword) keyword = '';
       const likeQr = { $like: `%${keyword}%` };
       const queryObj = {
+        deleted_at: null,
         $or: [
           {
             rental: {
@@ -368,6 +369,9 @@ export class PaymentService {
           paymentDTO.rental = await this.rentalService.setRentalDTO(
             payment.rental,
           );
+          const expirationDate = new Date(payment.created_at);
+          expirationDate.setDate(expirationDate.getDate() + 7);
+          paymentDTO.expirationDate = expirationDate;
           return paymentDTO;
         }),
       );

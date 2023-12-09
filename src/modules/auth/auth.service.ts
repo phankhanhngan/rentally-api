@@ -90,7 +90,7 @@ export class AuthService {
         throw new HttpException(
           'Email has not been verified',
           HttpStatus.BAD_REQUEST,
-        );      
+        );
       if (userDb.status === UserStatus.DISABLED)
         throw new HttpException('User are disabled', HttpStatus.BAD_REQUEST);
       const isValidPass = await bcrypt.compare(
@@ -131,14 +131,9 @@ export class AuthService {
         );
       dto.verificationCode = verificationToken;
       if (this.checkIsRegister(userDb)) {
-        const updateDto = plainToInstance(UpdateUserDTO, userDb);
-        updateDto.status = UserStatus.REGISTING;
-        await this.userService.updateUser(
-          userDb.id,
-          plainToInstance(UpdateUserDTO, userDb),
-          null,
-          0,
-        );
+        userDb.verificationCode = verificationToken;
+        userDb.status = UserStatus.REGISTING;
+        await this.em.persistAndFlush(userDb);
       } else {
         await this.userService.addUser(
           plainToInstance(UserDTO, dto),
