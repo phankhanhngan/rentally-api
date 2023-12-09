@@ -815,7 +815,7 @@ export class RentalService {
       const rental = await this.rentalRepository.findOne(
         {
           id,
-          renter: user,
+          landlord: user,
         },
         { populate: ['room', 'renter', 'rentalDetail', 'room.roomblock'] },
       );
