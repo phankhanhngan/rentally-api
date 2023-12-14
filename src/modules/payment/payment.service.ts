@@ -50,25 +50,48 @@ export class PaymentService {
     private readonly notificationService: NotificationService,
     private readonly stripeService: StripeService,
   ) {}
-  async findMyPayment(user: any) {
+  async findMyPayment(user: any, status: PaymentStatus) {
     try {
-      const payments = await this.em.find(
-        Payment,
-        {
-          rental: { renter: { id: user.id } },
-          deleted_at: null,
-        },
-        {
-          populate: [
-            'rental',
-            'rental.room',
-            'rental.room.roomblock',
-            'rental.landlord',
-            'rental.rentalDetail',
-          ],
-          orderBy: { status: 'DESC' },
-        },
-      );
+      let payments;
+      if (status) {
+        payments = await this.em.find(
+          Payment,
+          {
+            rental: { renter: { id: user.id } },
+            deleted_at: null,
+            status: status,
+          },
+          {
+            populate: [
+              'rental',
+              'rental.room',
+              'rental.room.roomblock',
+              'rental.landlord',
+              'rental.rentalDetail',
+            ],
+            orderBy: { status: 'DESC' },
+          },
+        );
+      } else {
+        payments = await this.em.find(
+          Payment,
+          {
+            rental: { renter: { id: user.id } },
+            deleted_at: null,
+          },
+          {
+            populate: [
+              'rental',
+              'rental.room',
+              'rental.room.roomblock',
+              'rental.landlord',
+              'rental.rentalDetail',
+            ],
+            orderBy: { status: 'DESC' },
+          },
+        );
+      }
+
       const paymentDTOs = await Promise.all(
         payments.map(async (payment) => {
           const paymentDTO = plainToInstance(PaymentDTO, payment);

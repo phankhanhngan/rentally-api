@@ -18,7 +18,7 @@ import { RentalService } from './rental.service';
 import { Response } from 'express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
-import { Role } from 'src/common/enum/common.enum';
+import { RentalStatus, Role } from 'src/common/enum/common.enum';
 import { CreateRentalDTO } from './dtos/CreateRental.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UpdateRentalDTO } from './dtos/UpdateRental.dto';
@@ -57,10 +57,14 @@ export class RentalController {
   }
 
   @Get('/my-rental')
-  async getMyRental(@Res() res: Response, @Req() req) {
+  async getMyRental(
+    @Res() res: Response,
+    @Req() req,
+    @Query('status') status: RentalStatus,
+  ) {
     try {
       const idLogined = req.user.id;
-      const myRental = await this.rentalService.getMyRental(idLogined);
+      const myRental = await this.rentalService.getMyRental(idLogined, status);
       res.status(200).json({
         message: 'Get my rentals successfully',
         status: 'success',

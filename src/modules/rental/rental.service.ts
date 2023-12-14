@@ -123,21 +123,41 @@ export class RentalService {
     }
   }
 
-  async getMyRental(idLogined: any): Promise<MyRentalDTO[]> {
+  async getMyRental(
+    idLogined: any,
+    status: RentalStatus,
+  ): Promise<MyRentalDTO[]> {
     try {
-      const rentals = await this.em.find(
-        Rental,
-        { renter: { id: idLogined } },
-        {
-          populate: [
-            'landlord',
-            'renter',
-            'room',
-            'room.roomblock',
-            'rentalDetail',
-          ],
-        },
-      );
+      let rentals;
+      if (status) {
+        rentals = await this.em.find(
+          Rental,
+          { renter: { id: idLogined }, status: status },
+          {
+            populate: [
+              'landlord',
+              'renter',
+              'room',
+              'room.roomblock',
+              'rentalDetail',
+            ],
+          },
+        );
+      } else {
+        rentals = await this.em.find(
+          Rental,
+          { renter: { id: idLogined } },
+          {
+            populate: [
+              'landlord',
+              'renter',
+              'room',
+              'room.roomblock',
+              'rentalDetail',
+            ],
+          },
+        );
+      }
       const rentalsDTO: MyRentalDTO[] = [];
       if (rentals.length < 1) {
         return rentalsDTO;

@@ -19,7 +19,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Logger } from 'winston';
 import { PaymentService } from './payment.service';
 import { RoleAuthGuard } from 'src/common/guards/role-auth.guard';
-import { Role } from 'src/common/enum/common.enum';
+import { PaymentStatus, Role } from 'src/common/enum/common.enum';
 import { CreatePaymentDTO } from './dtos/create-payment.dto';
 import { Response } from 'express';
 import { UpdatePaymentDTO } from './dtos/update-payment.dto';
@@ -125,10 +125,14 @@ export class PaymentController {
   }
 
   @Get('my-payment')
-  async findMyPayment(@Req() req, @Res() res: Response) {
+  async findMyPayment(
+    @Req() req,
+    @Res() res: Response,
+    @Query('status') status: PaymentStatus,
+  ) {
     try {
       const user = req.user;
-      const paymentDTOs = await this.paymentService.findMyPayment(user);
+      const paymentDTOs = await this.paymentService.findMyPayment(user, status);
       res.status(200).json({
         message: 'Get my payment successfully',
         status: 'success',
