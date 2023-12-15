@@ -4,10 +4,15 @@ import { plainToInstance } from 'class-transformer';
 import { PaymentStatus, Role } from 'src/common/enum/common.enum';
 import { ViewRoomDTO } from '../mod/rooms/dto/view-room.dto';
 import { User } from 'src/entities';
+import { Utility } from 'src/entities/utility.entity';
+import { UtilitiesService } from '../utilities/utilities.service';
 
 @Injectable()
 export class StatisticService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly utilitiesService: UtilitiesService,
+  ) {}
 
   // MOD
   async getRevenueMonthlyByYear(year: number, landlordId: number) {
@@ -123,6 +128,7 @@ export class StatisticService {
         inner join roomblocks rb
         on r.roomblock_id = rb.id
         ${user.role !== Role.ADMIN ? 'where rb.landlord_id = :landlordId' : ''}
+        and r.deleted_at is null
         group by room_id 
         order by avg((clean_rate + support_rate + location_rate + security_rate) / 4) ${order}
         limit 5`,
@@ -133,6 +139,15 @@ export class StatisticService {
       for (let i = 0; i < res.length; i++) {
         const { ratings, ...room } = res[i];
         const roomDto = plainToInstance(ViewRoomDTO, room);
+        const { utilities } =  roomDto ;
+        const utilitiesDto = [];
+        for (let i = 0; i < utilities.length; i++) {
+          const utilityDto = await this.utilitiesService.getUtilityById(
+            Number(utilities[i]),
+          );
+          utilitiesDto.push(utilityDto);
+        }
+        roomDto.utilities = utilitiesDto;
         rooms.push({ ...roomDto, ratings: Number(ratings) });
       }
       return rooms;
@@ -245,7 +260,7 @@ export class StatisticService {
           increase: 0,
         };
       }
-      
+
       for (let i = 1; i < 12; i++) {
         if (statisticDto.statistics[i - 1].cost === 0) {
           statisticDto.statistics[i].increase =
