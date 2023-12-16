@@ -27,9 +27,9 @@ export class StatisticController {
   ) {}
 
   // MOD
-  @Get('landlord/money/:year')
+  @Get('revenue/:year')
   @UseGuards(RoleAuthGuard([Role.MOD]))
-  async getTotalMoneyMonthlyByYear(
+  async getRevenueMonthlyByYear(
     @Req() req,
     @Res() res: Response,
     @Param('year', ParseIntPipe) year: number,
@@ -38,7 +38,7 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getTotalMoneyMonthlyByYear(
+      const data = await this.statisticService.getRevenueMonthlyByYear(
         year,
         req.user.id,
       );
@@ -49,7 +49,7 @@ export class StatisticController {
       });
     } catch (error) {
       this.logger.error(
-        'Calling getTotalMoneyMonthlyByYear()',
+        'Calling getRevenueMonthlyByYear()',
         error,
         StatisticController.name,
       );
@@ -57,9 +57,9 @@ export class StatisticController {
     }
   }
 
-  @Get('landlord/rentals/:year')
-  @UseGuards(RoleAuthGuard([Role.MOD]))
-  async getTotaRentalMonthlyByYear(
+  @Get('rentals/:year')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  async getTRentalsMonthlyByYear(
     @Req() req,
     @Res() res: Response,
     @Param('year', ParseIntPipe) year: number,
@@ -68,9 +68,9 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getTotaRentalMonthlyByYear(
+      const data = await this.statisticService.getTRentalsMonthlyByYear(
         year,
-        req.user.id,
+        req.user,
       );
       res.status(200).json({
         message: 'Get statistic successfully',
@@ -79,7 +79,7 @@ export class StatisticController {
       });
     } catch (error) {
       this.logger.error(
-        'Calling getTotaRentalMonthlyByYear()',
+        'Calling getTRentalsMonthlyByYear()',
         error,
         StatisticController.name,
       );
@@ -87,8 +87,8 @@ export class StatisticController {
     }
   }
 
-  @Get('landlord/rooms/:year')
-  @UseGuards(RoleAuthGuard([Role.MOD]))
+  @Get('rooms/:year')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
   async getStatisticRoom(
     @Req() req,
     @Res() res: Response,
@@ -98,7 +98,7 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getStatisticRoom(req.user.id);
+      const data = await this.statisticService.getStatisticRoom(req.user);
       res.status(200).json({
         message: 'Get statistic successfully',
         status: 'success',
@@ -114,11 +114,11 @@ export class StatisticController {
     }
   }
 
-  @Get('landlord/ratings')
-  @UseGuards(RoleAuthGuard([Role.MOD]))
+  @Get('ratings')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
   async getTopRooms(@Req() req, @Res() res: Response) {
     try {
-      const data = await this.statisticService.getTopRooms(req.user.id);
+      const data = await this.statisticService.getTopRooms(req.user);
       res.status(200).json({
         message: 'Get statistic successfully',
         status: 'success',
@@ -134,11 +134,11 @@ export class StatisticController {
     }
   }
 
-  @Get('landlord/total')
-  @UseGuards(RoleAuthGuard([Role.MOD]))
-  async getTotal(@Req() req, @Res() res: Response) {
+  @Get('overview')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  async getOverview(@Req() req, @Res() res: Response) {
     try {
-      const data = await this.statisticService.getTotal(req.user.id);
+      const data = await this.statisticService.getOverview(req.user);
       res.status(200).json({
         message: 'Get statistic successfully',
         status: 'success',
@@ -146,7 +146,7 @@ export class StatisticController {
       });
     } catch (error) {
       this.logger.error(
-        'Calling getTopRooms()',
+        'Calling getOverview()',
         error,
         StatisticController.name,
       );
@@ -155,9 +155,9 @@ export class StatisticController {
   }
 
   // USER
-  @Get('renter/:year')
-  @UseGuards(RoleAuthGuard([Role.MOD, Role.USER]))
-  async getTotalMoneyByYearUser(
+  @Get('cost/:year')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.USER, Role.ADMIN]))
+  async getCostMonthlyByYear(
     @Req() req,
     @Res() res: Response,
     @Param('year', ParseIntPipe) year: number,
@@ -166,7 +166,7 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getTotalMoneyByYearUser(
+      const data = await this.statisticService.getCostMonthlyByYear(
         year,
         req.user.id,
       );
@@ -177,7 +177,7 @@ export class StatisticController {
       });
     } catch (error) {
       this.logger.error(
-        'Calling getTotalMoneyByYearUser()',
+        'Calling getCostMonthlyByYear()',
         error,
         StatisticController.name,
       );
@@ -185,102 +185,7 @@ export class StatisticController {
     }
   }
 
-  // ADMIN
-  @Get('admin/rentals/:year')
-  @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getTotaRentalMonthlyByYearAdmin(
-    @Req() req,
-    @Res() res: Response,
-    @Param('year', ParseIntPipe) year: number,
-  ) {
-    try {
-      if (year < 1990) {
-        throw new BadRequestException('Year invalid!');
-      }
-      const data = await this.statisticService.getTotaRentalMonthlyByYear(year);
-      res.status(200).json({
-        message: 'Get statistic successfully',
-        status: 'success',
-        data: data,
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling getTotaRentalMonthlyByYearAdmin()',
-        error,
-        StatisticController.name,
-      );
-      throw error;
-    }
-  }
-
-  @Get('admin/rooms/:year')
-  @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getStatisticRoomAdmin(
-    @Req() req,
-    @Res() res: Response,
-    @Param('year', ParseIntPipe) year: number,
-  ) {
-    try {
-      if (year < 1990) {
-        throw new BadRequestException('Year invalid!');
-      }
-      const data = await this.statisticService.getStatisticRoom();
-      res.status(200).json({
-        message: 'Get statistic successfully',
-        status: 'success',
-        data: data,
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling getStatisticRoomAdmin()',
-        error,
-        StatisticController.name,
-      );
-      throw error;
-    }
-  }
-
-  @Get('admin/ratings')
-  @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getTopRoomsAdmin(@Req() req, @Res() res: Response) {
-    try {
-      const data = await this.statisticService.getTopRooms();
-      res.status(200).json({
-        message: 'Get statistic successfully',
-        status: 'success',
-        data: data,
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling getTopRoomsAdmin()',
-        error,
-        StatisticController.name,
-      );
-      throw error;
-    }
-  }
-
-  @Get('admin/total')
-  @UseGuards(RoleAuthGuard([Role.ADMIN]))
-  async getTotalAdmin(@Req() req, @Res() res: Response) {
-    try {
-      const data = await this.statisticService.getTotal();
-      res.status(200).json({
-        message: 'Get statistic successfully',
-        status: 'success',
-        data: data,
-      });
-    } catch (error) {
-      this.logger.error(
-        'Calling getTotalAdmin()',
-        error,
-        StatisticController.name,
-      );
-      throw error;
-    }
-  }
-
-  @Get('admin/users/:year')
+  @Get('users/:year')
   @UseGuards(RoleAuthGuard([Role.ADMIN]))
   async getNewUserMonthlyByYearAdmin(
     @Req() req,
@@ -291,7 +196,9 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getNewUserMonthlyByYearAdmin(year);
+      const data = await this.statisticService.getNewUserMonthlyByYearAdmin(
+        year,
+      );
       res.status(200).json({
         message: 'Get statistic successfully',
         status: 'success',
