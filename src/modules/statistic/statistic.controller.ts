@@ -26,9 +26,10 @@ export class StatisticController {
     private readonly statisticService: StatisticService,
   ) {}
 
-  @Get('landlord/:year')
+  // MOD
+  @Get('revenue/:year')
   @UseGuards(RoleAuthGuard([Role.MOD]))
-  async getTotalMonthlyAmountByYearLandlord(
+  async getRevenueMonthlyByYear(
     @Req() req,
     @Res() res: Response,
     @Param('year', ParseIntPipe) year: number,
@@ -37,7 +38,7 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getTotalMonthlyAmountByYearMod(
+      const data = await this.statisticService.getRevenueMonthlyByYear(
         year,
         req.user.id,
       );
@@ -48,7 +49,7 @@ export class StatisticController {
       });
     } catch (error) {
       this.logger.error(
-        'Calling getTotalMonthlyAmountByYearLandlord()',
+        'Calling getRevenueMonthlyByYear()',
         error,
         StatisticController.name,
       );
@@ -56,9 +57,9 @@ export class StatisticController {
     }
   }
 
-  @Get('renter/:year')
-  @UseGuards(RoleAuthGuard([Role.MOD, Role.USER]))
-  async getTotalMonthlyAmountByYearRenter(
+  @Get('rentals/:year')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  async getTRentalsMonthlyByYear(
     @Req() req,
     @Res() res: Response,
     @Param('year', ParseIntPipe) year: number,
@@ -67,7 +68,105 @@ export class StatisticController {
       if (year < 1990) {
         throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getTotalMonthlyAmountByYearUser(
+      const data = await this.statisticService.getTRentalsMonthlyByYear(
+        year,
+        req.user,
+      );
+      res.status(200).json({
+        message: 'Get statistic successfully',
+        status: 'success',
+        data: data,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getTRentalsMonthlyByYear()',
+        error,
+        StatisticController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Get('rooms/:year')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  async getStatisticRoom(
+    @Req() req,
+    @Res() res: Response,
+    @Param('year', ParseIntPipe) year: number,
+  ) {
+    try {
+      if (year < 1990) {
+        throw new BadRequestException('Year invalid!');
+      }
+      const data = await this.statisticService.getStatisticRoom(req.user);
+      res.status(200).json({
+        message: 'Get statistic successfully',
+        status: 'success',
+        data: data,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getStatisticRoom()',
+        error,
+        StatisticController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Get('ratings')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  async getTopRooms(@Req() req, @Res() res: Response) {
+    try {
+      const data = await this.statisticService.getTopRooms(req.user);
+      res.status(200).json({
+        message: 'Get statistic successfully',
+        status: 'success',
+        data: data,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getTopRooms()',
+        error,
+        StatisticController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Get('overview')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
+  async getOverview(@Req() req, @Res() res: Response) {
+    try {
+      const data = await this.statisticService.getOverview(req.user);
+      res.status(200).json({
+        message: 'Get statistic successfully',
+        status: 'success',
+        data: data,
+      });
+    } catch (error) {
+      this.logger.error(
+        'Calling getOverview()',
+        error,
+        StatisticController.name,
+      );
+      throw error;
+    }
+  }
+
+  // USER
+  @Get('cost/:year')
+  @UseGuards(RoleAuthGuard([Role.MOD, Role.USER, Role.ADMIN]))
+  async getCostMonthlyByYear(
+    @Req() req,
+    @Res() res: Response,
+    @Param('year', ParseIntPipe) year: number,
+  ) {
+    try {
+      if (year < 1990) {
+        throw new BadRequestException('Year invalid!');
+      }
+      const data = await this.statisticService.getCostMonthlyByYear(
         year,
         req.user.id,
       );
@@ -78,7 +177,7 @@ export class StatisticController {
       });
     } catch (error) {
       this.logger.error(
-        'Calling getTotalMonthlyAmountByYearRenter()',
+        'Calling getCostMonthlyByYear()',
         error,
         StatisticController.name,
       );
@@ -86,30 +185,28 @@ export class StatisticController {
     }
   }
 
-  @Get('renter/:year/:month')
-  async getPriceDetailByMonth(
+  @Get('users/:year')
+  @UseGuards(RoleAuthGuard([Role.ADMIN]))
+  async getNewUserMonthlyByYearAdmin(
     @Req() req,
     @Res() res: Response,
     @Param('year', ParseIntPipe) year: number,
-    @Param('month', ParseIntPipe) month: number,
   ) {
     try {
-      if (month < 1 || month > 12) {
-        throw new BadRequestException('Month invalid!');
+      if (year < 1990) {
+        throw new BadRequestException('Year invalid!');
       }
-      const data = await this.statisticService.getPriceDetailByMonth(
+      const data = await this.statisticService.getNewUserMonthlyByYearAdmin(
         year,
-        month,
-        req.user.id,
       );
       res.status(200).json({
-        message: 'Get user successfully',
+        message: 'Get statistic successfully',
         status: 'success',
         data: data,
       });
     } catch (error) {
       this.logger.error(
-        'Calling getPriceDetailByMonth()',
+        'Calling getNewUserMonthlyByYearAdmin()',
         error,
         StatisticController.name,
       );

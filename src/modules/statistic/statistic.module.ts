@@ -7,14 +7,17 @@ import { UsersService } from '../users/users.service';
 import { UsersModule } from '../users/users.module';
 import { AWSModule } from '../aws/aws.module';
 import { StripeService } from '../stripe/stripe.service';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { Utility } from 'src/entities/utility.entity';
 
 @Module({
   imports: [
     UsersModule,
     AWSModule,
-    MikroOrmModule.forFeature([User])
+    MikroOrmModule.forFeature([User]),
+    MikroOrmModule.forFeature([Utility])
   ],
   controllers: [StatisticController],
-  providers: [StatisticService, UsersService, StripeService],
+  providers: [StatisticService, UsersService, StripeService, UtilitiesService],
 })
 export class StatisticModule {}
