@@ -87,18 +87,15 @@ export class StatisticController {
     }
   }
 
-  @Get('rooms/:year')
+  @Get('rooms/:roomblockid')
   @UseGuards(RoleAuthGuard([Role.MOD, Role.ADMIN]))
   async getStatisticRoom(
     @Req() req,
     @Res() res: Response,
-    @Param('year', ParseIntPipe) year: number,
+    @Param('roomblockid', ParseIntPipe) id: number,
   ) {
     try {
-      if (year < 1990) {
-        throw new BadRequestException('Year invalid!');
-      }
-      const data = await this.statisticService.getStatisticRoom(req.user);
+      const data = await this.statisticService.getStatisticRoom(req.user, id);
       res.status(200).json({
         message: 'Get statistic successfully',
         status: 'success',

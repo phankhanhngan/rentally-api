@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { PaymentStatus, Role } from 'src/common/enum/common.enum';
 import { ViewRoomDTO } from '../mod/rooms/dto/view-room.dto';
-import { User } from 'src/entities';
-import { Utility } from 'src/entities/utility.entity';
+import { RoomBlock, User } from 'src/entities';
 import { UtilitiesService } from '../utilities/utilities.service';
+import { RoomBlocksService } from '../admin/roomblocks/roomblocks.service';
 
 @Injectable()
 export class StatisticService {
@@ -19,7 +19,7 @@ export class StatisticService {
     try {
       const qb = this.em.getKnex().raw(
         `select sum(p.total_price) as revenue, sum(p.total_electric_price) as electric,
-        sum(p.total_water_price) as water , p.month as month 
+        sum(p.total_water_price) as water, sum(p.additional_price) as additionalPrice, p.month as month 
         from payments p
         inner join rental r 
         on p.rental_id = r.id
@@ -38,6 +38,7 @@ export class StatisticService {
           revenue: 0,
           electric: 0,
           water: 0,
+          additionalPrice: 0,
           month: index + 1,
         };
       });
@@ -91,17 +92,29 @@ export class StatisticService {
     }
   }
 
-  async getStatisticRoom(user: User) {
+  async getStatisticRoom(user: User, id: number) {
     try {
+      const query = { id };
+      if (user.role === Role.MOD) {
+        query['landlord'] = { id: user.id };
+      }
+      console.log(query);
+
+      const roomblock = await this.em.findOne(RoomBlock, query);
+      if (!roomblock) {
+        throw new BadRequestException(
+          `Can not find room block with id=[${id}]`,
+        );
+      }
       const qb = this.em.getKnex().raw(
         `select count(r.status) as rooms, r.status from rooms r
         inner join roomblocks rb
         on r.roomblock_id = rb.id
-        where r.deleted_at is null ${
-          user.role !== Role.ADMIN ? 'and rb.landlord_id = :landlordId' : ''
-        }
+        where r.deleted_at is null
+        and rb.id = :id
+        ${user.role !== Role.ADMIN ? 'and rb.landlord_id = :landlordId' : ''}
         group by r.status`,
-        { landlordId: user.id },
+        { landlordId: user.id, id: id },
       );
       const res = await this.em.execute(qb);
       const statisticDto = {
@@ -139,7 +152,7 @@ export class StatisticService {
       for (let i = 0; i < res.length; i++) {
         const { ratings, ...room } = res[i];
         const roomDto = plainToInstance(ViewRoomDTO, room);
-        const { utilities } =  roomDto ;
+        const { utilities } = roomDto;
         const utilitiesDto = [];
         for (let i = 0; i < utilities.length; i++) {
           const utilityDto = await this.utilitiesService.getUtilityById(
