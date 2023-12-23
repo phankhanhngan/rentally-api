@@ -582,6 +582,17 @@ export class RentalService {
       if (!rental) {
         throw new BadRequestException(`Cannot find rental with id=[${id}]`);
       }
+
+      const roomCount = await this.roomRepository.count({
+        id: rental.room.id,
+        status: RoomStatus.EMPTY,
+      });
+      if (roomCount < 1) {
+        throw new BadRequestException(
+          `Room not found or this room has already been rented!`,
+        );
+      }
+
       if (rental.status != RentalStatus.CREATED) {
         throw new BadRequestException(
           `Only rental request with status ${RentalStatus.CREATED} could be approved`,
