@@ -6,6 +6,7 @@ import {
   IsNotEmptyObject,
   IsObject,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -27,15 +28,19 @@ class UpdateRentalHostInfo {
 class UpdateRentalInfo {
   @ApiProperty()
   @IsInt()
+  @Min(0)
   electricPrice: number;
   @ApiProperty()
   @IsInt()
+  @Min(0)
   waterPrice: number;
   @ApiProperty()
   @IsInt()
+  @Min(0)
   leaseTerminationCost: number;
   @ApiProperty()
   @IsInt()
+  @Min(0)
   additionalPrice: number;
 }
 
