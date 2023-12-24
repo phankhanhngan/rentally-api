@@ -4,3 +4,11 @@ export interface IUserAuthen {
   firstName: string;
   photo: string;
 }
+
+export interface IUserAuthenV2 {
+  googleId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+}

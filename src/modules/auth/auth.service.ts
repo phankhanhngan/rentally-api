@@ -14,7 +14,7 @@ import { CheckCodeDto } from './dtos/CheckCodeDto.dto';
 import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { User } from 'src/entities';
-import { IUserAuthen } from './interfaces/auth-user.interface';
+import { IUserAuthen, IUserAuthenV2 } from './interfaces/auth-user.interface';
 import { UserStatus } from 'src/common/enum/common.enum';
 import { UpdateUserDTO } from '../users/dtos/update-user.dto';
 @Injectable()
@@ -49,7 +49,7 @@ export class AuthService {
     }
   }
 
-  async validateGoogleLogin(user: IUserAuthen) {
+  async validateGoogleLogin(user: IUserAuthen | IUserAuthenV2) {
     try {
       const userDb = await this.getUserByEmail(user.email);
       if (userDb && userDb.status === UserStatus.DISABLED)

@@ -21,7 +21,8 @@ import { CheckCodeDto } from './dtos/CheckCodeDto.dto';
 import { ResetPasswordDto } from './dtos/ResetPasswordDto.dto';
 import { error } from 'console';
 import { OAuth2Client } from './google_client/google-client.config';
-import { IUserAuthen } from './interfaces/auth-user.interface';
+import { IUserAuthen, IUserAuthenV2 } from './interfaces/auth-user.interface';
+import { FireBaseAuthDTO } from './dtos/FireBaseAuthUser.dto';
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -81,6 +82,38 @@ export class AuthController {
         email,
         firstName: name,
         photo: picture,
+      };
+      const response = await this.authService.validateGoogleLogin(user);
+      res.status(200).json({
+        message: 'Login Successfully',
+        status: 'SUCCESS',
+        data: response,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Calling googleAuthCallback()',
+        err,
+        AuthController.name,
+      );
+      throw error;
+    }
+  }
+
+  @Post('/firebase/callback')
+  async firebaseCallback(@Body() dto: FireBaseAuthDTO, @Res() res: Response) {
+    try {
+      if (!dto.id) {
+        throw new HttpException(
+          'Google ID can not be null',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      const user: IUserAuthenV2 = {
+        googleId: dto.id,
+        email: dto.email,
+        firstName: dto.familyName,
+        photo: dto.photo,
+        lastName: dto.givenName,
       };
       const response = await this.authService.validateGoogleLogin(user);
       res.status(200).json({
