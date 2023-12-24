@@ -749,7 +749,7 @@ export class RentalService {
         );
       }
       if (rental.room.status === RoomStatus.OCCUPIED) {
-        throw new BadRequestException('This room are already OCCIPIED!');
+        throw new BadRequestException('This room are already OCCUPIED!');
       }
 
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
