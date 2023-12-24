@@ -174,9 +174,15 @@ export class RentalController {
     @Req() req,
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
+    @Body(new ValidationPipe())
+    updateRentalDto: UpdateRentalDTO,
   ) {
     try {
-      await this.rentalService.approveRentalRequest(id, req.user);
+      await this.rentalService.approveRentalRequest(
+        id,
+        req.user,
+        updateRentalDto,
+      );
       res.status(200).json({
         success: true,
         message: `Approve rental request successfully`,
