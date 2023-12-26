@@ -50,7 +50,7 @@ export class StatisticService {
           res[i][key] = Number(res[i][key]);
         }
 
-        statisticDto.statistics[Number(res[i].month)] = res[i];
+        statisticDto.statistics[Number(res[i].month) - 1] = res[i];
       }
       return statisticDto;
     } catch (error) {
