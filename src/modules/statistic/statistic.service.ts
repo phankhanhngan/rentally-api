@@ -133,7 +133,8 @@ export class StatisticService {
   async getTop5(user: User, order: string) {
     try {
       const qb = this.em.getKnex().raw(
-        `select r.id, r.room_name, r.area, r.price, r.deposit_amount, r.images, r.utilities, r.status,
+        `select r.id, r.room_name as roomName, rb.address, r.area, r.price, 
+        r.deposit_amount as depositAmount, r.images, r.utilities, r.status,
         round(avg((clean_rate + support_rate + location_rate + security_rate) / 4), 2) as ratings 
         from room_ratings rr
         inner join rooms r
@@ -150,7 +151,7 @@ export class StatisticService {
       const res = await this.em.execute(qb);
       const rooms = [];
       for (let i = 0; i < res.length; i++) {
-        const { ratings, ...room } = res[i];
+        const { address, ratings, ...room } = res[i];
         const roomDto = plainToInstance(ViewRoomDTO, room);
         const { utilities } = roomDto;
         const utilitiesDto = [];
@@ -161,7 +162,11 @@ export class StatisticService {
           utilitiesDto.push(utilityDto);
         }
         roomDto.utilities = utilitiesDto;
-        rooms.push({ ...roomDto, ratings: Number(ratings) });
+        rooms.push({
+          ...roomDto,
+          address,
+          ratings: Number(ratings),
+        });
       }
       return rooms;
     } catch (error) {
