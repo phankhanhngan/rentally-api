@@ -570,11 +570,7 @@ export class RentalService {
     }
   }
 
-  async approveRentalRequest(
-    id: number,
-    user: any,
-    updateRentalDto: UpdateRentalDTO,
-  ) {
+  async approveRentalRequest(id: number, user: any) {
     try {
       const rental = await this.rentalRepository.findOne(
         {
@@ -603,33 +599,16 @@ export class RentalService {
         );
       }
 
-      rental.rentalDetail.electricPrice =
-        updateRentalDto.rentalInfo.electricPrice;
-      rental.rentalDetail.waterPrice = updateRentalDto.rentalInfo.waterPrice;
-      rental.rentalDetail.addtionalPrice =
-        updateRentalDto.rentalInfo.additionalPrice;
-      rental.rentalDetail.leaseTerminationCost =
-        updateRentalDto.rentalInfo.leaseTerminationCost;
-      rental.rentalDetail.landlordBirthday = moment(
-        updateRentalDto.hostInfo.birthday,
-        'DD/MM/YYYY',
-      ).toDate();
-      rental.rentalDetail.landlordIdentifyNo =
-        updateRentalDto.hostInfo.identityNumber;
-      rental.rentalDetail.landlordIdentifyDate = moment(
-        updateRentalDto.hostInfo.identityDateOfIssue,
-        'DD/MM/YYYY',
-      ).toDate();
-      rental.rentalDetail.landlordIdentifyAddress =
-        updateRentalDto.hostInfo.identityPlaceOfIssue;
-
-      this.em.persist(rental.rentalDetail);
+      if (rental.rentalDetail.landlordIdentifyNo == null) {
+        throw new BadRequestException(
+          `Please update neccessary information before approve this rental request`,
+        );
+      }
 
       rental.status = RentalStatus.APPROVED;
-      this.em.persist(rental);
+      await this.em.persistAndFlush(rental);
       const dto = await this.setRentalDTO(rental);
       const rentalLink = this.feLink + '/my-rental/' + rental.id;
-      await this.em.flush();
       this.sendMail(
         rental.renter.email,
         rentalLink,
