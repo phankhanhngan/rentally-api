@@ -1,3 +1,12 @@
+
+## Room rental management system
+
+A system where room host can manage their rooms and renters can perform online room rentals.
+The host can manage rooms' monthly payments. The system will take care of payment and payout to the hosts.
+
+Renters can easily find a suitable room, and track their monthly payment.
+
+--------------------------------------------------------------------------------
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
